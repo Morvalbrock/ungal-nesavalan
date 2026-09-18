@@ -1,0 +1,416 @@
+[
+  {
+    "id": "prd_kanjivaram_crimson",
+    "slug": "kanjivaram-crimson-gold",
+    "name": "Kanjivaram Crimson Gold",
+    "description": "A regal Kanchipuram silk woven in deep crimson with an antique gold zari border and traditional temple-motif pallu. Handloomed by master weavers from Kanchipuram.",
+    "basePrice": 2499900,
+    "salePrice": 1999900,
+    "fabric": "silk",
+    "weave": "kanjivaram",
+    "occasion": ["bridal", "festive"],
+    "region": "Kanchipuram, Tamil Nadu",
+    "lengthMeters": 6.3,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean only. Store folded in muslin cloth.",
+    "categoryId": "cat_bridal",
+    "images": [
+      { "id": "img_kj1_a", "url": "https://picsum.photos/seed/kanjivaram-crimson-a/900/1200", "alt": "Kanjivaram Crimson Gold front view", "sort": 1 },
+      { "id": "img_kj1_b", "url": "https://picsum.photos/seed/kanjivaram-crimson-b/900/1200", "alt": "Pallu detail", "sort": 2 },
+      { "id": "img_kj1_c", "url": "https://picsum.photos/seed/kanjivaram-crimson-c/900/1200", "alt": "Border zari detail", "sort": 3 }
+    ],
+    "variants": [
+      {
+        "id": "var_kj1_crimson",
+        "productId": "prd_kanjivaram_crimson",
+        "color": "Crimson",
+        "colorHex": "#7a1f2b",
+        "sku": "KJ-CRM-01",
+        "stock": 6,
+        "images": []
+      },
+      {
+        "id": "var_kj1_maroon",
+        "productId": "prd_kanjivaram_crimson",
+        "color": "Deep Maroon",
+        "colorHex": "#5a1520",
+        "sku": "KJ-MRN-01",
+        "stock": 4,
+        "images": []
+      }
+    ],
+    "featured": true,
+    "published": true,
+    "createdAt": "2026-08-02T09:00:00.000Z",
+    "updatedAt": "2026-08-02T09:00:00.000Z"
+  },
+  {
+    "id": "prd_banarasi_ivory",
+    "slug": "banarasi-ivory-brocade",
+    "name": "Banarasi Ivory Brocade",
+    "description": "Hand-brocaded Banarasi in ivory with intricate gold zari jaal. Woven on traditional pit looms in Varanasi.",
+    "basePrice": 1899900,
+    "fabric": "silk",
+    "weave": "banarasi",
+    "occasion": ["bridal", "festive"],
+    "region": "Varanasi, Uttar Pradesh",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean recommended.",
+    "categoryId": "cat_bridal",
+    "images": [
+      { "id": "img_bn1_a", "url": "https://picsum.photos/seed/banarasi-ivory-a/900/1200", "alt": "Banarasi Ivory front", "sort": 1 },
+      { "id": "img_bn1_b", "url": "https://picsum.photos/seed/banarasi-ivory-b/900/1200", "alt": "Zari jaal detail", "sort": 2 }
+    ],
+    "variants": [
+      { "id": "var_bn1_ivory", "productId": "prd_banarasi_ivory", "color": "Ivory", "colorHex": "#f5ecd7", "sku": "BN-IVR-01", "stock": 5, "images": [] }
+    ],
+    "featured": true,
+    "published": true,
+    "createdAt": "2026-08-05T09:00:00.000Z",
+    "updatedAt": "2026-08-05T09:00:00.000Z"
+  },
+  {
+    "id": "prd_chanderi_sky",
+    "slug": "chanderi-sky-blue",
+    "name": "Chanderi Sky Blue",
+    "description": "Lightweight Chanderi silk-cotton in sky blue with delicate silver booti. Perfect for afternoon soirées.",
+    "basePrice": 649900,
+    "salePrice": 549900,
+    "fabric": "silk",
+    "weave": "chanderi",
+    "occasion": ["festive", "party", "office"],
+    "region": "Chanderi, Madhya Pradesh",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Gentle hand wash in cold water or dry clean.",
+    "categoryId": "cat_designer",
+    "images": [
+      { "id": "img_ch1_a", "url": "https://picsum.photos/seed/chanderi-sky-a/900/1200", "alt": "Chanderi Sky Blue", "sort": 1 },
+      { "id": "img_ch1_b", "url": "https://picsum.photos/seed/chanderi-sky-b/900/1200", "alt": "Booti detail", "sort": 2 }
+    ],
+    "variants": [
+      { "id": "var_ch1_sky", "productId": "prd_chanderi_sky", "color": "Sky Blue", "colorHex": "#a8c8e0", "sku": "CH-SKY-01", "stock": 8, "images": [] },
+      { "id": "var_ch1_powder", "productId": "prd_chanderi_sky", "color": "Powder Pink", "colorHex": "#e8c5cc", "sku": "CH-PPK-01", "stock": 6, "images": [] }
+    ],
+    "featured": true,
+    "published": true,
+    "createdAt": "2026-08-10T09:00:00.000Z",
+    "updatedAt": "2026-08-10T09:00:00.000Z"
+  },
+  {
+    "id": "prd_patola_emerald",
+    "slug": "patola-emerald-double-ikat",
+    "name": "Patola Emerald Double Ikat",
+    "description": "Rajkot double-ikat Patola in emerald green with geometric parrot motifs. A collector's piece.",
+    "basePrice": 4999900,
+    "fabric": "silk",
+    "weave": "patola",
+    "occasion": ["bridal", "festive"],
+    "region": "Rajkot, Gujarat",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean only. Keep away from direct sunlight.",
+    "categoryId": "cat_silk",
+    "images": [
+      { "id": "img_pt1_a", "url": "https://picsum.photos/seed/patola-emerald-a/900/1200", "alt": "Patola Emerald", "sort": 1 },
+      { "id": "img_pt1_b", "url": "https://picsum.photos/seed/patola-emerald-b/900/1200", "alt": "Ikat motif detail", "sort": 2 }
+    ],
+    "variants": [
+      { "id": "var_pt1_emerald", "productId": "prd_patola_emerald", "color": "Emerald", "colorHex": "#1f5c47", "sku": "PT-EMR-01", "stock": 3, "images": [] }
+    ],
+    "featured": true,
+    "published": true,
+    "createdAt": "2026-08-12T09:00:00.000Z",
+    "updatedAt": "2026-08-12T09:00:00.000Z"
+  },
+  {
+    "id": "prd_cotton_mulmul_white",
+    "slug": "mulmul-cotton-white",
+    "name": "Mulmul Cotton White",
+    "description": "Soft, breathable mulmul cotton in pure white with a hand-block-printed border. Everyday luxury.",
+    "basePrice": 249900,
+    "fabric": "cotton",
+    "weave": "handloom",
+    "occasion": ["daily", "casual", "office"],
+    "region": "West Bengal",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": false,
+    "careInstructions": "Machine wash cold, gentle cycle.",
+    "categoryId": "cat_cotton",
+    "images": [
+      { "id": "img_mm1_a", "url": "https://picsum.photos/seed/mulmul-white-a/900/1200", "alt": "Mulmul White", "sort": 1 }
+    ],
+    "variants": [
+      { "id": "var_mm1_white", "productId": "prd_cotton_mulmul_white", "color": "White", "colorHex": "#ffffff", "sku": "MM-WHT-01", "stock": 14, "images": [] },
+      { "id": "var_mm1_ecru", "productId": "prd_cotton_mulmul_white", "color": "Ecru", "colorHex": "#e6dcc8", "sku": "MM-ECR-01", "stock": 10, "images": [] }
+    ],
+    "featured": false,
+    "published": true,
+    "createdAt": "2026-08-14T09:00:00.000Z",
+    "updatedAt": "2026-08-14T09:00:00.000Z"
+  },
+  {
+    "id": "prd_jamdani_lavender",
+    "slug": "jamdani-lavender",
+    "name": "Jamdani Lavender",
+    "description": "Handwoven Bengali jamdani with floral motifs in lavender and silver.",
+    "basePrice": 899900,
+    "fabric": "cotton",
+    "weave": "jamdani",
+    "occasion": ["festive", "party"],
+    "region": "Nadia, West Bengal",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean only.",
+    "categoryId": "cat_designer",
+    "images": [
+      { "id": "img_jm1_a", "url": "https://picsum.photos/seed/jamdani-lavender-a/900/1200", "alt": "Jamdani Lavender", "sort": 1 },
+      { "id": "img_jm1_b", "url": "https://picsum.photos/seed/jamdani-lavender-b/900/1200", "alt": "Motif detail", "sort": 2 }
+    ],
+    "variants": [
+      { "id": "var_jm1_lavender", "productId": "prd_jamdani_lavender", "color": "Lavender", "colorHex": "#c8b6d9", "sku": "JM-LVD-01", "stock": 5, "images": [] }
+    ],
+    "featured": true,
+    "published": true,
+    "createdAt": "2026-08-16T09:00:00.000Z",
+    "updatedAt": "2026-08-16T09:00:00.000Z"
+  },
+  {
+    "id": "prd_paithani_peacock",
+    "slug": "paithani-peacock-teal",
+    "name": "Paithani Peacock Teal",
+    "description": "Maharashtrian Paithani with signature peacock pallu in vibrant teal and gold.",
+    "basePrice": 3499900,
+    "fabric": "silk",
+    "weave": "paithani",
+    "occasion": ["bridal", "festive"],
+    "region": "Aurangabad, Maharashtra",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean only.",
+    "categoryId": "cat_bridal",
+    "images": [
+      { "id": "img_pn1_a", "url": "https://picsum.photos/seed/paithani-teal-a/900/1200", "alt": "Paithani Teal", "sort": 1 },
+      { "id": "img_pn1_b", "url": "https://picsum.photos/seed/paithani-teal-b/900/1200", "alt": "Peacock pallu", "sort": 2 }
+    ],
+    "variants": [
+      { "id": "var_pn1_teal", "productId": "prd_paithani_peacock", "color": "Peacock Teal", "colorHex": "#146c72", "sku": "PN-TEL-01", "stock": 3, "images": [] }
+    ],
+    "featured": true,
+    "published": true,
+    "createdAt": "2026-08-18T09:00:00.000Z",
+    "updatedAt": "2026-08-18T09:00:00.000Z"
+  },
+  {
+    "id": "prd_bandhani_yellow",
+    "slug": "bandhani-mustard-yellow",
+    "name": "Bandhani Mustard Yellow",
+    "description": "Gujarati bandhani tie-dye in warm mustard with red border. Ideal for haldi and mehendi.",
+    "basePrice": 549900,
+    "salePrice": 449900,
+    "fabric": "georgette",
+    "weave": "bandhani",
+    "occasion": ["festive", "party"],
+    "region": "Jamnagar, Gujarat",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Hand wash cold. Do not wring.",
+    "categoryId": "cat_printed",
+    "images": [
+      { "id": "img_bd1_a", "url": "https://picsum.photos/seed/bandhani-mustard-a/900/1200", "alt": "Bandhani Mustard", "sort": 1 },
+      { "id": "img_bd1_b", "url": "https://picsum.photos/seed/bandhani-mustard-b/900/1200", "alt": "Bandhani dots", "sort": 2 }
+    ],
+    "variants": [
+      { "id": "var_bd1_mustard", "productId": "prd_bandhani_yellow", "color": "Mustard", "colorHex": "#c99f2c", "sku": "BD-MST-01", "stock": 7, "images": [] },
+      { "id": "var_bd1_saffron", "productId": "prd_bandhani_yellow", "color": "Saffron", "colorHex": "#e5893b", "sku": "BD-SFR-01", "stock": 5, "images": [] }
+    ],
+    "featured": false,
+    "published": true,
+    "createdAt": "2026-08-20T09:00:00.000Z",
+    "updatedAt": "2026-08-20T09:00:00.000Z"
+  },
+  {
+    "id": "prd_organza_pastel",
+    "slug": "organza-pastel-pink",
+    "name": "Organza Pastel Pink",
+    "description": "Sheer organza in pastel pink with embroidered floral vines. Modern romance.",
+    "basePrice": 749900,
+    "fabric": "organza",
+    "weave": "printed",
+    "occasion": ["party", "festive"],
+    "region": "Surat, Gujarat",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean only.",
+    "categoryId": "cat_designer",
+    "images": [
+      { "id": "img_or1_a", "url": "https://picsum.photos/seed/organza-pink-a/900/1200", "alt": "Organza Pink", "sort": 1 }
+    ],
+    "variants": [
+      { "id": "var_or1_pink", "productId": "prd_organza_pastel", "color": "Pastel Pink", "colorHex": "#f4c5d1", "sku": "OR-PNK-01", "stock": 6, "images": [] },
+      { "id": "var_or1_mint", "productId": "prd_organza_pastel", "color": "Mint", "colorHex": "#c5e6d1", "sku": "OR-MNT-01", "stock": 5, "images": [] }
+    ],
+    "featured": true,
+    "published": true,
+    "createdAt": "2026-08-22T09:00:00.000Z",
+    "updatedAt": "2026-08-22T09:00:00.000Z"
+  },
+  {
+    "id": "prd_linen_indigo",
+    "slug": "linen-indigo-stripe",
+    "name": "Linen Indigo Stripe",
+    "description": "Crisp handwoven linen with indigo pinstripes. Office-to-evening drape.",
+    "basePrice": 449900,
+    "fabric": "linen",
+    "weave": "handloom",
+    "occasion": ["office", "daily"],
+    "region": "Bhagalpur, Bihar",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": false,
+    "careInstructions": "Dry clean recommended.",
+    "categoryId": "cat_cotton",
+    "images": [
+      { "id": "img_ln1_a", "url": "https://picsum.photos/seed/linen-indigo-a/900/1200", "alt": "Linen Indigo", "sort": 1 }
+    ],
+    "variants": [
+      { "id": "var_ln1_indigo", "productId": "prd_linen_indigo", "color": "Indigo", "colorHex": "#2a3d66", "sku": "LN-IND-01", "stock": 9, "images": [] }
+    ],
+    "featured": false,
+    "published": true,
+    "createdAt": "2026-08-23T09:00:00.000Z",
+    "updatedAt": "2026-08-23T09:00:00.000Z"
+  },
+  {
+    "id": "prd_ikat_charcoal",
+    "slug": "ikat-charcoal",
+    "name": "Pochampally Ikat Charcoal",
+    "description": "Telangana pochampally ikat in charcoal with red and white geometric bands.",
+    "basePrice": 599900,
+    "fabric": "cotton",
+    "weave": "ikat",
+    "occasion": ["office", "daily", "party"],
+    "region": "Pochampally, Telangana",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean for first wash.",
+    "categoryId": "cat_designer",
+    "images": [
+      { "id": "img_ik1_a", "url": "https://picsum.photos/seed/ikat-charcoal-a/900/1200", "alt": "Ikat Charcoal", "sort": 1 },
+      { "id": "img_ik1_b", "url": "https://picsum.photos/seed/ikat-charcoal-b/900/1200", "alt": "Pattern detail", "sort": 2 }
+    ],
+    "variants": [
+      { "id": "var_ik1_charcoal", "productId": "prd_ikat_charcoal", "color": "Charcoal", "colorHex": "#2b2b2b", "sku": "IK-CHC-01", "stock": 6, "images": [] }
+    ],
+    "featured": false,
+    "published": true,
+    "createdAt": "2026-08-25T09:00:00.000Z",
+    "updatedAt": "2026-08-25T09:00:00.000Z"
+  },
+  {
+    "id": "prd_georgette_wine",
+    "slug": "georgette-wine",
+    "name": "Georgette Wine Sequin",
+    "description": "Flowy georgette in wine with delicate sequin work along the border. Evening-ready.",
+    "basePrice": 699900,
+    "salePrice": 599900,
+    "fabric": "georgette",
+    "weave": "printed",
+    "occasion": ["party", "festive"],
+    "region": "Surat, Gujarat",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean only.",
+    "categoryId": "cat_designer",
+    "images": [
+      { "id": "img_gz1_a", "url": "https://picsum.photos/seed/georgette-wine-a/900/1200", "alt": "Georgette Wine", "sort": 1 }
+    ],
+    "variants": [
+      { "id": "var_gz1_wine", "productId": "prd_georgette_wine", "color": "Wine", "colorHex": "#6b1e3f", "sku": "GZ-WIN-01", "stock": 8, "images": [] },
+      { "id": "var_gz1_black", "productId": "prd_georgette_wine", "color": "Black", "colorHex": "#0f0f0f", "sku": "GZ-BLK-01", "stock": 6, "images": [] }
+    ],
+    "featured": false,
+    "published": true,
+    "createdAt": "2026-08-27T09:00:00.000Z",
+    "updatedAt": "2026-08-27T09:00:00.000Z"
+  },
+  {
+    "id": "prd_tissue_silver",
+    "slug": "tissue-silver-shimmer",
+    "name": "Tissue Silver Shimmer",
+    "description": "Luminous silver tissue silk with a subtle pastel pallu. Cocktail elegance.",
+    "basePrice": 1299900,
+    "fabric": "tissue",
+    "weave": "handloom",
+    "occasion": ["party", "festive"],
+    "region": "Bengaluru, Karnataka",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean only.",
+    "categoryId": "cat_silk",
+    "images": [
+      { "id": "img_ts1_a", "url": "https://picsum.photos/seed/tissue-silver-a/900/1200", "alt": "Tissue Silver", "sort": 1 },
+      { "id": "img_ts1_b", "url": "https://picsum.photos/seed/tissue-silver-b/900/1200", "alt": "Pallu detail", "sort": 2 }
+    ],
+    "variants": [
+      { "id": "var_ts1_silver", "productId": "prd_tissue_silver", "color": "Silver", "colorHex": "#c0c0c0", "sku": "TS-SLV-01", "stock": 4, "images": [] }
+    ],
+    "featured": true,
+    "published": true,
+    "createdAt": "2026-08-28T09:00:00.000Z",
+    "updatedAt": "2026-08-28T09:00:00.000Z"
+  },
+  {
+    "id": "prd_printed_floral",
+    "slug": "printed-floral-navy",
+    "name": "Printed Floral Navy",
+    "description": "Digital-print georgette in navy with all-over botanical florals. Fuss-free daily elegance.",
+    "basePrice": 199900,
+    "salePrice": 169900,
+    "fabric": "georgette",
+    "weave": "printed",
+    "occasion": ["daily", "office", "casual"],
+    "region": "Surat, Gujarat",
+    "lengthMeters": 5.5,
+    "blousePieceIncluded": true,
+    "careInstructions": "Hand wash cold. Do not bleach.",
+    "categoryId": "cat_printed",
+    "images": [
+      { "id": "img_pf1_a", "url": "https://picsum.photos/seed/printed-navy-a/900/1200", "alt": "Printed Floral Navy", "sort": 1 }
+    ],
+    "variants": [
+      { "id": "var_pf1_navy", "productId": "prd_printed_floral", "color": "Navy", "colorHex": "#1a2b4a", "sku": "PF-NVY-01", "stock": 15, "images": [] },
+      { "id": "var_pf1_forest", "productId": "prd_printed_floral", "color": "Forest", "colorHex": "#1f3a2a", "sku": "PF-FRS-01", "stock": 12, "images": [] }
+    ],
+    "featured": false,
+    "published": true,
+    "createdAt": "2026-08-29T09:00:00.000Z",
+    "updatedAt": "2026-08-29T09:00:00.000Z"
+  },
+  {
+    "id": "prd_kanjivaram_royal_blue",
+    "slug": "kanjivaram-royal-blue",
+    "name": "Kanjivaram Royal Blue",
+    "description": "Deep royal-blue Kanchipuram silk with contrast pink border and mango motif pallu.",
+    "basePrice": 2199900,
+    "fabric": "silk",
+    "weave": "kanjivaram",
+    "occasion": ["bridal", "festive"],
+    "region": "Kanchipuram, Tamil Nadu",
+    "lengthMeters": 6.3,
+    "blousePieceIncluded": true,
+    "careInstructions": "Dry clean only.",
+    "categoryId": "cat_silk",
+    "images": [
+      { "id": "img_kj2_a", "url": "https://picsum.photos/seed/kanjivaram-blue-a/900/1200", "alt": "Kanjivaram Royal Blue", "sort": 1 },
+      { "id": "img_kj2_b", "url": "https://picsum.photos/seed/kanjivaram-blue-b/900/1200", "alt": "Mango motif pallu", "sort": 2 }
+    ],
+    "variants": [
+      { "id": "var_kj2_royal", "productId": "prd_kanjivaram_royal_blue", "color": "Royal Blue", "colorHex": "#1e3a8a", "sku": "KJ-RYL-01", "stock": 5, "images": [] }
+    ],
+    "featured": true,
+    "published": true,
+    "createdAt": "2026-08-30T09:00:00.000Z",
+    "updatedAt": "2026-08-30T09:00:00.000Z"
+  }
+]

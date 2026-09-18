@@ -1,0 +1,42 @@
+[
+  {
+    "id": "cat_silk",
+    "slug": "silk-sarees",
+    "name": "Silk Sarees",
+    "description": "Handwoven silks from Kanchipuram, Banaras and beyond.",
+    "image": "https://picsum.photos/seed/cat-silk/1200/600",
+    "sort": 1
+  },
+  {
+    "id": "cat_cotton",
+    "slug": "cotton-sarees",
+    "name": "Cotton Sarees",
+    "description": "Breathable everyday drapes in soft cottons and linens.",
+    "image": "https://picsum.photos/seed/cat-cotton/1200/600",
+    "sort": 2
+  },
+  {
+    "id": "cat_bridal",
+    "slug": "bridal-sarees",
+    "name": "Bridal Sarees",
+    "description": "Statement drapes for the biggest day.",
+    "image": "https://picsum.photos/seed/cat-bridal/1200/600",
+    "sort": 3
+  },
+  {
+    "id": "cat_designer",
+    "slug": "designer-sarees",
+    "name": "Designer Sarees",
+    "description": "Contemporary silhouettes with a couture finish.",
+    "image": "https://picsum.photos/seed/cat-designer/1200/600",
+    "sort": 4
+  },
+  {
+    "id": "cat_printed",
+    "slug": "printed-sarees",
+    "name": "Printed Sarees",
+    "description": "Playful prints for daily and festive wear.",
+    "image": "https://picsum.photos/seed/cat-printed/1200/600",
+    "sort": 5
+  }
+]

@@ -1,0 +1,10 @@
+export { jsonProductRepo as productRepo } from "./products.repository";
+export { jsonCategoryRepo as categoryRepo } from "./categories.repository";
+export { jsonUserRepo as userRepo } from "./users.repository";
+export { jsonOrderRepo as orderRepo } from "./orders.repository";
+export { jsonPaymentRepo as paymentRepo } from "./payments.repository";
+export type { ProductRepository } from "./products.repository";
+export type { CategoryRepository } from "./categories.repository";
+export type { UserRepository } from "./users.repository";
+export type { OrderRepository } from "./orders.repository";
+export type { PaymentRepository } from "./payments.repository";
