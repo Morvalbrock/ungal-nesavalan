@@ -1,6 +1,30 @@
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
-body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #171717; }
-a { color: inherit; text-decoration: none; }
-button, input, select { font: inherit; }
-.container { width: min(1200px, 92%); margin: 0 auto; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+  a {
+    @apply text-inherit;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-card bg-maroon px-6 py-3 text-sm font-medium uppercase tracking-wider text-cream transition hover:bg-maroon-deep disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-card border border-ink/20 px-5 py-2.5 text-sm font-medium text-ink transition hover:border-ink hover:bg-ink hover:text-cream;
+  }
+  .link-underline {
+    @apply relative inline-block after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-current after:transition-transform hover:after:origin-left hover:after:scale-x-100;
+  }
+}
