@@ -15,7 +15,7 @@ const schema = z.object({
   city: z.string().trim().min(2, "City is required"),
   state: z.enum(INDIAN_STATES, { message: "Select a state" }),
   pincode: z.string().trim().regex(/^\d{6}$/, "6-digit pincode"),
-  isDefault: z.boolean().default(false)
+  isDefault: z.boolean().optional()
 });
 type FormValues = z.infer<typeof schema>;
 
