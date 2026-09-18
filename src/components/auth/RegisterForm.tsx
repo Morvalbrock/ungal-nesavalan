@@ -1,0 +1,69 @@
+"use client";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema, type RegisterInput } from "@/features/auth/auth.provider";
+import { useAuth } from "@/features/auth/AuthContext";
+import { AuthField, authInputCls } from "./AuthShell";
+
+export function RegisterForm() {
+  const router = useRouter();
+  const sp = useSearchParams();
+  const next = sp.get("next") || "/account/profile";
+  const { refresh } = useAuth();
+  const [serverError, setServerError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
+
+  const onSubmit = async (data: RegisterInput) => {
+    setServerError(null);
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setServerError(body.message ?? "Registration failed");
+      return;
+    }
+    await refresh();
+    router.push(next);
+    router.refresh();
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <AuthField label="Full name" error={errors.name?.message}>
+        <input autoComplete="name" {...register("name")} className={authInputCls} />
+      </AuthField>
+      <AuthField label="Email" error={errors.email?.message}>
+        <input type="email" autoComplete="email" {...register("email")} className={authInputCls} />
+      </AuthField>
+      <AuthField label="Mobile (optional)" error={errors.phone?.message}>
+        <input inputMode="tel" placeholder="+91 9876543210" {...register("phone")} className={authInputCls} />
+      </AuthField>
+      <AuthField label="Password" error={errors.password?.message}>
+        <input type="password" autoComplete="new-password" {...register("password")} className={authInputCls} />
+      </AuthField>
+      {serverError && <p className="text-xs text-maroon">{serverError}</p>}
+      <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
+        {isSubmitting ? "Creating account…" : "Create account"}
+      </button>
+      <p className="text-xs text-ink-muted">
+        Already have an account?{" "}
+        <Link
+          href={`/login${sp.get("next") ? `?next=${encodeURIComponent(sp.get("next")!)}` : ""}`}
+          className="link-underline"
+        >
+          Sign in
+        </Link>
+      </p>
+    </form>
+  );
+}
