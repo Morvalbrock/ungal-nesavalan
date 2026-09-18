@@ -1,8 +1,12 @@
-import type { Order, OrderStatus } from "@/types/order";
+import type { Order, OrderItem, OrderStatus } from "@/types/order";
 import { mutateCollection, newId, nowIso, readCollection } from "@/server/db/json-store";
 
+export type OrderCreateInput = Omit<Order, "id" | "orderNumber" | "createdAt" | "updatedAt" | "items"> & {
+  items: Omit<OrderItem, "orderId">[];
+};
+
 export interface OrderRepository {
-  create(input: Omit<Order, "id" | "orderNumber" | "createdAt" | "updatedAt">): Promise<Order>;
+  create(input: OrderCreateInput): Promise<Order>;
   findById(id: string): Promise<Order | null>;
   listByUser(userId: string): Promise<Order[]>;
   listAll(): Promise<Order[]>;
@@ -22,10 +26,12 @@ export const jsonOrderRepo: OrderRepository = {
   async create(input) {
     let created: Order | null = null;
     await mutateCollection<Order>(COLLECTION, [], (rows) => {
+      const id = newId("ord");
       const order: Order = {
         ...input,
-        id: newId("ord"),
+        id,
         orderNumber: nextOrderNumber(rows),
+        items: input.items.map((i) => ({ ...i, orderId: id })),
         createdAt: nowIso(),
         updatedAt: nowIso()
       };

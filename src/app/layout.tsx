@@ -1,8 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { getSession } from "@/features/auth/session";
 import { userRepo } from "@/server/repositories";
@@ -37,12 +35,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body className="flex min-h-screen flex-col">
-        <AuthProvider initialUser={initialUser}>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </AuthProvider>
+      <body className="min-h-screen bg-cream text-ink antialiased">
+        <AuthProvider initialUser={initialUser}>{children}</AuthProvider>
       </body>
     </html>
   );

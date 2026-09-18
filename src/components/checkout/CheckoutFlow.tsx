@@ -9,7 +9,7 @@ import { ReviewStep } from "./ReviewStep";
 
 type Step = "address" | "review";
 
-export function CheckoutFlow() {
+export function CheckoutFlow({ prefill }: { prefill?: { name?: string; email?: string; phone?: string } }) {
   const hydrated = useCartHydrated();
   const items = useCartStore((s) => s.items);
   const [step, setStep] = useState<Step>("address");
@@ -43,7 +43,16 @@ export function CheckoutFlow() {
       <div className="mt-10">
         {step === "address" && (
           <AddressStep
-            initial={address ?? undefined}
+            initial={
+              address ??
+              (prefill
+                ? ({
+                    fullName: prefill.name ?? "",
+                    email: prefill.email ?? "",
+                    phone: prefill.phone ?? ""
+                  } as Partial<AddressForm> as AddressForm)
+                : undefined)
+            }
             onSubmit={(data) => {
               setAddress(data);
               setStep("review");

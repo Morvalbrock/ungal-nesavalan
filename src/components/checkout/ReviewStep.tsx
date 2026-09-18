@@ -1,36 +1,13 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { CartLine } from "@/components/cart/CartLine";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { useCartStore, useCartTotals } from "@/features/cart/cart.store";
 import type { AddressForm } from "@/features/checkout/checkout.schema";
+import { PayButton } from "./PayButton";
 
 export function ReviewStep({ address, onEdit }: { address: AddressForm; onEdit: () => void }) {
-  const router = useRouter();
   const items = useCartStore((s) => s.items);
-  const clear = useCartStore((s) => s.clear);
   const totals = useCartTotals();
-  const [placing, setPlacing] = useState(false);
-
-  const placeOrder = async () => {
-    setPlacing(true);
-    const payload = {
-      address,
-      items: items.map((i) => ({
-        productId: i.productId,
-        variantId: i.variantId,
-        quantity: i.quantity,
-        unitPricePaise: i.unitPricePaise
-      })),
-      totals: { subtotal: totals.subtotal, shipping: totals.shipping, total: totals.total }
-    };
-    console.info("[checkout] order payload (Razorpay integration lands in Phase 5)", payload);
-    await new Promise((r) => setTimeout(r, 400));
-    clear();
-    router.push("/");
-    setTimeout(() => alert("Order placed (stub). Razorpay integration lands in Phase 5."), 200);
-  };
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
@@ -59,12 +36,7 @@ export function ReviewStep({ address, onEdit }: { address: AddressForm; onEdit: 
           </div>
         </section>
 
-        <button type="button" onClick={placeOrder} disabled={placing} className="btn-primary w-full sm:w-auto">
-          {placing ? "Placing order…" : "Place order"}
-        </button>
-        <p className="text-xs text-ink-muted">
-          Payment integration (Razorpay) arrives in Phase 5. Placing now will simulate an order and clear your bag.
-        </p>
+        <PayButton address={address} amountPaise={totals.total} disabled={items.length === 0} />
       </div>
 
       <div>

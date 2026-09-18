@@ -9,6 +9,7 @@ export interface ProductRepository {
   create(input: Omit<Product, "id" | "createdAt" | "updatedAt">): Promise<Product>;
   update(id: string, patch: Partial<Product>): Promise<Product | null>;
   remove(id: string): Promise<boolean>;
+  adjustStock(entries: { productId: string; variantId: string; delta: number }[]): Promise<void>;
 }
 
 const COLLECTION = "products";
@@ -109,5 +110,22 @@ export const jsonProductRepo: ProductRepository = {
       return next;
     });
     return removed;
+  },
+  async adjustStock(entries) {
+    await mutateCollection<Product>(COLLECTION, [], (rows) =>
+      rows.map((p) => {
+        const affecting = entries.filter((e) => e.productId === p.id);
+        if (affecting.length === 0) return p;
+        return {
+          ...p,
+          updatedAt: nowIso(),
+          variants: p.variants.map((v) => {
+            const hit = affecting.find((e) => e.variantId === v.id);
+            if (!hit) return v;
+            return { ...v, stock: Math.max(0, v.stock + hit.delta) };
+          })
+        };
+      })
+    );
   }
 };
