@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { Container } from "@/components/layout/Container";
 import { FilterSidebar } from "@/components/product/FilterSidebar";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SortSelect } from "@/components/product/SortSelect";
+import { Ornament } from "@/components/home/Ornament";
 import { readQueryFromSearchParams } from "@/features/products/filters";
 import { productRepo, reviewRepo } from "@/server/repositories";
 
@@ -16,22 +18,42 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const ratings = await reviewRepo.aggregateForMany(items.map((p) => p.id));
 
   return (
-    <Container className="py-12">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Collection</p>
-          <h1 className="mt-2 font-display text-4xl">All Sarees</h1>
-        </div>
-        <div className="flex items-center gap-6">
-          <p className="text-sm text-ink-muted">{total} piece{total === 1 ? "" : "s"}</p>
+    <>
+      <section className="border-b border-border/60 bg-cream-warm/60">
+        <Container className="py-14">
+          <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-ink-muted">
+            <Link href="/" className="hover:text-ink">Home</Link>
+            <span className="mx-2 text-ink-muted/60">/</span>
+            <span className="text-ink">All Sarees</span>
+          </nav>
+
+          <div className="mt-6 flex flex-col items-start gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="eyebrow">The full atlas</p>
+              <h1 className="mt-2 font-display text-[42px] leading-none md:text-[52px]">All Sarees</h1>
+              <p className="mt-3 max-w-lg text-[14.5px] leading-[1.6] text-ink-soft">
+                Kanjivaram, Banarasi, Chanderi, Patola, Uppada, Ikat and more —
+                every drape sourced directly from the loom.
+              </p>
+            </div>
+            <Ornament className="hidden h-4 w-40 md:block" tone="gold" />
+          </div>
+        </Container>
+      </section>
+
+      <Container className="py-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-5">
+          <p className="text-[12.5px] text-ink-muted">
+            Showing <span className="font-medium text-ink">{total}</span> piece{total === 1 ? "" : "s"}
+          </p>
           <SortSelect />
         </div>
-      </div>
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[220px_1fr]">
-        <FilterSidebar />
-        <ProductGrid items={items} ratings={ratings} />
-      </div>
-    </Container>
+        <div className="mt-10 grid gap-10 lg:grid-cols-[240px_1fr]">
+          <FilterSidebar />
+          <ProductGrid items={items} ratings={ratings} />
+        </div>
+      </Container>
+    </>
   );
 }

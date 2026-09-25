@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { Container } from "@/components/layout/Container";
-import { ProductCard } from "@/components/product/ProductCard";
+import { Hero } from "@/components/home/Hero";
+import { UspStrip } from "@/components/home/UspStrip";
+import { SectionHeading } from "@/components/home/SectionHeading";
+import { CategoryMosaic } from "@/components/home/CategoryMosaic";
+import { WeaverStory } from "@/components/home/WeaverStory";
+import { Testimonials } from "@/components/home/Testimonials";
+import { JournalPreview } from "@/components/home/JournalPreview";
+import { InstagramGrid } from "@/components/home/InstagramGrid";
+import { NewsletterCta } from "@/components/home/NewsletterCta";
+import { FeaturedRail } from "@/components/home/FeaturedRail";
+import { HeritageStrip } from "@/components/home/HeritageStrip";
 import { productRepo, categoryRepo } from "@/server/repositories";
 
 export const revalidate = 60;
@@ -10,7 +18,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Ungal Nesavalan — Handwoven Sarees, Loomed by Hand",
   description:
-    "Discover Kanjivaram, Banarasi, Chanderi and more — handloom sarees sourced directly from master weavers across India. Free shipping on orders above ₹5,000.",
+    "Discover Kanjivaram, Banarasi, Chanderi, Patola, Uppada and more — handloom sarees sourced directly from master weavers across India. Free shipping on orders above ₹5,000.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Ungal Nesavalan — Handwoven Sarees",
@@ -23,88 +31,67 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featured, categories] = await Promise.all([
+  const [featured, bridal, newest, categories] = await Promise.all([
     productRepo.featured(8),
+    productRepo.list({ category: "cat_bridal", perPage: 4, sort: "featured" }),
+    productRepo.list({ sort: "newest", perPage: 4 }),
     categoryRepo.list()
   ]);
 
   return (
     <>
-      <section className="relative overflow-hidden bg-ink text-cream">
-        <div className="absolute inset-0 opacity-40">
-          <Image
-            src="https://picsum.photos/seed/hero-saree/1800/900"
-            alt="Draped saree hero"
-            fill
-            sizes="100vw"
-            priority
-            className="object-cover"
+      <Hero />
+      <UspStrip />
+
+      <FeaturedRail
+        products={featured}
+        eyebrow="Curator's selection"
+        title="Featured drapes"
+        subtitle="A rotating shortlist from the studio — chosen for weave, story and season."
+        href="/products"
+      />
+
+      <section className="border-t border-border/60 bg-cream-warm/50 py-24">
+        <Container>
+          <SectionHeading
+            eyebrow="Shop by weave"
+            title="Explore the collection"
+            subtitle="From the pit looms of Kanchipuram to the jala looms of Bishnupur — each collection is a region, a story, a rhythm of the shuttle."
           />
-        </div>
-        <Container className="relative flex min-h-[520px] flex-col items-start justify-center py-24">
-          <p className="text-[11px] uppercase tracking-[0.4em] text-cream/70">Loomed by hand · Woven with story</p>
-          <h1 className="mt-4 max-w-2xl font-display text-5xl leading-[1.05] md:text-6xl">
-            Sarees carried down<br />generations of looms.
-          </h1>
-          <p className="mt-6 max-w-lg text-cream/80">
-            From Kanchipuram to Banaras, Patola to Chanderi — every drape traces back to the artisan who wove it.
-          </p>
-          <div className="mt-8 flex gap-3">
-            <Link href="/products" className="btn-primary">Shop the collection</Link>
-            <Link href="/category/bridal-sarees" className="btn-ghost !border-cream/40 !text-cream hover:!bg-cream hover:!text-ink">
-              Bridal edit
-            </Link>
+          <div className="mt-14">
+            <CategoryMosaic categories={categories} />
           </div>
         </Container>
       </section>
 
-      <section className="py-20">
-        <Container>
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Curated</p>
-              <h2 className="mt-2 font-display text-3xl">Featured Sarees</h2>
-            </div>
-            <Link href="/products" className="link-underline text-sm">View all →</Link>
-          </div>
-          <div className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </Container>
-      </section>
+      <WeaverStory />
 
-      <section className="border-t border-border/70 bg-cream-warm py-20">
-        <Container>
-          <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Shop by weave</p>
-          <h2 className="mt-2 font-display text-3xl">Explore collections</h2>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-            {categories.map((c) => (
-              <Link
-                key={c.id}
-                href={`/category/${c.slug}`}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-card"
-              >
-                {c.image && (
-                  <Image
-                    src={c.image}
-                    alt={c.name}
-                    fill
-                    sizes="(min-width: 1024px) 20vw, 50vw"
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-4 text-cream">
-                  <p className="font-display text-lg">{c.name}</p>
-                  <p className="mt-1 text-xs text-cream/80">{c.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </section>
+      <FeaturedRail
+        products={bridal.items}
+        eyebrow="For the biggest day"
+        title="The Bridal Edit"
+        subtitle="Kanjivaram, Banarasi, Baluchari — bridal drapes with room in the border for a lineage."
+        href="/category/bridal-sarees"
+        tone="warm"
+      />
+
+      <HeritageStrip />
+
+      <FeaturedRail
+        products={newest.items}
+        eyebrow="Off the loom"
+        title="New arrivals"
+        subtitle="This month's drapes, freshly cut from the beam."
+        href="/products?sort=newest"
+      />
+
+      <Testimonials />
+
+      <JournalPreview />
+
+      <InstagramGrid />
+
+      <NewsletterCta />
     </>
   );
 }

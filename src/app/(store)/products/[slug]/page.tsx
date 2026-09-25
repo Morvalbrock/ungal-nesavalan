@@ -10,6 +10,7 @@ import { ReviewsSection } from "@/components/product/ReviewsSection";
 import { QuestionsSection } from "@/components/product/QuestionsSection";
 import { WhatsAppShare } from "@/components/product/WhatsAppShare";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { Ornament } from "@/components/home/Ornament";
 import { orderRepo, productRepo, categoryRepo, questionRepo, reviewRepo } from "@/server/repositories";
 import { getSession } from "@/features/auth/session";
 import { formatINR } from "@/lib/utils";
@@ -63,6 +64,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const onSale = product.salePrice != null && product.salePrice < product.basePrice;
   const displayPrice = product.salePrice ?? product.basePrice;
+  const salePct =
+    onSale && product.salePrice
+      ? Math.round(((product.basePrice - product.salePrice) / product.basePrice) * 100)
+      : 0;
 
   const productJsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -118,30 +123,34 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   return (
     <Container className="py-10">
       <JsonLd data={[productJsonLd, breadcrumbJsonLd]} />
-      <nav className="mb-6 text-xs text-ink-muted">
+
+      <nav aria-label="Breadcrumb" className="mb-8 text-[11.5px] uppercase tracking-widest2 text-ink-muted">
         <Link href="/" className="hover:text-ink">Home</Link>
-        <span className="mx-2">/</span>
+        <span className="mx-2 text-ink-muted/60">/</span>
         <Link href="/products" className="hover:text-ink">Sarees</Link>
         {category && (
           <>
-            <span className="mx-2">/</span>
+            <span className="mx-2 text-ink-muted/60">/</span>
             <Link href={`/category/${category.slug}`} className="hover:text-ink">
               {category.name}
             </Link>
           </>
         )}
-        <span className="mx-2">/</span>
+        <span className="mx-2 text-ink-muted/60">/</span>
         <span className="text-ink">{product.name}</span>
       </nav>
 
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div className="grid gap-14 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <ProductGallery images={product.images} />
 
         <div>
-          <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">
-            {product.weave} · {product.fabric} · {product.region}
-          </p>
-          <h1 className="mt-3 font-display text-4xl leading-tight">{product.name}</h1>
+          <div className="flex flex-wrap gap-1.5">
+            <span className="chip capitalize">{product.weave}</span>
+            <span className="chip capitalize">{product.fabric}</span>
+            <span className="chip">{product.region}</span>
+          </div>
+
+          <h1 className="mt-5 font-display text-[36px] leading-[1.1] md:text-[44px]">{product.name}</h1>
 
           {aggregate.count > 0 && (
             <div className="mt-3">
@@ -149,40 +158,45 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           )}
 
-          <div className="mt-4 flex items-baseline gap-3">
-            <span className="text-2xl font-medium">{formatINR(displayPrice)}</span>
+          <div className="mt-5 flex items-baseline gap-3">
+            <span className="font-display text-[28px] leading-none">{formatINR(displayPrice)}</span>
             {onSale && (
-              <span className="text-base text-ink-muted line-through">{formatINR(product.basePrice)}</span>
-            )}
-            {onSale && (
-              <span className="rounded-full bg-maroon/10 px-2 py-0.5 text-xs text-maroon">
-                Save {formatINR(product.basePrice - displayPrice)}
-              </span>
+              <>
+                <span className="text-[15px] text-ink-muted line-through">
+                  {formatINR(product.basePrice)}
+                </span>
+                <span className="chip-maroon">Save {salePct}%</span>
+              </>
             )}
           </div>
+          <p className="mt-1.5 text-[12px] text-ink-muted">Inclusive of all taxes · Free shipping on orders ₹5,000+</p>
 
-          <p className="mt-6 whitespace-pre-line text-ink-soft">{product.description}</p>
+          <Ornament className="mt-6 h-4 w-40" tone="gold" />
 
-          <dl className="mt-8 grid grid-cols-2 gap-4 border-y border-border/70 py-6 text-sm">
+          <p className="mt-6 whitespace-pre-line text-[15px] leading-[1.75] text-ink-soft">
+            {product.description}
+          </p>
+
+          <dl className="mt-8 grid grid-cols-2 gap-y-5 border-y border-border/70 py-6 text-sm">
             <div>
-              <dt className="text-xs uppercase tracking-wider text-ink-muted">Length</dt>
-              <dd className="mt-1">{product.lengthMeters} m</dd>
+              <dt className="text-[10.5px] uppercase tracking-widest2 text-ink-muted">Length</dt>
+              <dd className="mt-1.5 text-[14px]">{product.lengthMeters} m</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wider text-ink-muted">Blouse Piece</dt>
-              <dd className="mt-1">{product.blousePieceIncluded ? "Included" : "Not included"}</dd>
+              <dt className="text-[10.5px] uppercase tracking-widest2 text-ink-muted">Blouse Piece</dt>
+              <dd className="mt-1.5 text-[14px]">{product.blousePieceIncluded ? "Included" : "Not included"}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wider text-ink-muted">Fabric</dt>
-              <dd className="mt-1 capitalize">{product.fabric}</dd>
+              <dt className="text-[10.5px] uppercase tracking-widest2 text-ink-muted">Fabric</dt>
+              <dd className="mt-1.5 text-[14px] capitalize">{product.fabric}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-wider text-ink-muted">Weave</dt>
-              <dd className="mt-1 capitalize">{product.weave}</dd>
+              <dt className="text-[10.5px] uppercase tracking-widest2 text-ink-muted">Weave</dt>
+              <dd className="mt-1.5 text-[14px] capitalize">{product.weave}</dd>
             </div>
             <div className="col-span-2">
-              <dt className="text-xs uppercase tracking-wider text-ink-muted">Care</dt>
-              <dd className="mt-1">{product.careInstructions}</dd>
+              <dt className="text-[10.5px] uppercase tracking-widest2 text-ink-muted">Care</dt>
+              <dd className="mt-1.5 text-[14px]">{product.careInstructions}</dd>
             </div>
           </dl>
 
@@ -192,7 +206,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
           <DeliveryChecker subtotalPaise={displayPrice} />
 
-          <div className="mt-4">
+          <div className="mt-8 grid grid-cols-3 gap-4 rounded-card border border-border/70 bg-cream-warm/40 p-4 text-center">
+            <div>
+              <p className="text-[11px] uppercase tracking-widest2 text-ink-muted">Ships in</p>
+              <p className="mt-1 text-[13px] font-medium">3–5 days</p>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-widest2 text-ink-muted">Returns</p>
+              <p className="mt-1 text-[13px] font-medium">7-day easy</p>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-widest2 text-ink-muted">Handloom</p>
+              <p className="mt-1 text-[13px] font-medium">Mark certified</p>
+            </div>
+          </div>
+
+          <div className="mt-6">
             <WhatsAppShare productName={product.name} productSlug={product.slug} />
           </div>
         </div>
@@ -214,14 +243,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       {others.length > 0 && (
         <section className="mt-24 border-t border-border/70 pt-14">
           <div className="flex items-end justify-between">
-            <h2 className="font-display text-2xl">You may also like</h2>
+            <div>
+              <p className="eyebrow">Continue browsing</p>
+              <h2 className="mt-2 font-display text-[28px]">You may also like</h2>
+            </div>
             {category && (
-              <Link href={`/category/${category.slug}`} className="link-underline text-sm">
+              <Link href={`/category/${category.slug}`} className="link-underline text-[13px] uppercase tracking-widest2">
                 More in {category.name} →
               </Link>
             )}
           </div>
-          <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-4">
+          <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
             {others.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
