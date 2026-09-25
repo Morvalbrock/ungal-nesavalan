@@ -12,6 +12,7 @@ export interface OrderRepository {
   listAll(): Promise<Order[]>;
   updateStatus(id: string, status: OrderStatus): Promise<Order | null>;
   attachPayment(id: string, paymentId: string): Promise<Order | null>;
+  findEligibleForReview(userId: string, productId: string): Promise<Order | null>;
 }
 
 const COLLECTION = "orders";
@@ -20,6 +21,14 @@ function nextOrderNumber(existing: Order[]): string {
   const year = new Date().getFullYear();
   const count = existing.filter((o) => o.orderNumber.startsWith(`UN-${year}-`)).length + 1;
   return `UN-${year}-${String(count).padStart(5, "0")}`;
+}
+
+// Back-fill fields added after the initial Order shape (discount, coupon snapshot).
+function normalise(row: Order): Order {
+  return {
+    ...row,
+    discountPaise: row.discountPaise ?? 0
+  };
 }
 
 export const jsonOrderRepo: OrderRepository = {
@@ -42,17 +51,19 @@ export const jsonOrderRepo: OrderRepository = {
   },
   async findById(id) {
     const rows = await readCollection<Order>(COLLECTION);
-    return rows.find((o) => o.id === id) ?? null;
+    const hit = rows.find((o) => o.id === id);
+    return hit ? normalise(hit) : null;
   },
   async listByUser(userId) {
     const rows = await readCollection<Order>(COLLECTION);
     return rows
       .filter((o) => o.userId === userId)
+      .map(normalise)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
   async listAll() {
     const rows = await readCollection<Order>(COLLECTION);
-    return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return rows.map(normalise).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
   async updateStatus(id, status) {
     let updated: Order | null = null;
@@ -75,5 +86,19 @@ export const jsonOrderRepo: OrderRepository = {
       })
     );
     return updated;
+  },
+  async findEligibleForReview(userId, productId) {
+    const rows = await readCollection<Order>(COLLECTION);
+    const eligibleStatuses: OrderStatus[] = ["paid", "packed", "shipped", "delivered"];
+    return (
+      rows
+        .filter(
+          (o) =>
+            o.userId === userId &&
+            eligibleStatuses.includes(o.status) &&
+            o.items.some((i) => i.productId === productId)
+        )
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ?? null
+    );
   }
 };

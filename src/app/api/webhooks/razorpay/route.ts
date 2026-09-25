@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { orderRepo, paymentRepo, productRepo } from "@/server/repositories";
+import { orderRepo, paymentRepo, productRepo, userRepo } from "@/server/repositories";
 import { getPaymentProvider } from "@/features/payments";
+import { getMailProvider } from "@/features/mail";
+import { orderConfirmationEmail } from "@/features/mail/templates";
 
 export async function POST(req: Request) {
   // CRITICAL: read raw body BEFORE any JSON parse so the HMAC matches Razorpay's signing.
@@ -48,6 +50,23 @@ export async function POST(req: Request) {
     await productRepo.adjustStock(
       order.items.map((i) => ({ productId: i.productId, variantId: i.variantId, delta: -i.quantity }))
     );
+
+    // Fire the order confirmation email. Best-effort — failures are logged but don't fail the webhook.
+    try {
+      const user = await userRepo.findById(order.userId);
+      if (user) {
+        const paidOrder = { ...order, status: "paid" as const };
+        const { subject, html } = orderConfirmationEmail(paidOrder, user.name);
+        await getMailProvider().send({
+          to: user.email,
+          subject,
+          html,
+          tags: { orderId: order.id, orderNumber: order.orderNumber }
+        });
+      }
+    } catch (err) {
+      console.error("[webhook] confirmation email failed:", (err as Error).message);
+    }
   } else if (failed) {
     await paymentRepo.updateStatus(record.id, {
       status: "failed",

@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { Container } from "./Container";
 import { MiniCart } from "@/components/cart/MiniCart";
 import { AccountMenu } from "./AccountMenu";
+import { WishlistHeaderLink } from "./WishlistHeaderLink";
 
 export function Header() {
   return (
@@ -22,13 +23,14 @@ export function Header() {
           <Link href="/category/silk-sarees" className="link-underline text-sm">Silk</Link>
           <Link href="/category/bridal-sarees" className="link-underline text-sm">Bridal</Link>
           <Link href="/category/cotton-sarees" className="link-underline text-sm">Cotton</Link>
-          <Link href="/category/designer-sarees" className="link-underline text-sm">Designer</Link>
+          <Link href="/journal" className="link-underline text-sm">Journal</Link>
         </nav>
 
         <div className="flex items-center gap-2 text-ink">
           <Link href="/products" aria-label="Search" className="rounded-full p-2 hover:bg-ink/5">
             <Search className="h-5 w-5" />
           </Link>
+          <WishlistHeaderLink />
           <AccountMenu />
           <MiniCart />
         </div>

@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/features/auth/session";
-import { orderRepo, paymentRepo, userRepo } from "@/server/repositories";
+import {
+  abandonedCartRepo,
+  couponRepo,
+  orderRepo,
+  paymentRepo,
+  userRepo
+} from "@/server/repositories";
 import { addressSchema } from "@/features/checkout/checkout.schema";
 import { buildOrderFromCart, OrderBuildError } from "@/features/checkout/build-order";
 import { getPaymentProvider } from "@/features/payments";
+import { couponErrorMessage, evaluateCoupon } from "@/features/coupons/evaluate";
 
 const bodySchema = z.object({
   address: addressSchema,
+  couponCode: z.string().trim().min(1).max(64).optional(),
   items: z
     .array(
       z.object({
@@ -32,7 +40,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_input", issues: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { address, items } = parsed.data;
+  const { address, items, couponCode } = parsed.data;
 
   let built;
   try {
@@ -43,6 +51,32 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
+
+  let discountPaise = 0;
+  let couponSnapshot;
+  let couponForRedemption;
+  if (couponCode) {
+    const evalResult = await evaluateCoupon({
+      code: couponCode,
+      subtotalPaise: built.subtotalPaise,
+      userId: user.id
+    });
+    if (!evalResult.ok) {
+      return NextResponse.json(
+        { error: evalResult.error, message: couponErrorMessage(evalResult.error) },
+        { status: 400 }
+      );
+    }
+    discountPaise = evalResult.discountPaise;
+    couponSnapshot = {
+      code: evalResult.coupon.code,
+      kind: evalResult.coupon.kind,
+      value: evalResult.coupon.value
+    };
+    couponForRedemption = evalResult.coupon;
+  }
+
+  const totalPaise = Math.max(0, built.subtotalPaise - discountPaise + built.shippingPaise);
 
   const order = await orderRepo.create({
     userId: user.id,
@@ -61,10 +95,23 @@ export async function POST(req: Request) {
     subtotalPaise: built.subtotalPaise,
     shippingPaise: built.shippingPaise,
     taxPaise: 0,
-    totalPaise: built.totalPaise,
+    discountPaise,
+    couponSnapshot,
+    totalPaise,
     currency: "INR",
     notes: address.notes
   });
+
+  if (couponForRedemption && discountPaise > 0) {
+    await couponRepo.recordRedemption({
+      couponId: couponForRedemption.id,
+      userId: user.id,
+      orderId: order.id,
+      amountAppliedPaise: discountPaise
+    });
+  }
+
+  await abandonedCartRepo.markRecovered(user.id, order.id);
 
   const provider = getPaymentProvider();
   const providerOrder = await provider.createOrder({

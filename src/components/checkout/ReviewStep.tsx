@@ -2,12 +2,17 @@
 import { CartLine } from "@/components/cart/CartLine";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { useCartStore, useCartTotals } from "@/features/cart/cart.store";
+import { useAppliedCouponStore } from "@/features/coupons/applied-coupon.store";
 import type { AddressForm } from "@/features/checkout/checkout.schema";
+import { CouponBox } from "./CouponBox";
 import { PayButton } from "./PayButton";
 
 export function ReviewStep({ address, onEdit }: { address: AddressForm; onEdit: () => void }) {
   const items = useCartStore((s) => s.items);
   const totals = useCartTotals();
+  const applied = useAppliedCouponStore((s) => s.coupon);
+  const discount = applied?.subtotalPaise === totals.subtotal ? applied.discountPaise : 0;
+  const payable = Math.max(0, totals.total - discount);
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
@@ -36,7 +41,19 @@ export function ReviewStep({ address, onEdit }: { address: AddressForm; onEdit: 
           </div>
         </section>
 
-        <PayButton address={address} amountPaise={totals.total} disabled={items.length === 0} />
+        <section>
+          <h2 className="font-display text-2xl">Coupon</h2>
+          <div className="mt-3">
+            <CouponBox />
+          </div>
+        </section>
+
+        <PayButton
+          address={address}
+          amountPaise={payable}
+          couponCode={applied?.code}
+          disabled={items.length === 0}
+        />
       </div>
 
       <div>

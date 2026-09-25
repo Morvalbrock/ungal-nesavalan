@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/layout/Container";
@@ -5,6 +6,21 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { productRepo, categoryRepo } from "@/server/repositories";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Ungal Nesavalan — Handwoven Sarees, Loomed by Hand",
+  description:
+    "Discover Kanjivaram, Banarasi, Chanderi and more — handloom sarees sourced directly from master weavers across India. Free shipping on orders above ₹5,000.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Ungal Nesavalan — Handwoven Sarees",
+    description:
+      "Kanjivaram, Banarasi, Chanderi and more — handloom sarees sourced directly from master weavers.",
+    url: "/",
+    type: "website",
+    images: [{ url: "https://picsum.photos/seed/hero-saree/1200/630", width: 1200, height: 630 }]
+  }
+};
 
 export default async function HomePage() {
   const [featured, categories] = await Promise.all([

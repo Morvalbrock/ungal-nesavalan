@@ -3,6 +3,7 @@ import Script from "next/script";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/features/cart/cart.store";
+import { useAppliedCouponStore } from "@/features/coupons/applied-coupon.store";
 import type { AddressForm } from "@/features/checkout/checkout.schema";
 import { formatINR } from "@/lib/utils";
 
@@ -41,15 +42,18 @@ declare global {
 export function PayButton({
   address,
   disabled,
-  amountPaise
+  amountPaise,
+  couponCode
 }: {
   address: AddressForm;
   disabled?: boolean;
   amountPaise: number;
+  couponCode?: string;
 }) {
   const router = useRouter();
   const items = useCartStore((s) => s.items);
   const clear = useCartStore((s) => s.clear);
+  const clearCoupon = useAppliedCouponStore((s) => s.clear);
   const [scriptReady, setScriptReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,9 +77,10 @@ export function PayButton({
         return;
       }
       clear();
+      clearCoupon();
       router.push(`/checkout/success/${data.orderId}`);
     },
-    [clear, router]
+    [clear, clearCoupon, router]
   );
 
   const start = useCallback(async () => {
@@ -87,6 +92,7 @@ export function PayButton({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         address,
+        couponCode,
         items: items.map((i) => ({
           productId: i.productId,
           variantId: i.variantId,
@@ -150,7 +156,7 @@ export function PayButton({
       }
     });
     rzp.open();
-  }, [address, items, confirm, router]);
+  }, [address, items, couponCode, confirm, router]);
 
   return (
     <div>

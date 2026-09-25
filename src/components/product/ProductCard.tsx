@@ -2,12 +2,21 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ProductSummary } from "@/types/product";
 import { cn, formatINR } from "@/lib/utils";
+import { WishlistButton } from "./WishlistButton";
+import { RatingStars } from "./RatingStars";
 
-export function ProductCard({ product, className }: { product: ProductSummary; className?: string }) {
+interface Props {
+  product: ProductSummary;
+  className?: string;
+  rating?: { avg: number; count: number } | null;
+}
+
+export function ProductCard({ product, className, rating }: Props) {
   const primary = product.images[0];
   const onSale = product.salePrice != null && product.salePrice < product.basePrice;
   return (
-    <article className={cn("group", className)}>
+    <article className={cn("group relative", className)}>
+      <WishlistButton productId={product.id} className="absolute right-3 top-3 z-10" />
       <Link href={`/products/${product.slug}`} className="block">
         <div className="relative aspect-[3/4] overflow-hidden rounded-card bg-cream-warm">
           {primary ? (
@@ -40,6 +49,9 @@ export function ProductCard({ product, className }: { product: ProductSummary; c
               <span className="text-xs text-ink-muted line-through">{formatINR(product.basePrice)}</span>
             )}
           </div>
+          {rating && rating.count > 0 && (
+            <RatingStars avg={rating.avg} count={rating.count} size="sm" />
+          )}
         </div>
       </Link>
     </article>

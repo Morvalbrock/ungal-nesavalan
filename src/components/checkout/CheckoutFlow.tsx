@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Container } from "@/components/layout/Container";
-import { useCartHydrated, useCartStore } from "@/features/cart/cart.store";
+import { useCartHydrated, useCartStore, useCartTotals } from "@/features/cart/cart.store";
+import { useAuth } from "@/features/auth/AuthContext";
+import { track } from "@/features/analytics/track";
 import type { AddressForm } from "@/features/checkout/checkout.schema";
 import { AddressStep } from "./AddressStep";
 import { ReviewStep } from "./ReviewStep";
@@ -12,8 +14,45 @@ type Step = "address" | "review";
 export function CheckoutFlow({ prefill }: { prefill?: { name?: string; email?: string; phone?: string } }) {
   const hydrated = useCartHydrated();
   const items = useCartStore((s) => s.items);
+  const { subtotal, count } = useCartTotals();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>("address");
   const [address, setAddress] = useState<AddressForm | null>(null);
+
+  // Fire begin_checkout once per checkout mount with a non-empty cart.
+  useEffect(() => {
+    if (!hydrated || items.length === 0) return;
+    track.beginCheckout({ subtotalInr: Math.round(subtotal / 100), itemCount: count });
+    // Only fire once per mount:
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
+  // Snapshot an abandoned cart when a logged-in shopper opens checkout with items
+  // but doesn't complete. Called on mount + on unload.
+  useEffect(() => {
+    if (!hydrated || !user || items.length === 0) return;
+    const snapshot = () => {
+      const body = JSON.stringify({ items });
+      // sendBeacon survives page unload; fetch fallback for initial mount.
+      if (navigator.sendBeacon) {
+        const blob = new Blob([body], { type: "application/json" });
+        navigator.sendBeacon("/api/abandoned-cart", blob);
+      } else {
+        void fetch("/api/abandoned-cart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          keepalive: true
+        }).catch(() => undefined);
+      }
+    };
+    const initial = setTimeout(snapshot, 4000);
+    window.addEventListener("beforeunload", snapshot);
+    return () => {
+      clearTimeout(initial);
+      window.removeEventListener("beforeunload", snapshot);
+    };
+  }, [hydrated, user, items]);
 
   if (!hydrated) {
     return (

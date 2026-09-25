@@ -1,18 +1,21 @@
 import type { MetadataRoute } from "next";
 import { categoryRepo, productRepo } from "@/server/repositories";
+import { listPosts } from "@/features/journal/posts";
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, cats] = await Promise.all([
+  const [products, cats, posts] = await Promise.all([
     productRepo.list({ perPage: 500 }),
-    categoryRepo.list()
+    categoryRepo.list(),
+    listPosts()
   ]);
   const now = new Date();
 
   const routes: MetadataRoute.Sitemap = [
     { url: `${BASE}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${BASE}/products`, lastModified: now, changeFrequency: "daily", priority: 0.9 }
+    { url: `${BASE}/products`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE}/journal`, lastModified: now, changeFrequency: "weekly", priority: 0.6 }
   ];
 
   for (const c of cats) {
@@ -30,6 +33,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.8
+    });
+  }
+
+  for (const p of posts) {
+    routes.push({
+      url: `${BASE}/journal/${p.slug}`,
+      lastModified: new Date(p.publishedAt),
+      changeFrequency: "monthly",
+      priority: 0.6
     });
   }
 

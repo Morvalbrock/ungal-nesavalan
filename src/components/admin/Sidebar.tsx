@@ -1,7 +1,18 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, Layers, ShoppingBag, Users, ExternalLink, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  Layers,
+  ShoppingBag,
+  Users,
+  Tag,
+  RotateCcw,
+  Clock,
+  ExternalLink,
+  LogOut
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 
@@ -10,6 +21,9 @@ const NAV = [
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: Layers },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/admin/coupons", label: "Coupons", icon: Tag },
+  { href: "/admin/returns", label: "Returns", icon: RotateCcw },
+  { href: "/admin/abandoned-carts", label: "Abandoned carts", icon: Clock },
   { href: "/admin/customers", label: "Customers", icon: Users }
 ];
 

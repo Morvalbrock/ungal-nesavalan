@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { useShallow } from "zustand/react/shallow";
 import type { CartItem } from "./cart.types";
 
 interface CartState {
@@ -70,11 +71,14 @@ export function useCartHydrated(): boolean {
 }
 
 export function useCartTotals() {
-  return useCartStore((s) => {
-    const subtotal = s.items.reduce((n, i) => n + i.unitPricePaise * i.quantity, 0);
-    const count = s.items.reduce((n, i) => n + i.quantity, 0);
-    const shipping = subtotal === 0 || subtotal >= 500000 ? 0 : 9900;
-    const total = subtotal + shipping;
-    return { subtotal, shipping, total, count };
-  });
+  // Selector returns a fresh object; useShallow keeps subscribers stable and prevents infinite rerenders.
+  return useCartStore(
+    useShallow((s) => {
+      const subtotal = s.items.reduce((n, i) => n + i.unitPricePaise * i.quantity, 0);
+      const count = s.items.reduce((n, i) => n + i.quantity, 0);
+      const shipping = subtotal === 0 || subtotal >= 500000 ? 0 : 9900;
+      const total = subtotal + shipping;
+      return { subtotal, shipping, total, count };
+    })
+  );
 }

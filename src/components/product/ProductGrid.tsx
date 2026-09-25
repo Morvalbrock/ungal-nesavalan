@@ -1,7 +1,13 @@
 import type { ProductSummary } from "@/types/product";
+import type { ReviewAggregate } from "@/types/review";
 import { ProductCard } from "./ProductCard";
 
-export function ProductGrid({ items }: { items: ProductSummary[] }) {
+interface Props {
+  items: ProductSummary[];
+  ratings?: Record<string, ReviewAggregate>;
+}
+
+export function ProductGrid({ items, ratings }: Props) {
   if (items.length === 0) {
     return (
       <div className="rounded-card border border-border/70 bg-cream-warm/50 px-6 py-24 text-center">
@@ -12,9 +18,16 @@ export function ProductGrid({ items }: { items: ProductSummary[] }) {
   }
   return (
     <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
-      {items.map((p) => (
-        <ProductCard key={p.id} product={p} />
-      ))}
+      {items.map((p) => {
+        const r = ratings?.[p.id];
+        return (
+          <ProductCard
+            key={p.id}
+            product={p}
+            rating={r && r.count > 0 ? { avg: r.avg, count: r.count } : null}
+          />
+        );
+      })}
     </div>
   );
 }

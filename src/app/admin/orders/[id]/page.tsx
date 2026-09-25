@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Download } from "lucide-react";
 import { orderRepo, paymentRepo, userRepo } from "@/server/repositories";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { formatINR } from "@/lib/utils";
@@ -60,11 +61,26 @@ export default async function AdminOrderDetailPage({
             <div className="border-t border-border/70 p-4 text-sm">
               <dl className="ml-auto max-w-xs space-y-1">
                 <div className="flex justify-between"><dt className="text-ink-muted">Subtotal</dt><dd>{formatINR(order.subtotalPaise)}</dd></div>
+                {order.discountPaise > 0 && order.couponSnapshot && (
+                  <div className="flex justify-between text-maroon">
+                    <dt>Coupon {order.couponSnapshot.code}</dt>
+                    <dd>−{formatINR(order.discountPaise)}</dd>
+                  </div>
+                )}
                 <div className="flex justify-between"><dt className="text-ink-muted">Shipping</dt><dd>{order.shippingPaise === 0 ? "Free" : formatINR(order.shippingPaise)}</dd></div>
                 <div className="flex justify-between border-t border-border/70 pt-2 font-medium"><dt>Total</dt><dd>{formatINR(order.totalPaise)}</dd></div>
               </dl>
             </div>
           </div>
+
+          {["paid", "packed", "shipped", "delivered", "return_requested", "refunded"].includes(order.status) && (
+            <a
+              href={`/api/orders/${order.id}/invoice`}
+              className="inline-flex items-center gap-2 self-start rounded-card border border-border px-3 py-2 text-xs hover:border-ink"
+            >
+              <Download className="h-3.5 w-3.5" /> Download invoice
+            </a>
+          )}
         </div>
 
         <div className="space-y-4 text-sm">

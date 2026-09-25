@@ -3,7 +3,9 @@ import { useMemo, useState } from "react";
 import { Check, ShoppingBag } from "lucide-react";
 import type { Product } from "@/types/product";
 import { useCartStore } from "@/features/cart/cart.store";
+import { track } from "@/features/analytics/track";
 import { cn, formatINR } from "@/lib/utils";
+import { WishlistButton } from "./WishlistButton";
 
 export function PurchasePanel({ product }: { product: Product }) {
   const firstInStock = useMemo(
@@ -32,6 +34,11 @@ export function PurchasePanel({ product }: { product: Product }) {
       unitPricePaise: unitPrice,
       quantity,
       maxStock: variant.stock
+    });
+    track.addToCart({
+      productId: product.id,
+      variantId: variant.id,
+      priceInr: Math.round(unitPrice / 100)
     });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1600);
@@ -121,6 +128,8 @@ export function PurchasePanel({ product }: { product: Product }) {
           </>
         )}
       </button>
+
+      <WishlistButton productId={product.id} variant="full" />
 
       <p className="text-xs text-ink-muted">
         Free shipping within India · Handloom Mark certified · 7-day return on unworn drapes

@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { Trash2, Plus } from "lucide-react";
+import { useRef, useState, useTransition } from "react";
+import { Trash2, Plus, Upload } from "lucide-react";
 import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
 import { FABRICS, OCCASIONS, WEAVES } from "@/features/products/filters";
@@ -297,50 +297,32 @@ export function ProductForm({
       <Section title="Images">
         <div className="space-y-2">
           {values.images.map((img, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <input
-                placeholder="https://…"
-                value={img.url}
-                onChange={(e) => {
-                  const arr = [...values.images];
-                  arr[i] = { ...arr[i], url: e.target.value };
-                  setField("images", arr);
-                }}
-                className={cn(inputCls, "flex-1")}
-              />
-              <input
-                placeholder="alt text"
-                value={img.alt}
-                onChange={(e) => {
-                  const arr = [...values.images];
-                  arr[i] = { ...arr[i], alt: e.target.value };
-                  setField("images", arr);
-                }}
-                className={cn(inputCls, "w-56")}
-              />
-              <button
-                type="button"
-                onClick={() => setField("images", values.images.filter((_, j) => j !== i))}
-                className="rounded p-2 text-ink-muted hover:bg-ink/5 hover:text-maroon"
-                aria-label="Remove image"
-                disabled={values.images.length === 1}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
+            <ImageRow
+              key={i}
+              url={img.url}
+              alt={img.alt}
+              onChange={(patch) => {
+                const arr = [...values.images];
+                arr[i] = { ...arr[i], ...patch };
+                setField("images", arr);
+              }}
+              onRemove={() => setField("images", values.images.filter((_, j) => j !== i))}
+              removable={values.images.length > 1}
+              onUploadError={(msg) => setBanner(msg)}
+            />
           ))}
           <button
             type="button"
             onClick={() => setField("images", [...values.images, { url: "", alt: "" }])}
             className="btn-ghost inline-flex"
           >
-            <Plus className="h-4 w-4" /> Add image URL
+            <Plus className="h-4 w-4" /> Add image
           </button>
         </div>
         {issues.images && <p className="text-xs text-maroon">{issues.images[0]}</p>}
         <p className="text-xs text-ink-muted">
-          Direct file upload (Cloudinary/S3) arrives in a later polish phase. For now, paste any hosted image URL — try{" "}
-          <code className="rounded bg-ink/5 px-1">https://picsum.photos/seed/your-slug/900/1200</code>.
+          Upload writes to <code className="rounded bg-ink/5 px-1">/public/products/</code> (local dev only). Cloudinary/S3
+          swap arrives in Phase 9. You can also paste any hosted URL.
         </p>
       </Section>
 
@@ -512,3 +494,87 @@ function Field({
 
 const inputCls =
   "w-full rounded-card border border-border bg-transparent px-3 py-2 text-sm outline-none transition focus:border-ink";
+
+function ImageRow({
+  url,
+  alt,
+  onChange,
+  onRemove,
+  removable,
+  onUploadError
+}: {
+  url: string;
+  alt: string;
+  onChange: (patch: { url?: string; alt?: string }) => void;
+  onRemove: () => void;
+  removable: boolean;
+  onUploadError: (msg: string) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/uploads", { method: "POST", body: fd });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        onUploadError(`Image upload failed: ${data.error ?? res.statusText}`);
+        return;
+      }
+      onChange({ url: data.url, alt: alt || file.name.replace(/\.[^.]+$/, "") });
+    } catch (err) {
+      onUploadError(`Image upload failed: ${(err as Error).message}`);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="flex items-start gap-2">
+      <input
+        placeholder="https://… or upload →"
+        value={url}
+        onChange={(e) => onChange({ url: e.target.value })}
+        className={cn(inputCls, "flex-1")}
+      />
+      <input
+        placeholder="alt text"
+        value={alt}
+        onChange={(e) => onChange({ alt: e.target.value })}
+        className={cn(inputCls, "w-56")}
+      />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/avif"
+        onChange={onFile}
+        className="hidden"
+      />
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        disabled={uploading}
+        className="rounded-card border border-border p-2 text-ink-muted hover:border-ink hover:text-ink disabled:opacity-50"
+        aria-label="Upload image file"
+        title="Upload image file"
+      >
+        <Upload className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="rounded p-2 text-ink-muted hover:bg-ink/5 hover:text-maroon disabled:opacity-40"
+        aria-label="Remove image"
+        disabled={!removable}
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}

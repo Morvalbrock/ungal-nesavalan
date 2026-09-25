@@ -43,6 +43,19 @@ export function createRazorpayProvider(): PaymentProvider {
       if (!webhookSecret) return false;
       const expected = crypto.createHmac("sha256", webhookSecret).update(rawBody).digest("hex");
       return timingSafeEqualHex(expected, signature);
+    },
+    async refund({ providerPaymentId, amountPaise, notes }) {
+      const refund = await client.payments.refund(providerPaymentId, {
+        amount: amountPaise,
+        speed: "normal",
+        notes
+      });
+      return {
+        refundId: refund.id,
+        amountPaise: Number(refund.amount ?? amountPaise),
+        status: (refund.status as "pending" | "processed" | "failed") ?? "pending",
+        mode: "razorpay"
+      };
     }
   };
 }

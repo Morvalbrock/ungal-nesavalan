@@ -27,4 +27,22 @@
   .link-underline {
     @apply relative inline-block after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-current after:transition-transform hover:after:origin-left hover:after:scale-x-100;
   }
+  .prose-journal p {
+    @apply my-5 text-[17px] leading-[1.75] text-ink-soft;
+  }
+  .prose-journal h2 {
+    @apply mt-12 font-display text-2xl text-ink;
+  }
+  .prose-journal h3 {
+    @apply mt-8 font-display text-xl text-ink;
+  }
+  .prose-journal a {
+    @apply text-maroon underline underline-offset-4;
+  }
+  .prose-journal ul {
+    @apply my-4 list-disc space-y-2 pl-6 text-ink-soft;
+  }
+  .prose-journal blockquote {
+    @apply my-6 border-l-2 border-ink/40 pl-5 italic text-ink-soft;
+  }
 }

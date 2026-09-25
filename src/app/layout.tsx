@@ -1,9 +1,14 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { getSession } from "@/features/auth/session";
 import { userRepo } from "@/server/repositories";
+import { WishlistBoot } from "@/features/wishlist/WishlistBoot";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { PlausibleScript } from "@/features/analytics/PlausibleScript";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 const display = Fraunces({
   subsets: ["latin"],
@@ -25,7 +30,21 @@ export const metadata: Metadata = {
   },
   description:
     "Handcrafted sarees from India's finest weaving clusters — Kanjivaram, Banarasi, Chanderi, Patola and more.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000")
+  metadataBase: new URL(SITE_URL),
+  manifest: "/manifest.json"
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f5eddc"
+};
+
+const ORGANIZATION_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Ungal Nesavalan",
+  url: SITE_URL,
+  logo: `${SITE_URL}/icon-512.png`,
+  sameAs: [] as string[]
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -35,8 +54,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body className="min-h-screen bg-cream text-ink antialiased">
-        <AuthProvider initialUser={initialUser}>{children}</AuthProvider>
+      <head>
+        <JsonLd data={ORGANIZATION_JSONLD} />
+        <PlausibleScript />
+      </head>
+      <body className="min-h-screen bg-cream text-ink antialiased" suppressHydrationWarning>
+        <AuthProvider initialUser={initialUser}>
+          <WishlistBoot />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

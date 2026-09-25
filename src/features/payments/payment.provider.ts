@@ -8,6 +8,13 @@ export interface CreatedProviderOrder {
   mode: PaymentMode;
 }
 
+export interface CreatedRefund {
+  refundId: string;
+  amountPaise: number;
+  status: "pending" | "processed" | "failed";
+  mode: PaymentMode;
+}
+
 export interface PaymentProvider {
   readonly mode: PaymentMode;
   createOrder(input: {
@@ -25,4 +32,11 @@ export interface PaymentProvider {
 
   /** Verifies the HMAC-SHA256 signature on a raw webhook body. */
   verifyWebhook(rawBody: string, signature: string): boolean;
+
+  /** Issues a full or partial refund against a captured payment. */
+  refund(input: {
+    providerPaymentId: string;
+    amountPaise: number;
+    notes?: Record<string, string>;
+  }): Promise<CreatedRefund>;
 }

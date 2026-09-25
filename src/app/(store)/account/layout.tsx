@@ -5,7 +5,8 @@ import { getSession } from "@/features/auth/session";
 const NAV = [
   { href: "/account/profile", label: "Profile" },
   { href: "/account/addresses", label: "Addresses" },
-  { href: "/account/orders", label: "Orders" }
+  { href: "/account/orders", label: "Orders" },
+  { href: "/account/wishlist", label: "Wishlist" }
 ];
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {

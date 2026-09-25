@@ -5,8 +5,10 @@ import type { Metadata } from "next";
 import { Check } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { getSession } from "@/features/auth/session";
-import { orderRepo } from "@/server/repositories";
+import { orderRepo, userRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
+import { SuccessExtras } from "@/components/checkout/SuccessExtras";
+import { getOrCreateReferralCoupon } from "@/features/referrals/generate";
 
 export const metadata: Metadata = { title: "Order confirmed" };
 export const dynamic = "force-dynamic";
@@ -22,6 +24,11 @@ export default async function CheckoutSuccessPage({
   const { orderId } = await params;
   const order = await orderRepo.findById(orderId);
   if (!order || order.userId !== session.userId) notFound();
+
+  const user = await userRepo.findById(session.userId);
+  const referral = user
+    ? await getOrCreateReferralCoupon({ user, order })
+    : null;
 
   return (
     <Container className="py-16">
@@ -75,6 +82,14 @@ export default async function CheckoutSuccessPage({
           </dl>
         </div>
       </div>
+
+      <SuccessExtras
+        orderId={order.id}
+        revenuePaise={order.totalPaise}
+        couponCode={order.couponSnapshot?.code}
+        referralCode={referral?.code}
+        referralValueLabel={referral?.valueLabel}
+      />
 
       <div className="mx-auto mt-10 flex max-w-2xl flex-wrap items-center justify-center gap-3">
         <Link href={`/account/orders/${order.id}`} className="btn-primary">View order</Link>

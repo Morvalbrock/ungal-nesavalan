@@ -4,7 +4,16 @@ import { useState, useTransition } from "react";
 import type { OrderStatus } from "@/types/order";
 import { updateOrderStatus } from "@/features/admin/actions";
 
-const STATUSES: OrderStatus[] = ["pending", "paid", "packed", "shipped", "delivered", "cancelled", "refunded"];
+const STATUSES: OrderStatus[] = [
+  "pending",
+  "paid",
+  "packed",
+  "shipped",
+  "delivered",
+  "return_requested",
+  "cancelled",
+  "refunded"
+];
 
 export function OrderStatusForm({ orderId, current }: { orderId: string; current: OrderStatus }) {
   const router = useRouter();

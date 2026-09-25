@@ -1,4 +1,5 @@
 import type { Address } from "./address";
+import type { CouponSnapshot } from "./coupon";
 
 export type OrderStatus =
   | "pending"
@@ -6,6 +7,7 @@ export type OrderStatus =
   | "packed"
   | "shipped"
   | "delivered"
+  | "return_requested"
   | "cancelled"
   | "refunded";
 
@@ -31,6 +33,8 @@ export interface Order {
   subtotalPaise: number;
   shippingPaise: number;
   taxPaise: number;
+  discountPaise: number;
+  couponSnapshot?: CouponSnapshot;
   totalPaise: number;
   currency: "INR";
   paymentId?: string;

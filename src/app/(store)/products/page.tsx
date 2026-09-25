@@ -3,7 +3,7 @@ import { FilterSidebar } from "@/components/product/FilterSidebar";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SortSelect } from "@/components/product/SortSelect";
 import { readQueryFromSearchParams } from "@/features/products/filters";
-import { productRepo } from "@/server/repositories";
+import { productRepo, reviewRepo } from "@/server/repositories";
 
 export const metadata = { title: "All Sarees" };
 
@@ -13,6 +13,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const query = readQueryFromSearchParams(sp);
   const { items, total } = await productRepo.list({ ...query, perPage: 60 });
+  const ratings = await reviewRepo.aggregateForMany(items.map((p) => p.id));
 
   return (
     <Container className="py-12">
@@ -29,7 +30,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[220px_1fr]">
         <FilterSidebar />
-        <ProductGrid items={items} />
+        <ProductGrid items={items} ratings={ratings} />
       </div>
     </Container>
   );

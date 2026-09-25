@@ -1,10 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useCartTotals } from "@/features/cart/cart.store";
+import { useAppliedCouponStore } from "@/features/coupons/applied-coupon.store";
 import { formatINR } from "@/lib/utils";
 
 export function CartSummary({ showCheckoutButton = true }: { showCheckoutButton?: boolean }) {
-  const { subtotal, shipping, total, count } = useCartTotals();
+  const { subtotal, shipping, total: rawTotal, count } = useCartTotals();
+  const applied = useAppliedCouponStore((s) => s.coupon);
+  const discount = applied?.subtotalPaise === subtotal ? applied.discountPaise : 0;
+  const total = Math.max(0, rawTotal - discount);
   const freeShippingRemaining = 500000 - subtotal;
 
   return (
@@ -22,6 +26,12 @@ export function CartSummary({ showCheckoutButton = true }: { showCheckoutButton?
           <dt className="text-ink-muted">Subtotal ({count} item{count === 1 ? "" : "s"})</dt>
           <dd>{formatINR(subtotal)}</dd>
         </div>
+        {discount > 0 && applied && (
+          <div className="flex justify-between text-maroon">
+            <dt>Coupon {applied.code}</dt>
+            <dd>−{formatINR(discount)}</dd>
+          </div>
+        )}
         <div className="flex justify-between">
           <dt className="text-ink-muted">Shipping</dt>
           <dd>{shipping === 0 ? "Free" : formatINR(shipping)}</dd>

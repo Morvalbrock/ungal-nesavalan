@@ -5,9 +5,16 @@ import { z } from "zod";
 import { requireAdmin } from "./guard";
 import {
   categoryRepo,
+  couponRepo,
   orderRepo,
-  productRepo
+  paymentRepo,
+  productRepo,
+  returnRepo,
+  userRepo
 } from "@/server/repositories";
+import { getPaymentProvider } from "@/features/payments";
+import { getMailProvider } from "@/features/mail";
+import { deliveredEmail, returnDecisionEmail, shippedEmail } from "@/features/mail/templates";
 import type { OrderStatus } from "@/types/order";
 import type { Fabric, Occasion, Product, ProductImage, Variant, Weave } from "@/types/product";
 import { FABRICS, OCCASIONS, WEAVES } from "@/features/products/filters";
@@ -192,6 +199,7 @@ const ORDER_STATUSES: OrderStatus[] = [
   "packed",
   "shipped",
   "delivered",
+  "return_requested",
   "cancelled",
   "refunded"
 ];
@@ -201,9 +209,165 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
   if (!ORDER_STATUSES.includes(status)) return { ok: false, error: "invalid_status" };
   const updated = await orderRepo.updateStatus(orderId, status);
   if (!updated) return { ok: false, error: "not_found" };
+
+  if (status === "shipped" || status === "delivered") {
+    void sendStatusEmail(updated, status).catch((err) =>
+      console.error("[status] email failed:", (err as Error).message)
+    );
+  }
+
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath(`/account/orders/${orderId}`);
   revalidatePath("/account/orders");
+  return { ok: true };
+}
+
+async function sendStatusEmail(order: Awaited<ReturnType<typeof orderRepo.findById>>, status: "shipped" | "delivered") {
+  if (!order) return;
+  const user = await userRepo.findById(order.userId);
+  if (!user) return;
+  const { subject, html } = status === "shipped" ? shippedEmail(order) : deliveredEmail(order);
+  await getMailProvider().send({
+    to: user.email,
+    subject,
+    html,
+    tags: { orderId: order.id, orderNumber: order.orderNumber, event: status }
+  });
+}
+
+const couponSchema = z.object({
+  id: z.string().optional(),
+  code: z.string().trim().min(2).max(64),
+  kind: z.enum(["percent", "fixed"]),
+  value: z.coerce.number().min(1),
+  minSubtotalPaise: z.coerce.number().int().min(0).default(0),
+  maxRedemptions: z
+    .union([z.coerce.number().int().min(1), z.literal("").transform(() => null)])
+    .nullable()
+    .optional(),
+  perUserLimit: z.coerce.number().int().min(0).default(1),
+  expiresAt: z
+    .union([z.string().trim().min(1), z.literal("").transform(() => null)])
+    .nullable()
+    .optional(),
+  active: z.boolean().default(true)
+});
+
+export type CouponFormValues = z.input<typeof couponSchema>;
+
+export async function upsertCoupon(values: CouponFormValues): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = couponSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "invalid_input",
+      issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
+    };
+  }
+  const d = parsed.data;
+  if (d.kind === "percent" && d.value > 100) {
+    return { ok: false, error: "invalid_input", issues: { value: ["Percent must be ≤ 100"] } };
+  }
+
+  const payload = {
+    code: d.code,
+    kind: d.kind,
+    value: d.value,
+    minSubtotalPaise: d.minSubtotalPaise,
+    maxRedemptions: d.maxRedemptions ?? null,
+    perUserLimit: d.perUserLimit,
+    expiresAt: d.expiresAt ? new Date(d.expiresAt).toISOString() : null,
+    active: d.active
+  };
+
+  try {
+    if (d.id) {
+      const updated = await couponRepo.update(d.id, payload);
+      if (!updated) return { ok: false, error: "not_found" };
+    } else {
+      await couponRepo.create(payload);
+    }
+  } catch (err) {
+    if ((err as Error).message === "duplicate_code") {
+      return { ok: false, error: "invalid_input", issues: { code: ["That code already exists"] } };
+    }
+    throw err;
+  }
+  revalidatePath("/admin/coupons");
+  return { ok: true };
+}
+
+export async function toggleCouponActive(id: string, active: boolean): Promise<ActionResult> {
+  await requireAdmin();
+  const updated = await couponRepo.update(id, { active });
+  if (!updated) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/coupons");
+  return { ok: true };
+}
+
+export async function decideReturn(
+  id: string,
+  decision: "approved" | "rejected",
+  adminNote: string
+): Promise<ActionResult> {
+  await requireAdmin();
+  const ret = await returnRepo.findById(id);
+  if (!ret) return { ok: false, error: "not_found" };
+  if (ret.decision) return { ok: false, error: "already_decided" };
+
+  const order = await orderRepo.findById(ret.orderId);
+  if (!order) return { ok: false, error: "not_found" };
+
+  let refundId: string | undefined;
+  if (decision === "approved") {
+    if (order.paymentId) {
+      const payment = await paymentRepo.findById(order.paymentId);
+      if (payment?.providerPaymentId) {
+        try {
+          const provider = getPaymentProvider();
+          const refund = await provider.refund({
+            providerPaymentId: payment.providerPaymentId,
+            amountPaise: order.totalPaise,
+            notes: { orderId: order.id, returnId: ret.id }
+          });
+          refundId = refund.refundId;
+        } catch (err) {
+          return { ok: false, error: `refund_failed:${(err as Error).message}` };
+        }
+      }
+    }
+    await orderRepo.updateStatus(ret.orderId, "refunded");
+  } else {
+    await orderRepo.updateStatus(ret.orderId, "delivered");
+  }
+
+  await returnRepo.decide(id, decision, adminNote, refundId);
+
+  try {
+    const user = await userRepo.findById(ret.userId);
+    if (user) {
+      const { subject, html } = returnDecisionEmail({
+        customerName: user.name,
+        orderNumber: order.orderNumber,
+        decision,
+        note: adminNote,
+        refundId
+      });
+      await getMailProvider().send({
+        to: user.email,
+        subject,
+        html,
+        tags: { orderId: order.id, returnId: id, decision }
+      });
+    }
+  } catch (err) {
+    console.error("[return] decision email failed:", (err as Error).message);
+  }
+
+  revalidatePath("/admin/returns");
+  revalidatePath(`/admin/orders/${ret.orderId}`);
+  revalidatePath(`/account/orders/${ret.orderId}`);
   return { ok: true };
 }
