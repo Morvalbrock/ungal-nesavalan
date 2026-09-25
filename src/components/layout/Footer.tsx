@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "./Container";
+import { NewsletterForm } from "./NewsletterForm";
 
 const columns = [
   {
@@ -15,19 +16,19 @@ const columns = [
   {
     heading: "Support",
     links: [
-      { label: "Shipping & Returns", href: "#" },
-      { label: "Care Guide", href: "#" },
-      { label: "Size & Length Guide", href: "#" },
-      { label: "Contact", href: "#" }
+      { label: "Shipping & Returns", href: "/shipping-returns" },
+      { label: "Care Guide", href: "/care-guide" },
+      { label: "Size & Length Guide", href: "/size-guide" },
+      { label: "Contact", href: "/contact" }
     ]
   },
   {
     heading: "Company",
     links: [
-      { label: "Our Weavers", href: "#" },
-      { label: "Journal", href: "#" },
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" }
+      { label: "Our Weavers", href: "/about" },
+      { label: "Journal", href: "/journal" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" }
     ]
   }
 ];
@@ -41,6 +42,7 @@ export function Footer() {
           <p className="mt-3 max-w-xs text-sm text-ink-muted">
             Handcrafted sarees from India's finest weaving clusters — direct from the loom to your drape.
           </p>
+          <NewsletterForm />
         </div>
         {columns.map((col) => (
           <div key={col.heading}>

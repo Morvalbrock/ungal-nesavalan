@@ -10,6 +10,7 @@ import {
   Tag,
   RotateCcw,
   Clock,
+  MessageCircle,
   ExternalLink,
   LogOut
 } from "lucide-react";
@@ -23,6 +24,7 @@ const NAV = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/coupons", label: "Coupons", icon: Tag },
   { href: "/admin/returns", label: "Returns", icon: RotateCcw },
+  { href: "/admin/questions", label: "Q & A", icon: MessageCircle },
   { href: "/admin/abandoned-carts", label: "Abandoned carts", icon: Clock },
   { href: "/admin/customers", label: "Customers", icon: Users }
 ];

@@ -27,7 +27,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2 text-ink">
-          <Link href="/products" aria-label="Search" className="rounded-full p-2 hover:bg-ink/5">
+          <Link href="/search" aria-label="Search" className="rounded-full p-2 hover:bg-ink/5">
             <Search className="h-5 w-5" />
           </Link>
           <WishlistHeaderLink />

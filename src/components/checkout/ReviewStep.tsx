@@ -1,9 +1,12 @@
 "use client";
+import { useMemo } from "react";
 import { CartLine } from "@/components/cart/CartLine";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { useCartStore, useCartTotals } from "@/features/cart/cart.store";
 import { useAppliedCouponStore } from "@/features/coupons/applied-coupon.store";
 import type { AddressForm } from "@/features/checkout/checkout.schema";
+import { shippingQuote, estimatedDeliveryLabel } from "@/features/shipping/calculate";
+import { formatINR } from "@/lib/utils";
 import { CouponBox } from "./CouponBox";
 import { PayButton } from "./PayButton";
 
@@ -12,7 +15,12 @@ export function ReviewStep({ address, onEdit }: { address: AddressForm; onEdit: 
   const totals = useCartTotals();
   const applied = useAppliedCouponStore((s) => s.coupon);
   const discount = applied?.subtotalPaise === totals.subtotal ? applied.discountPaise : 0;
-  const payable = Math.max(0, totals.total - discount);
+
+  const quote = useMemo(
+    () => shippingQuote({ subtotalPaise: totals.subtotal, pincode: address.pincode }),
+    [totals.subtotal, address.pincode]
+  );
+  const payable = Math.max(0, totals.subtotal - discount + quote.ratePaise);
 
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
@@ -31,6 +39,14 @@ export function ReviewStep({ address, onEdit }: { address: AddressForm; onEdit: 
             <p>{address.country} · {address.phone}</p>
             <p className="text-ink-muted">{address.email}</p>
             {address.notes && <p className="mt-2 text-ink-soft">Note: {address.notes}</p>}
+          </div>
+          <div className="mt-3 rounded-card bg-cream-warm/60 p-3 text-xs text-ink-soft">
+            <p>
+              <span className="text-ink-muted">Shipping:</span>{" "}
+              {quote.ratePaise === 0 ? <span className="font-medium text-emerald-700">Free</span> : formatINR(quote.ratePaise)}
+              {" · "}
+              <span className="text-ink-muted">Arrives</span> {estimatedDeliveryLabel(quote)}
+            </p>
           </div>
         </section>
 

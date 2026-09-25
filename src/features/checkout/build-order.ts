@@ -2,6 +2,8 @@ import type { OrderItem } from "@/types/order";
 import type { Product, Variant } from "@/types/product";
 import { productRepo } from "@/server/repositories";
 import { newId } from "@/server/db/json-store";
+import { shippingQuote } from "@/features/shipping/calculate";
+import type { ShippingZone } from "@/features/shipping/zones";
 
 type BuiltItem = Omit<OrderItem, "orderId">;
 
@@ -15,6 +17,7 @@ export interface BuiltOrderTotals {
   items: BuiltItem[];
   subtotalPaise: number;
   shippingPaise: number;
+  shippingZone: ShippingZone;
   totalPaise: number;
 }
 
@@ -35,12 +38,10 @@ function priceOf(product: Product, variant: Variant): number {
   return variant.priceOverride ?? product.salePrice ?? product.basePrice;
 }
 
-function shippingFor(subtotal: number): number {
-  if (subtotal === 0) return 0;
-  return subtotal >= 500000 ? 0 : 9900;
-}
-
-export async function buildOrderFromCart(lines: CartLinePayload[]): Promise<BuiltOrderTotals> {
+export async function buildOrderFromCart(
+  lines: CartLinePayload[],
+  opts: { pincode?: string | null } = {}
+): Promise<BuiltOrderTotals> {
   if (!lines.length) throw new OrderBuildError("empty_cart", "Cart is empty");
 
   const uniqueProductIds = Array.from(new Set(lines.map((l) => l.productId)));
@@ -77,11 +78,12 @@ export async function buildOrderFromCart(lines: CartLinePayload[]): Promise<Buil
     });
   }
 
-  const shippingPaise = shippingFor(subtotal);
+  const quote = shippingQuote({ subtotalPaise: subtotal, pincode: opts.pincode });
   return {
     items,
     subtotalPaise: subtotal,
-    shippingPaise,
-    totalPaise: subtotal + shippingPaise
+    shippingPaise: quote.ratePaise,
+    shippingZone: quote.zone,
+    totalPaise: subtotal + quote.ratePaise
   };
 }

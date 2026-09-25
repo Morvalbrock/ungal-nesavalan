@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
   let built;
   try {
-    built = await buildOrderFromCart(items);
+    built = await buildOrderFromCart(items, { pincode: address.pincode });
   } catch (err) {
     if (err instanceof OrderBuildError) {
       return NextResponse.json({ error: err.code, message: err.message }, { status: 400 });

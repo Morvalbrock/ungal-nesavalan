@@ -4,11 +4,13 @@ import { Container } from "@/components/layout/Container";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { PurchasePanel } from "@/components/product/PurchasePanel";
+import { DeliveryChecker } from "@/components/product/DeliveryChecker";
 import { RatingStars } from "@/components/product/RatingStars";
 import { ReviewsSection } from "@/components/product/ReviewsSection";
+import { QuestionsSection } from "@/components/product/QuestionsSection";
 import { WhatsAppShare } from "@/components/product/WhatsAppShare";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { orderRepo, productRepo, categoryRepo, reviewRepo } from "@/server/repositories";
+import { orderRepo, productRepo, categoryRepo, questionRepo, reviewRepo } from "@/server/repositories";
 import { getSession } from "@/features/auth/session";
 import { formatINR } from "@/lib/utils";
 
@@ -39,11 +41,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const product = await productRepo.findBySlug(slug);
   if (!product) notFound();
 
-  const [category, related, reviewsPage, aggregate, session] = await Promise.all([
+  const [category, related, reviewsPage, aggregate, questions, session] = await Promise.all([
     categoryRepo.findById(product.categoryId),
     productRepo.list({ category: product.categoryId, perPage: 8 }),
     reviewRepo.listByProduct(product.id, { perPage: 10 }),
     reviewRepo.aggregateFor(product.id),
+    questionRepo.listByProduct(product.id),
     getSession()
   ]);
   const others = related.items.filter((p) => p.id !== product.id).slice(0, 4);
@@ -187,6 +190,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <PurchasePanel product={product} />
           </div>
 
+          <DeliveryChecker subtotalPaise={displayPrice} />
+
           <div className="mt-4">
             <WhatsAppShare productName={product.name} productSlug={product.slug} />
           </div>
@@ -198,6 +203,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         aggregate={aggregate}
         reviews={reviewsPage.items}
         eligibility={eligibility}
+      />
+
+      <QuestionsSection
+        productSlug={product.slug}
+        questions={questions}
+        signedIn={!!session}
       />
 
       {others.length > 0 && (

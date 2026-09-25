@@ -105,6 +105,22 @@ export function passwordResetEmail({ customerName, resetUrl }: { customerName: s
   return { subject: "Reset your Ungal Nesavalan password", html };
 }
 
+export function newsletterWelcomeEmail() {
+  const html = shell(`
+<p style="font-size:20px;">Welcome to the loom notes</p>
+<p>Thank you for signing up. Once a fortnight we send:</p>
+<ul>
+<li>New weaves, before they land on the site.</li>
+<li>Care tips for the season.</li>
+<li>Stories from the weaving clusters we buy from.</li>
+</ul>
+<p>No spam. Unsubscribe anytime with the link at the foot of every letter.</p>
+<p style="margin-top:24px;">
+<a href="${SITE_URL}/products" style="display:inline-block;background:#1a1a1a;color:#f5eddc;padding:10px 18px;text-decoration:none;border-radius:8px;">Browse sarees</a>
+</p>`);
+  return { subject: "Welcome to Ungal Nesavalan", html };
+}
+
 export function returnDecisionEmail({
   customerName,
   orderNumber,

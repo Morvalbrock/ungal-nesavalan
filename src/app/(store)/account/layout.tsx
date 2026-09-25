@@ -6,7 +6,8 @@ const NAV = [
   { href: "/account/profile", label: "Profile" },
   { href: "/account/addresses", label: "Addresses" },
   { href: "/account/orders", label: "Orders" },
-  { href: "/account/wishlist", label: "Wishlist" }
+  { href: "/account/wishlist", label: "Wishlist" },
+  { href: "/account/referrals", label: "Referrals" }
 ];
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
