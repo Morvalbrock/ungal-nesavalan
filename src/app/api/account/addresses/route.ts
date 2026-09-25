@@ -12,8 +12,8 @@ const addressPayload = z.object({
   city: z.string().trim().min(2),
   state: z.enum(INDIAN_STATES),
   pincode: z.string().trim().regex(/^\d{6}$/),
-  country: z.literal("India").default("India"),
-  isDefault: z.boolean().default(false)
+  country: z.literal("India").optional(),
+  isDefault: z.boolean().optional()
 });
 
 export async function GET() {
@@ -31,6 +31,10 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid_input", issues: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
-  const created = await addressRepo.create(session.userId, parsed.data);
+  const created = await addressRepo.create(session.userId, {
+    ...parsed.data,
+    country: parsed.data.country ?? "India",
+    isDefault: parsed.data.isDefault ?? false
+  });
   return NextResponse.json({ address: created }, { status: 201 });
 }

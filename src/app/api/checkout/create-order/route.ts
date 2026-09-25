@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       city: address.city,
       state: address.state,
       pincode: address.pincode,
-      country: address.country,
+      country: address.country ?? "India",
       phone: address.phone
     },
     status: "pending",

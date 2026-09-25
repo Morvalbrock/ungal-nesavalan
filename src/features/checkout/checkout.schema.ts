@@ -46,7 +46,7 @@ export const addressSchema = z.object({
   city: z.string().trim().min(2, "City is required"),
   state: z.enum(INDIAN_STATES, { message: "Select a state" }),
   pincode: z.string().trim().regex(/^\d{6}$/, "Enter a valid 6-digit pincode"),
-  country: z.literal("India").default("India"),
+  country: z.literal("India").optional(),
   notes: z.string().trim().max(300).optional()
 });
 
