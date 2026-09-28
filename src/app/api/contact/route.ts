@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getMailProvider } from "@/features/mail";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit-request";
 
 const bodySchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -21,6 +22,13 @@ function escapeHtml(s: string): string {
 }
 
 export async function POST(req: Request) {
+  const rl = checkRateLimit(req, {
+    bucket: "contact",
+    max: 3,
+    windowMs: 60 * 60_000
+  });
+  if (!rl.ok) return rateLimitResponse(rl);
+
   const raw = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(raw);
   if (!parsed.success) {

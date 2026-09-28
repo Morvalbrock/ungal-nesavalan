@@ -3,6 +3,7 @@ import { z } from "zod";
 import { newsletterRepo } from "@/server/repositories";
 import { getMailProvider } from "@/features/mail";
 import { newsletterWelcomeEmail } from "@/features/mail/templates";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit-request";
 
 const bodySchema = z.object({
   email: z.string().trim().email(),
@@ -10,6 +11,13 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const rl = checkRateLimit(req, {
+    bucket: "newsletter",
+    max: 5,
+    windowMs: 60 * 60_000
+  });
+  if (!rl.ok) return rateLimitResponse(rl);
+
   const raw = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(raw);
   if (!parsed.success) {

@@ -2,8 +2,16 @@ import { NextResponse } from "next/server";
 import { registerSchema, AuthError } from "@/features/auth/auth.provider";
 import { jwtAuthProvider } from "@/features/auth/jwt-auth.provider";
 import { setSessionCookie } from "@/features/auth/session";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit-request";
 
 export async function POST(req: Request) {
+  const rl = checkRateLimit(req, {
+    bucket: "auth:register",
+    max: 3,
+    windowMs: 60 * 60_000
+  });
+  if (!rl.ok) return rateLimitResponse(rl);
+
   const raw = await req.json().catch(() => null);
   const parsed = registerSchema.safeParse(raw);
   if (!parsed.success) {

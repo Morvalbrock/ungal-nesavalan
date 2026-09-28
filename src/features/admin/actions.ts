@@ -6,6 +6,7 @@ import { requireAdmin } from "./guard";
 import {
   categoryRepo,
   couponRepo,
+  heroSlideRepo,
   orderRepo,
   paymentRepo,
   productRepo,
@@ -369,5 +370,75 @@ export async function decideReturn(
   revalidatePath("/admin/returns");
   revalidatePath(`/admin/orders/${ret.orderId}`);
   revalidatePath(`/account/orders/${ret.orderId}`);
+  return { ok: true };
+}
+
+const imageRef = z
+  .string()
+  .trim()
+  .refine((v) => /^https?:\/\//.test(v) || v.startsWith("/"), {
+    message: "Upload an image or paste a full URL"
+  });
+
+const heroSlideSchema = z.object({
+  id: z.string().optional(),
+  imageUrl: imageRef,
+  imageAlt: z.string().trim().min(1, "Alt text is required"),
+  eyebrow: z.string().trim().default(""),
+  headline: z.string().trim().min(1, "Headline is required"),
+  headlineItalic: z.string().trim().default(""),
+  subheadline: z.string().trim().default(""),
+  ctaPrimaryLabel: z.string().trim().default(""),
+  ctaPrimaryHref: z.string().trim().default(""),
+  ctaSecondaryLabel: z.string().trim().default(""),
+  ctaSecondaryHref: z.string().trim().default(""),
+  featureImageUrl: z.union([imageRef, z.literal("")]).default(""),
+  featureImageAlt: z.string().trim().default(""),
+  featureEyebrow: z.string().trim().default(""),
+  featureTitle: z.string().trim().default(""),
+  featureSubtitle: z.string().trim().default(""),
+  sort: z.coerce.number().int().default(0),
+  active: z.boolean().default(true)
+});
+
+export type HeroSlideFormValues = z.input<typeof heroSlideSchema>;
+
+export async function upsertHeroSlide(values: HeroSlideFormValues): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = heroSlideSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "invalid_input",
+      issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
+    };
+  }
+  const { id, ...payload } = parsed.data;
+  if (id) {
+    const updated = await heroSlideRepo.update(id, payload);
+    if (!updated) return { ok: false, error: "not_found" };
+  } else {
+    await heroSlideRepo.create(payload);
+  }
+  revalidatePath("/admin/hero-slides");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function deleteHeroSlide(id: string): Promise<ActionResult> {
+  await requireAdmin();
+  const removed = await heroSlideRepo.remove(id);
+  if (!removed) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/hero-slides");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function toggleHeroSlideActive(id: string, active: boolean): Promise<ActionResult> {
+  await requireAdmin();
+  const updated = await heroSlideRepo.update(id, { active });
+  if (!updated) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/hero-slides");
+  revalidatePath("/");
   return { ok: true };
 }

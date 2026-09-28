@@ -41,3 +41,4 @@ data/*.json
 # IDE
 .idea
 .vscode
+.neon

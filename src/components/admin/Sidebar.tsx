@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Clock,
   MessageCircle,
+  Images,
   ExternalLink,
   LogOut
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/hero-slides", label: "Hero slides", icon: Images },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: Layers },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },

@@ -12,6 +12,7 @@ export { jsonAbandonedCartRepo as abandonedCartRepo } from "./abandoned-carts.re
 export { jsonReturnRepo as returnRepo } from "./returns.repository";
 export { jsonNewsletterRepo as newsletterRepo } from "./newsletter.repository";
 export { jsonQuestionRepo as questionRepo } from "./questions.repository";
+export { jsonHeroSlideRepo as heroSlideRepo } from "./hero-slides.repository";
 export type { ProductRepository } from "./products.repository";
 export type { CategoryRepository } from "./categories.repository";
 export type { UserRepository } from "./users.repository";
@@ -26,3 +27,4 @@ export type { AbandonedCartRepository } from "./abandoned-carts.repository";
 export type { ReturnRepository } from "./returns.repository";
 export type { NewsletterRepository } from "./newsletter.repository";
 export type { QuestionRepository } from "./questions.repository";
+export type { HeroSlideRepository } from "./hero-slides.repository";
