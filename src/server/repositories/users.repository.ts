@@ -4,6 +4,7 @@ import { mutateCollection, newId, nowIso, readCollection } from "@/server/db/jso
 export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
   findById(id: string): Promise<User | null>;
+  findByGoogleId(googleId: string): Promise<User | null>;
   create(input: Omit<User, "id" | "createdAt">): Promise<User>;
   update(id: string, patch: Partial<User>): Promise<User | null>;
   list(): Promise<User[]>;
@@ -20,6 +21,10 @@ export const jsonUserRepo: UserRepository = {
   async findById(id) {
     const rows = await readCollection<User>(COLLECTION);
     return rows.find((u) => u.id === id) ?? null;
+  },
+  async findByGoogleId(googleId) {
+    const rows = await readCollection<User>(COLLECTION);
+    return rows.find((u) => u.googleId === googleId) ?? null;
   },
   async create(input) {
     const created: User = {

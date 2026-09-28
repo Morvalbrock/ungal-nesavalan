@@ -21,8 +21,8 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-function stripPassword(u: { passwordHash: string } & PublicUser): PublicUser {
-  const { passwordHash: _ignored, ...pub } = u as unknown as PublicUser & { passwordHash: string };
+function stripPassword(u: { passwordHash?: string } & PublicUser): PublicUser {
+  const { passwordHash: _ignored, ...pub } = u as unknown as PublicUser & { passwordHash?: string };
   void _ignored;
   return pub;
 }
@@ -34,6 +34,10 @@ async function sign(payload: SessionPayload): Promise<string> {
     .setIssuedAt()
     .setExpirationTime(`${SESSION_MAX_AGE_SEC}s`)
     .sign(getSecret());
+}
+
+export async function signForUser(user: PublicUser): Promise<string> {
+  return sign({ userId: user.id, email: user.email, name: user.name, role: user.role });
 }
 
 export const jwtAuthProvider: AuthProvider = {
@@ -55,6 +59,9 @@ export const jwtAuthProvider: AuthProvider = {
   async login(input: LoginInput) {
     const user = await userRepo.findByEmail(input.email);
     if (!user) throw new AuthError("invalid_credentials", "Email or password is incorrect");
+    if (!user.passwordHash) {
+      throw new AuthError("invalid_credentials", "This account uses Google sign-in. Please continue with Google.");
+    }
     const ok = await bcrypt.compare(input.password, user.passwordHash);
     if (!ok) throw new AuthError("invalid_credentials", "Email or password is incorrect");
     const token = await sign({ userId: user.id, email: user.email, name: user.name, role: user.role });

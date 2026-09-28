@@ -7,13 +7,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/features/auth/auth.provider";
 import { useAuth } from "@/features/auth/AuthContext";
 import { AuthField, authInputCls } from "./AuthShell";
+import { GoogleSignInButton } from "./GoogleSignInButton";
 
 export function LoginForm() {
   const router = useRouter();
   const sp = useSearchParams();
   const next = sp.get("next") || "/account/profile";
   const { refresh } = useAuth();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const oauthError = sp.get("error");
+  const [serverError, setServerError] = useState<string | null>(
+    oauthError ? "Google sign-in failed. Please try again." : null
+  );
   const {
     register,
     handleSubmit,
@@ -38,7 +42,14 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="space-y-5">
+      <GoogleSignInButton />
+      <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-ink-muted">
+        <span className="h-px flex-1 bg-border" />
+        <span>or</span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <AuthField label="Email" error={errors.email?.message}>
         <input type="email" autoComplete="email" {...register("email")} className={authInputCls} />
       </AuthField>
@@ -55,6 +66,7 @@ export function LoginForm() {
           Create account
         </Link>
       </div>
-    </form>
+      </form>
+    </div>
   );
 }
