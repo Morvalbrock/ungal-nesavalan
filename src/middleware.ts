@@ -36,7 +36,10 @@ export async function middleware(req: NextRequest) {
   }
 
   if (needsAdmin && payload.role !== "admin") {
-    return new NextResponse("Forbidden", { status: 403 });
+    const url = req.nextUrl.clone();
+    url.pathname = "/forbidden";
+    url.search = "";
+    return NextResponse.rewrite(url, { status: 403 });
   }
 
   return NextResponse.next();
