@@ -14,6 +14,15 @@ const SEED_DIR = path.join(DATA_DIR, "seed");
 const DATABASE_URL = process.env.DATABASE_URL;
 const USE_DB = Boolean(DATABASE_URL);
 
+if (process.env.VERCEL_ENV && !DATABASE_URL) {
+  console.error(
+    "[json-store] FATAL: DATABASE_URL is missing on Vercel " +
+      (process.env.VERCEL_ENV ?? "?") +
+      ". Runtime will attempt filesystem writes and crash with EROFS. " +
+      "Set DATABASE_URL in Vercel Project Settings → Environment Variables → Production."
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Neon pool (cached on globalThis so hot-reload in dev doesn't leak sockets)
 // ---------------------------------------------------------------------------
