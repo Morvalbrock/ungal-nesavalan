@@ -8,7 +8,7 @@ import { WishlistBoot } from "@/features/wishlist/WishlistBoot";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PlausibleScript } from "@/features/analytics/PlausibleScript";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 const display = Fraunces({
   subsets: ["latin"],
