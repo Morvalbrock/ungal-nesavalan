@@ -42,3 +42,9 @@ data/*.json
 .idea
 .vscode
 .neon
+
+.vercel
+.env*
+
+# OAuth client secret JSON downloads from Google Cloud Console
+client_secret_*.json

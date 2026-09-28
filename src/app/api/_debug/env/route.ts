@@ -24,6 +24,9 @@ export async function GET() {
     NEXT_PUBLIC_SITE_URL: mask(process.env.NEXT_PUBLIC_SITE_URL),
     CLOUDINARY_URL: mask(process.env.CLOUDINARY_URL),
     AUTH_SECRET: mask(process.env.AUTH_SECRET),
+    AUTH_GOOGLE_ID: mask(process.env.AUTH_GOOGLE_ID),
+    AUTH_GOOGLE_SECRET: mask(process.env.AUTH_GOOGLE_SECRET),
+    AUTH_URL: mask(process.env.AUTH_URL),
     RESEND_API_KEY: mask(process.env.RESEND_API_KEY)
   });
 }
