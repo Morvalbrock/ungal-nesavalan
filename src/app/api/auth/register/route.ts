@@ -7,8 +7,8 @@ import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit-request";
 export async function POST(req: Request) {
   const rl = checkRateLimit(req, {
     bucket: "auth:register",
-    max: 3,
-    windowMs: 60 * 60_000
+    max: 20,
+    windowMs: 60_000
   });
   if (!rl.ok) return rateLimitResponse(rl);
 
