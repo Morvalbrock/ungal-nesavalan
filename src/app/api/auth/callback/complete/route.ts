@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import { userRepo } from "@/server/repositories";
-import { signForUser } from "@/features/auth/jwt-auth.provider";
-import { setSessionCookie } from "@/features/auth/session";
+import { signForUser, SESSION_MAX_AGE_SEC } from "@/features/auth/jwt-auth.provider";
+import { SESSION_COOKIE } from "@/features/auth/session";
 
 function safeNext(raw: string | null): string {
   if (!raw) return "/account/profile";
@@ -11,18 +10,11 @@ function safeNext(raw: string | null): string {
   return raw;
 }
 
-async function clearAuthJsCookies(): Promise<void> {
-  const store = await cookies();
-  for (const c of store.getAll()) {
-    if (/^(?:__Secure-|__Host-)?authjs\./.test(c.name)) {
-      store.set(c.name, "", { path: "/", maxAge: 0 });
-    }
-  }
-}
-
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const next = safeNext(url.searchParams.get("next"));
+  const rawNext = url.searchParams.get("next");
+  const next = safeNext(rawNext);
+  console.log("[oauth/complete] rawNext=%j resolved=%j", rawNext, next);
 
   const session = await auth();
   const email = session?.user?.email?.trim().toLowerCase();
@@ -45,8 +37,19 @@ export async function GET(req: Request) {
     image: user.image,
     createdAt: user.createdAt
   });
-  await setSessionCookie(token);
-  await clearAuthJsCookies();
 
-  return NextResponse.redirect(new URL(next, req.url));
+  const res = NextResponse.redirect(new URL(next, req.url));
+  res.cookies.set(SESSION_COOKIE, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_MAX_AGE_SEC
+  });
+  // Kill Auth.js's own session cookies — we've bridged into our JWT.
+  const raw = req.headers.get("cookie") ?? "";
+  for (const m of raw.matchAll(/(?:^|;\s*)((?:__Secure-|__Host-)?authjs\.[^=]+)=/g)) {
+    res.cookies.set(m[1], "", { path: "/", maxAge: 0 });
+  }
+  return res;
 }

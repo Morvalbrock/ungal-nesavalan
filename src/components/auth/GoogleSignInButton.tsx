@@ -11,7 +11,7 @@ export function GoogleSignInButton({ label = "Continue with Google" }: { label?:
   const onClick = async () => {
     setLoading(true);
     await signIn("google", {
-      callbackUrl: `/api/auth/google/complete?next=${encodeURIComponent(next)}`
+      callbackUrl: `/api/auth/callback/complete?next=${encodeURIComponent(next)}`
     });
   };
 
