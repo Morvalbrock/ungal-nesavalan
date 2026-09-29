@@ -4,8 +4,11 @@ import { userRepo } from "@/server/repositories";
 
 function requiredEnv(name: string): string {
   const v = process.env[name]?.trim();
-  if (!v) throw new Error(`${name} is not set`);
-  return v;
+  if (v) return v;
+  // Next.js evaluates route modules during `next build` to collect page data;
+  // fail soft there and let runtime surface the missing var.
+  if (process.env.NEXT_PHASE === "phase-production-build") return "";
+  throw new Error(`${name} is not set`);
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
