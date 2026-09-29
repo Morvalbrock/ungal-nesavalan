@@ -1,7 +1,17 @@
 import { promises as fs, existsSync } from "node:fs";
 import path from "node:path";
+import net from "node:net";
+import { setDefaultResultOrder } from "node:dns";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
+
+// Neon's WS endpoint has multiple A/AAAA records. Node's happy-eyeballs
+// default `autoSelectFamilyAttemptTimeout` is 250ms — shorter than the RTT
+// to us-east-2 from many networks, so every attempt is aborted and the
+// connection dies with a synthetic ETIMEDOUT AggregateError. Bump it, and
+// prefer IPv4 so we skip AAAA records on hosts without a v6 route.
+setDefaultResultOrder("ipv4first");
+net.setDefaultAutoSelectFamilyAttemptTimeout(2000);
 
 // Storage layer for all 16 repositories.
 // - With DATABASE_URL set: backs onto Neon Postgres, one row per collection in `collections`.
@@ -36,9 +46,10 @@ declare global {
 
 function getPool(): Pool {
   if (!globalThis.__neonPool) {
-    if (typeof WebSocket === "undefined") {
-      neonConfig.webSocketConstructor = ws as unknown as typeof WebSocket;
-    }
+    // Always use `ws`. Node 22+ ships a global `WebSocket` (undici) that
+    // isn't wire-compatible with @neondatabase/serverless and surfaces as
+    // `[object ErrorEvent]` on connect.
+    neonConfig.webSocketConstructor = ws as unknown as typeof WebSocket;
     globalThis.__neonPool = new Pool({ connectionString: DATABASE_URL });
   }
   return globalThis.__neonPool!;
