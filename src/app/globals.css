@@ -120,3 +120,30 @@
     -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
   }
 }
+
+.un-loader {
+  width: 40px;
+  aspect-ratio: 1;
+  color: #7a1f2b;
+  position: relative;
+  background: radial-gradient(10px, currentColor 94%, transparent);
+}
+.un-loader::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(9px at bottom right, transparent 94%, currentColor) top left,
+    radial-gradient(9px at bottom left, transparent 94%, currentColor) top right,
+    radial-gradient(9px at top right, transparent 94%, currentColor) bottom left,
+    radial-gradient(9px at top left, transparent 94%, currentColor) bottom right;
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
+  animation: un-loader-spin 1.5s infinite cubic-bezier(0.3, 1, 0, 1);
+}
+@keyframes un-loader-spin {
+  33%  { inset: -10px; transform: rotate(0deg); }
+  66%  { inset: -10px; transform: rotate(90deg); }
+  100% { inset: 0;     transform: rotate(90deg); }
+}
