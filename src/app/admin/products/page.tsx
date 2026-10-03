@@ -5,28 +5,93 @@ import { readCollection } from "@/server/db/json-store";
 import type { Product } from "@/types/product";
 import { categoryRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
+import { SearchFilter } from "@/components/admin/SearchFilter";
+import { ProductRowActions } from "@/components/admin/ProductRowActions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminProductsPage() {
+interface SearchParams {
+  q?: string;
+  category?: string;
+  status?: string;
+  featured?: string;
+}
+
+export default async function AdminProductsPage({
+  searchParams
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const [products, categories] = await Promise.all([
     readCollection<Product>("products"),
     categoryRepo.list()
   ]);
+  const sp = await searchParams;
   const catMap = new Map(categories.map((c) => [c.id, c]));
-  const sorted = products.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
+  const needle = sp.q?.trim().toLowerCase() ?? "";
+  const filtered = products.filter((p) => {
+    if (needle) {
+      const hay = `${p.name} ${p.description} ${p.weave} ${p.fabric}`.toLowerCase();
+      if (!hay.includes(needle)) return false;
+    }
+    if (sp.category && sp.category !== "all" && p.categoryId !== sp.category) return false;
+    if (sp.status === "live" && !p.published) return false;
+    if (sp.status === "draft" && p.published) return false;
+    if (sp.featured === "yes" && !p.featured) return false;
+    if (sp.featured === "no" && p.featured) return false;
+    return true;
+  });
+
+  const sorted = filtered.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+
+  const liveCount = products.filter((p) => p.published).length;
+  const draftCount = products.length - liveCount;
+  const featuredCount = products.filter((p) => p.featured).length;
 
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
           <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Catalog</p>
-          <h1 className="mt-2 font-display text-3xl">Products</h1>
+          <h1 className="mt-2 font-display text-3xl">
+            Products
+            <span className="ml-3 text-sm font-normal text-ink-muted">
+              {sorted.length} of {products.length}
+            </span>
+          </h1>
         </div>
         <Link href="/admin/products/new" className="btn-primary inline-flex">
           <Plus className="h-4 w-4" /> New product
         </Link>
       </header>
+
+      <SearchFilter
+        searchPlaceholder="Search by name, weave, fabric…"
+        filters={[
+          {
+            key: "category",
+            label: "Category",
+            options: categories.map((c) => ({ value: c.id, label: c.name }))
+          },
+          {
+            key: "status",
+            label: "Status",
+            options: [
+              { value: "live", label: "Live", count: liveCount },
+              { value: "draft", label: "Draft", count: draftCount }
+            ]
+          },
+          {
+            key: "featured",
+            label: "Featured",
+            options: [
+              { value: "yes", label: "Featured", count: featuredCount },
+              { value: "no", label: "Not featured" }
+            ]
+          }
+        ]}
+      />
 
       <div className="overflow-hidden rounded-card border border-border bg-cream">
         <table className="w-full text-sm">
@@ -95,12 +160,12 @@ export default async function AdminProductsPage() {
                     </div>
                   </td>
                   <td className="p-3 text-right">
-                    <Link
-                      href={`/admin/products/${p.id}`}
-                      className="text-xs text-ink-muted hover:text-ink"
-                    >
-                      Edit →
-                    </Link>
+                    <ProductRowActions
+                      productId={p.id}
+                      productName={p.name}
+                      published={p.published}
+                      featured={p.featured}
+                    />
                   </td>
                 </tr>
               );
@@ -108,7 +173,13 @@ export default async function AdminProductsPage() {
             {sorted.length === 0 && (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-sm text-ink-muted">
-                  No products yet. <Link href="/admin/products/new" className="link-underline">Create the first one</Link>.
+                  {products.length === 0 ? (
+                    <>
+                      No products yet. <Link href="/admin/products/new" className="link-underline">Create the first one</Link>.
+                    </>
+                  ) : (
+                    <>No products match your filters. <Link href="/admin/products" className="link-underline">Clear filters</Link>.</>
+                  )}
                 </td>
               </tr>
             )}

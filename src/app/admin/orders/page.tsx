@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { orderRepo, userRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
+import { SearchFilter } from "@/components/admin/SearchFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -14,15 +15,30 @@ const STATUS_CHIP: Record<string, string> = {
   refunded: "bg-maroon/10 text-maroon"
 };
 
+interface SearchParams {
+  status?: string;
+  q?: string;
+}
+
 export default async function AdminOrdersPage({
   searchParams
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<SearchParams>;
 }) {
   const [orders, users] = await Promise.all([orderRepo.listAll(), userRepo.list()]);
   const sp = await searchParams;
-  const filtered = sp.status ? orders.filter((o) => o.status === sp.status) : orders;
   const userMap = new Map(users.map((u) => [u.id, u]));
+
+  const needle = sp.q?.trim().toLowerCase() ?? "";
+  const filtered = orders.filter((o) => {
+    if (sp.status && o.status !== sp.status) return false;
+    if (needle) {
+      const u = userMap.get(o.userId);
+      const hay = `${o.orderNumber} ${u?.name ?? ""} ${u?.email ?? ""}`.toLowerCase();
+      if (!hay.includes(needle)) return false;
+    }
+    return true;
+  });
 
   const statuses = ["all", "pending", "paid", "packed", "shipped", "delivered", "cancelled", "refunded"];
 
@@ -30,12 +46,23 @@ export default async function AdminOrdersPage({
     <div className="space-y-6">
       <header>
         <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Sales</p>
-        <h1 className="mt-2 font-display text-3xl">Orders</h1>
+        <h1 className="mt-2 font-display text-3xl">
+          Orders
+          <span className="ml-3 text-sm font-normal text-ink-muted">
+            {filtered.length} of {orders.length}
+          </span>
+        </h1>
       </header>
+
+      <SearchFilter searchPlaceholder="Search by order number, customer name or email…" />
 
       <div className="flex flex-wrap gap-2 text-xs">
         {statuses.map((s) => {
-          const href = s === "all" ? "/admin/orders" : `/admin/orders?status=${s}`;
+          const params = new URLSearchParams();
+          if (s !== "all") params.set("status", s);
+          if (needle) params.set("q", sp.q!);
+          const qs = params.toString();
+          const href = qs ? `/admin/orders?${qs}` : "/admin/orders";
           const active = (sp.status ?? "all") === s;
           return (
             <Link
@@ -96,7 +123,7 @@ export default async function AdminOrdersPage({
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-sm text-ink-muted">
-                  No orders match this filter.
+                  No orders match your filters.
                 </td>
               </tr>
             )}

@@ -1,10 +1,27 @@
 import { orderRepo, userRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
+import { getSession } from "@/features/auth/session";
+import { SearchFilter } from "@/components/admin/SearchFilter";
+import { CustomerRoleToggle } from "@/components/admin/CustomerRoleToggle";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminCustomersPage() {
-  const [users, orders] = await Promise.all([userRepo.list(), orderRepo.listAll()]);
+interface SearchParams {
+  q?: string;
+  role?: string;
+}
+
+export default async function AdminCustomersPage({
+  searchParams
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const [users, orders, session] = await Promise.all([
+    userRepo.list(),
+    orderRepo.listAll(),
+    getSession()
+  ]);
+  const sp = await searchParams;
   const paidStatuses = new Set(["paid", "packed", "shipped", "delivered"]);
   const spendByUser = new Map<string, { count: number; total: number }>();
   for (const o of orders) {
@@ -13,16 +30,46 @@ export default async function AdminCustomersPage() {
     spendByUser.set(o.userId, { count: prev.count + 1, total: prev.total + o.totalPaise });
   }
 
-  const rows = users
-    .slice()
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const needle = sp.q?.trim().toLowerCase() ?? "";
+  const filtered = users.filter((u) => {
+    if (needle) {
+      const hay = `${u.name} ${u.email} ${u.phone ?? ""}`.toLowerCase();
+      if (!hay.includes(needle)) return false;
+    }
+    if (sp.role && sp.role !== "all" && u.role !== sp.role) return false;
+    return true;
+  });
+
+  const rows = filtered.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+  const adminCount = users.filter((u) => u.role === "admin").length;
+  const customerCount = users.length - adminCount;
 
   return (
     <div className="space-y-6">
       <header>
         <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">People</p>
-        <h1 className="mt-2 font-display text-3xl">Customers</h1>
+        <h1 className="mt-2 font-display text-3xl">
+          Customers
+          <span className="ml-3 text-sm font-normal text-ink-muted">
+            {rows.length} of {users.length}
+          </span>
+        </h1>
       </header>
+
+      <SearchFilter
+        searchPlaceholder="Search by name, email, phone…"
+        filters={[
+          {
+            key: "role",
+            label: "Role",
+            options: [
+              { value: "customer", label: "Customer", count: customerCount },
+              { value: "admin", label: "Admin", count: adminCount }
+            ]
+          }
+        ]}
+      />
 
       <div className="overflow-hidden rounded-card border border-border bg-cream">
         <table className="w-full text-sm">
@@ -34,6 +81,7 @@ export default async function AdminCustomersPage() {
               <th className="p-3">Orders</th>
               <th className="p-3">Lifetime spend</th>
               <th className="p-3">Joined</th>
+              <th className="p-3"></th>
             </tr>
           </thead>
           <tbody>
@@ -60,13 +108,21 @@ export default async function AdminCustomersPage() {
                   <td className="p-3 text-xs text-ink-muted">
                     {new Date(u.createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}
                   </td>
+                  <td className="p-3 text-right">
+                    <CustomerRoleToggle
+                      userId={u.id}
+                      userName={u.name}
+                      currentRole={u.role}
+                      isSelf={session?.userId === u.id}
+                    />
+                  </td>
                 </tr>
               );
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-sm text-ink-muted">
-                  No customers yet.
+                <td colSpan={7} className="p-6 text-center text-sm text-ink-muted">
+                  {users.length === 0 ? "No customers yet." : "No customers match your filters."}
                 </td>
               </tr>
             )}

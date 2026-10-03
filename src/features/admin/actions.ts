@@ -147,6 +147,46 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+export async function toggleProductPublished(id: string, published: boolean): Promise<ActionResult> {
+  await requireAdmin();
+  const updated = await productRepo.update(id, { published });
+  if (!updated) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath(`/products/${updated.slug}`);
+  return { ok: true };
+}
+
+export async function toggleProductFeatured(id: string, featured: boolean): Promise<ActionResult> {
+  await requireAdmin();
+  const updated = await productRepo.update(id, { featured });
+  if (!updated) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+  revalidatePath("/products");
+  return { ok: true };
+}
+
+export async function setUserRole(userId: string, role: "customer" | "admin"): Promise<ActionResult> {
+  const session = await requireAdmin();
+  if (userId === session.userId) {
+    return { ok: false, error: "cannot_change_own_role" };
+  }
+  if (role === "customer") {
+    const users = await userRepo.list();
+    const admins = users.filter((u) => u.role === "admin");
+    const target = users.find((u) => u.id === userId);
+    if (!target) return { ok: false, error: "not_found" };
+    if (target.role === "admin" && admins.length <= 1) {
+      return { ok: false, error: "cannot_demote_last_admin" };
+    }
+  }
+  const updated = await userRepo.update(userId, { role });
+  if (!updated) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/customers");
+  return { ok: true };
+}
+
 const categorySchema = z.object({
   id: z.string().optional(),
   name: z.string().trim().min(2),
