@@ -10,25 +10,36 @@ function safeNext(raw: string | null): string {
   return raw;
 }
 
+function publicBase(req: Request): string {
+  // Hostinger's reverse proxy forwards req.url as http://0.0.0.0:3000/...
+  // Prefer AUTH_URL / NEXT_PUBLIC_SITE_URL so redirects target the real domain.
+  return (
+    process.env.AUTH_URL ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    req.url
+  );
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const rawNext = url.searchParams.get("next");
   const next = safeNext(rawNext);
-  console.log("[oauth/complete] rawNext=%j resolved=%j", rawNext, next);
+  const base = publicBase(req);
+  console.log("[oauth/complete] rawNext=%j resolved=%j base=%j", rawNext, next, base);
 
   const session = await auth();
   const email = session?.user?.email?.trim().toLowerCase();
   console.log("[oauth/complete] auth() session email=%j", email ?? null);
   if (!email) {
     console.log("[oauth/complete] BAIL — auth() returned no session/email");
-    return NextResponse.redirect(new URL("/login?error=google_signin_failed", req.url));
+    return NextResponse.redirect(new URL("/login?error=google_signin_failed", base));
   }
 
   const user = await userRepo.findByEmail(email);
   console.log("[oauth/complete] userRepo.findByEmail(%s) → %s", email, user ? user.id : "NOT FOUND");
   if (!user) {
     console.log("[oauth/complete] BAIL — user not in DB (race with signIn callback create?)");
-    return NextResponse.redirect(new URL("/login?error=google_signin_failed", req.url));
+    return NextResponse.redirect(new URL("/login?error=google_signin_failed", base));
   }
 
   const token = await signForUser({
@@ -42,7 +53,7 @@ export async function GET(req: Request) {
     createdAt: user.createdAt
   });
 
-  const res = NextResponse.redirect(new URL(next, req.url));
+  const res = NextResponse.redirect(new URL(next, base));
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
