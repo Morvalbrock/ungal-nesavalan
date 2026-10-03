@@ -49,9 +49,9 @@ export function AccountMenu() {
           <div className="border-b border-border/70 px-4 py-3">
             <p className="text-sm font-medium">{user.name}</p>
             <p className="truncate text-xs text-ink-muted">{user.email}</p>
-            {user.role === "admin" && (
+            {(user.role === "admin" || user.role === "super_admin") && (
               <p className="mt-1 inline-block rounded-full bg-maroon/10 px-2 py-0.5 text-[10px] uppercase tracking-widest text-maroon">
-                Admin
+                {user.role === "super_admin" ? "Super Admin" : "Admin"}
               </p>
             )}
           </div>
@@ -59,7 +59,7 @@ export function AccountMenu() {
             <MenuLink href="/account/profile" onClick={() => setOpen(false)}>Profile</MenuLink>
             <MenuLink href="/account/addresses" onClick={() => setOpen(false)}>Addresses</MenuLink>
             <MenuLink href="/account/orders" onClick={() => setOpen(false)}>Orders</MenuLink>
-            {user.role === "admin" && (
+            {(user.role === "admin" || user.role === "super_admin") && (
               <MenuLink href="/admin" onClick={() => setOpen(false)}>Admin dashboard</MenuLink>
             )}
           </nav>

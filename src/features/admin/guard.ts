@@ -1,6 +1,7 @@
 import "server-only";
 import { getSession } from "@/features/auth/session";
 import type { SessionPayload } from "@/features/auth/auth.provider";
+import { isAdminRole } from "@/types/user";
 
 export class ForbiddenError extends Error {
   constructor() {
@@ -9,8 +10,16 @@ export class ForbiddenError extends Error {
   }
 }
 
+// Accepts admin OR super_admin.
 export async function requireAdmin(): Promise<SessionPayload> {
   const session = await getSession();
-  if (!session || session.role !== "admin") throw new ForbiddenError();
+  if (!session || !isAdminRole(session.role)) throw new ForbiddenError();
+  return session;
+}
+
+// Only super_admin — for destructive actions (delete anything, role management).
+export async function requireSuperAdmin(): Promise<SessionPayload> {
+  const session = await getSession();
+  if (!session || session.role !== "super_admin") throw new ForbiddenError();
   return session;
 }

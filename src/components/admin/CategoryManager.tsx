@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { Plus, Pencil, Trash2, X, Search } from "lucide-react";
 import type { Category } from "@/types/category";
 import { deleteCategory, upsertCategory } from "@/features/admin/actions";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,18 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [pending, startTransition] = useTransition();
   const [banner, setBanner] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    const n = search.trim().toLowerCase();
+    if (!n) return categories;
+    return categories.filter(
+      (c) =>
+        c.name.toLowerCase().includes(n) ||
+        c.slug.toLowerCase().includes(n) ||
+        (c.description ?? "").toLowerCase().includes(n)
+    );
+  }, [categories, search]);
 
   const save = () => {
     if (!draft) return;
@@ -61,6 +73,17 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
         </div>
       )}
 
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name, slug, description…"
+          className="w-full rounded-card border border-border bg-cream py-2 pl-9 pr-3 text-sm text-ink placeholder:text-ink-muted focus:border-ink focus:outline-none"
+        />
+      </div>
+
       <div className="overflow-hidden rounded-card border border-border bg-cream">
         <table className="w-full text-sm">
           <thead className="bg-ink/[.03] text-left text-[10px] uppercase tracking-widest text-ink-muted">
@@ -72,7 +95,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
             </tr>
           </thead>
           <tbody>
-            {categories.map((c) => (
+            {filtered.map((c) => (
               <tr key={c.id} className="border-t border-border/70">
                 <td className="p-3">
                   <p className="font-medium">{c.name}</p>
@@ -107,10 +130,10 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
                 </td>
               </tr>
             ))}
-            {categories.length === 0 && (
+            {filtered.length === 0 && (
               <tr>
                 <td colSpan={4} className="p-6 text-center text-ink-muted">
-                  No categories yet.
+                  {categories.length === 0 ? "No categories yet." : "No matches."}
                 </td>
               </tr>
             )}

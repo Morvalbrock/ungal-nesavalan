@@ -13,10 +13,14 @@ async function verify(token: string | undefined) {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, getSecret(), { algorithms: ["HS256"] });
-    return payload as { userId?: string; role?: "customer" | "admin" };
+    return payload as { userId?: string; role?: "customer" | "admin" | "super_admin" };
   } catch {
     return null;
   }
+}
+
+function isAdminish(role: string | undefined): boolean {
+  return role === "admin" || role === "super_admin";
 }
 
 export async function middleware(req: NextRequest) {
@@ -35,7 +39,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (needsAdmin && payload.role !== "admin") {
+  if (needsAdmin && !isAdminish(payload.role)) {
     const url = req.nextUrl.clone();
     url.pathname = "/forbidden";
     url.search = "";

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireAdmin } from "./guard";
+import { requireAdmin, requireSuperAdmin } from "./guard";
 import {
   categoryRepo,
   couponRepo,
@@ -10,6 +10,7 @@ import {
   orderRepo,
   paymentRepo,
   productRepo,
+  questionRepo,
   returnRepo,
   userRepo
 } from "@/server/repositories";
@@ -139,7 +140,7 @@ export async function upsertProduct(values: ProductFormValues): Promise<ActionRe
 }
 
 export async function deleteProduct(id: string): Promise<ActionResult> {
-  await requireAdmin();
+  await requireSuperAdmin();
   const removed = await productRepo.remove(id);
   if (!removed) return { ok: false, error: "not_found" };
   revalidatePath("/admin/products");
@@ -167,20 +168,34 @@ export async function toggleProductFeatured(id: string, featured: boolean): Prom
   return { ok: true };
 }
 
-export async function setUserRole(userId: string, role: "customer" | "admin"): Promise<ActionResult> {
-  const session = await requireAdmin();
+// Role management is ALWAYS super_admin only. Guards: can't change your own role,
+// can't demote the last super_admin, can't demote the last admin.
+export async function setUserRole(
+  userId: string,
+  role: "customer" | "admin" | "super_admin"
+): Promise<ActionResult> {
+  const session = await requireSuperAdmin();
   if (userId === session.userId) {
     return { ok: false, error: "cannot_change_own_role" };
   }
-  if (role === "customer") {
-    const users = await userRepo.list();
-    const admins = users.filter((u) => u.role === "admin");
-    const target = users.find((u) => u.id === userId);
-    if (!target) return { ok: false, error: "not_found" };
-    if (target.role === "admin" && admins.length <= 1) {
+  const users = await userRepo.list();
+  const target = users.find((u) => u.id === userId);
+  if (!target) return { ok: false, error: "not_found" };
+
+  // Protect against locking out the admin surface
+  if (target.role === "super_admin" && role !== "super_admin") {
+    const supers = users.filter((u) => u.role === "super_admin");
+    if (supers.length <= 1) {
+      return { ok: false, error: "cannot_demote_last_super_admin" };
+    }
+  }
+  if (target.role === "admin" && role === "customer") {
+    const admins = users.filter((u) => u.role === "admin" || u.role === "super_admin");
+    if (admins.length <= 1) {
       return { ok: false, error: "cannot_demote_last_admin" };
     }
   }
+
   const updated = await userRepo.update(userId, { role });
   if (!updated) return { ok: false, error: "not_found" };
   revalidatePath("/admin/customers");
@@ -227,7 +242,7 @@ export async function upsertCategory(values: z.input<typeof categorySchema>): Pr
 }
 
 export async function deleteCategory(id: string): Promise<ActionResult> {
-  await requireAdmin();
+  await requireSuperAdmin();
   const removed = await categoryRepo.remove(id);
   if (!removed) return { ok: false, error: "not_found" };
   revalidatePath("/admin/categories");
@@ -346,6 +361,82 @@ export async function toggleCouponActive(id: string, active: boolean): Promise<A
   if (!updated) return { ok: false, error: "not_found" };
   revalidatePath("/admin/coupons");
   return { ok: true };
+}
+
+export async function deleteCoupon(id: string): Promise<ActionResult> {
+  await requireSuperAdmin();
+  const removed = await couponRepo.remove(id);
+  if (!removed) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/coupons");
+  return { ok: true };
+}
+
+export async function deleteQuestion(id: string): Promise<ActionResult> {
+  await requireAdmin();
+  const removed = await questionRepo.remove(id);
+  if (!removed) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/questions");
+  return { ok: true };
+}
+
+// --- Bulk actions ------------------------------------------------------------
+
+export async function bulkDeleteProducts(ids: string[]): Promise<ActionResult<{ deleted: number }>> {
+  await requireSuperAdmin();
+  if (ids.length === 0) return { ok: true, data: { deleted: 0 } };
+  let deleted = 0;
+  for (const id of ids) {
+    if (await productRepo.remove(id)) deleted++;
+  }
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  return { ok: true, data: { deleted } };
+}
+
+export async function bulkSetProductPublished(
+  ids: string[],
+  published: boolean
+): Promise<ActionResult<{ updated: number }>> {
+  await requireAdmin();
+  if (ids.length === 0) return { ok: true, data: { updated: 0 } };
+  let updated = 0;
+  for (const id of ids) {
+    const res = await productRepo.update(id, { published });
+    if (res) updated++;
+  }
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  return { ok: true, data: { updated } };
+}
+
+export async function bulkSetProductFeatured(
+  ids: string[],
+  featured: boolean
+): Promise<ActionResult<{ updated: number }>> {
+  await requireAdmin();
+  if (ids.length === 0) return { ok: true, data: { updated: 0 } };
+  let updated = 0;
+  for (const id of ids) {
+    const res = await productRepo.update(id, { featured });
+    if (res) updated++;
+  }
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+  return { ok: true, data: { updated } };
+}
+
+export async function bulkUpdateOrderStatus(
+  orderIds: string[],
+  status: OrderStatus
+): Promise<ActionResult<{ updated: number }>> {
+  await requireAdmin();
+  if (orderIds.length === 0) return { ok: true, data: { updated: 0 } };
+  let updated = 0;
+  for (const id of orderIds) {
+    const res = await updateOrderStatus(id, status);
+    if (res.ok) updated++;
+  }
+  return { ok: true, data: { updated } };
 }
 
 export async function decideReturn(

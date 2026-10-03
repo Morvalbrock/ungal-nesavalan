@@ -4,9 +4,18 @@ import { Plus } from "lucide-react";
 import { readCollection } from "@/server/db/json-store";
 import type { Product } from "@/types/product";
 import { categoryRepo } from "@/server/repositories";
+import { getSession } from "@/features/auth/session";
 import { formatINR } from "@/lib/utils";
 import { SearchFilter } from "@/components/admin/SearchFilter";
 import { ProductRowActions } from "@/components/admin/ProductRowActions";
+import { Pagination, resolvePage, resolvePerPage } from "@/components/admin/Pagination";
+import { SortableHeader, parseSort } from "@/components/admin/SortableHeader";
+import {
+  BulkCheckbox,
+  BulkSelectAllCheckbox,
+  BulkSelectInit
+} from "@/components/admin/BulkSelect";
+import { ProductBulkActions } from "@/components/admin/ProductBulkActions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,20 +24,27 @@ interface SearchParams {
   category?: string;
   status?: string;
   featured?: string;
+  sort?: string;
+  page?: string;
+  perPage?: string;
 }
+
+const PATHNAME = "/admin/products";
 
 export default async function AdminProductsPage({
   searchParams
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const [products, categories] = await Promise.all([
+  const [products, categories, session] = await Promise.all([
     readCollection<Product>("products"),
-    categoryRepo.list()
+    categoryRepo.list(),
+    getSession()
   ]);
   const sp = await searchParams;
   const catMap = new Map(categories.map((c) => [c.id, c]));
 
+  // Filter
   const needle = sp.q?.trim().toLowerCase() ?? "";
   const filtered = products.filter((p) => {
     if (needle) {
@@ -43,11 +59,49 @@ export default async function AdminProductsPage({
     return true;
   });
 
-  const sorted = filtered.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  // Sort
+  const sort = parseSort(sp.sort, "updated", "desc");
+  const sorted = filtered.slice().sort((a, b) => {
+    const dir = sort.dir === "asc" ? 1 : -1;
+    switch (sort.field) {
+      case "name":
+        return a.name.localeCompare(b.name) * dir;
+      case "price":
+        return ((a.salePrice ?? a.basePrice) - (b.salePrice ?? b.basePrice)) * dir;
+      case "stock": {
+        const as = a.variants.reduce((n, v) => n + v.stock, 0);
+        const bs = b.variants.reduce((n, v) => n + v.stock, 0);
+        return (as - bs) * dir;
+      }
+      case "updated":
+      default:
+        return a.updatedAt.localeCompare(b.updatedAt) * dir;
+    }
+  });
 
+  // Paginate
+  const perPage = resolvePerPage(sp.perPage);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
+  const page = resolvePage(sp.page, totalPages);
+  const pageSlice = sorted.slice((page - 1) * perPage, page * perPage);
+  const pageIds = pageSlice.map((p) => p.id);
+
+  // Counts for filter chips
   const liveCount = products.filter((p) => p.published).length;
   const draftCount = products.length - liveCount;
   const featuredCount = products.filter((p) => p.featured).length;
+
+  const isSuperAdmin = session?.role === "super_admin";
+
+  const serializedSp: Record<string, string | undefined> = {
+    q: sp.q,
+    category: sp.category,
+    status: sp.status,
+    featured: sp.featured,
+    sort: sp.sort,
+    page: sp.page,
+    perPage: sp.perPage
+  };
 
   return (
     <div className="space-y-6">
@@ -93,23 +147,32 @@ export default async function AdminProductsPage({
         ]}
       />
 
+      <BulkSelectInit ids={pageIds} />
+
       <div className="overflow-hidden rounded-card border border-border bg-cream">
         <table className="w-full text-sm">
           <thead className="bg-ink/[.03] text-left text-[10px] uppercase tracking-widest text-ink-muted">
             <tr>
-              <th className="p-3">Product</th>
+              <th className="w-10 p-3">
+                <BulkSelectAllCheckbox />
+              </th>
+              <SortableHeader field="name" label="Product" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
               <th className="p-3">Category</th>
-              <th className="p-3">Price</th>
-              <th className="p-3">Stock</th>
+              <SortableHeader field="price" label="Price" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
+              <SortableHeader field="stock" label="Stock" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
               <th className="p-3">Status</th>
+              <SortableHeader field="updated" label="Updated" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
               <th className="p-3"></th>
             </tr>
           </thead>
           <tbody>
-            {sorted.map((p) => {
+            {pageSlice.map((p) => {
               const totalStock = p.variants.reduce((n, v) => n + v.stock, 0);
               return (
                 <tr key={p.id} className="border-t border-border/70">
+                  <td className="p-3">
+                    <BulkCheckbox id={p.id} />
+                  </td>
                   <td className="p-3">
                     <div className="flex items-center gap-3">
                       {p.images[0] && (
@@ -159,6 +222,9 @@ export default async function AdminProductsPage({
                       )}
                     </div>
                   </td>
+                  <td className="p-3 text-xs text-ink-muted">
+                    {new Date(p.updatedAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}
+                  </td>
                   <td className="p-3 text-right">
                     <ProductRowActions
                       productId={p.id}
@@ -170,9 +236,9 @@ export default async function AdminProductsPage({
                 </tr>
               );
             })}
-            {sorted.length === 0 && (
+            {pageSlice.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-sm text-ink-muted">
+                <td colSpan={8} className="p-6 text-center text-sm text-ink-muted">
                   {products.length === 0 ? (
                     <>
                       No products yet. <Link href="/admin/products/new" className="link-underline">Create the first one</Link>.
@@ -186,6 +252,16 @@ export default async function AdminProductsPage({
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={page}
+        perPage={perPage}
+        total={sorted.length}
+        pathname={PATHNAME}
+        searchParams={serializedSp}
+      />
+
+      <ProductBulkActions canDelete={isSuperAdmin} />
     </div>
   );
 }

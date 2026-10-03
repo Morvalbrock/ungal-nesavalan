@@ -9,6 +9,7 @@ export interface CouponRepository {
   findByCode(code: string): Promise<Coupon | null>;
   create(input: CouponInput): Promise<Coupon>;
   update(id: string, patch: Partial<Omit<Coupon, "id" | "code" | "createdAt">>): Promise<Coupon | null>;
+  remove(id: string): Promise<boolean>;
   countRedemptions(couponId: string): Promise<number>;
   countUserRedemptions(couponId: string, userId: string): Promise<number>;
   recordRedemption(input: Omit<CouponRedemption, "id" | "createdAt">): Promise<CouponRedemption>;
@@ -51,6 +52,15 @@ export const jsonCouponRepo: CouponRepository = {
       })
     );
     return updated;
+  },
+  async remove(id) {
+    let removed = false;
+    await mutateCollection<Coupon>(COLLECTION, [], (rows) => {
+      const next = rows.filter((c) => c.id !== id);
+      removed = next.length !== rows.length;
+      return next;
+    });
+    return removed;
   },
   async countRedemptions(couponId) {
     const rows = await readCollection<CouponRedemption>(REDEMPTIONS);

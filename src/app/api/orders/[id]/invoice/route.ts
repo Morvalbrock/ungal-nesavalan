@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!order) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   const isOwner = order.userId === session.userId;
-  const isAdmin = session.role === "admin";
+  const isAdmin = session.role === "admin" || session.role === "super_admin";
   if (!isOwner && !isAdmin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   if (!DOWNLOADABLE.has(order.status)) {

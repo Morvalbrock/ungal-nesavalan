@@ -3,13 +3,26 @@ import { formatINR } from "@/lib/utils";
 import { getSession } from "@/features/auth/session";
 import { SearchFilter } from "@/components/admin/SearchFilter";
 import { CustomerRoleToggle } from "@/components/admin/CustomerRoleToggle";
+import { Pagination, resolvePage, resolvePerPage } from "@/components/admin/Pagination";
+import { SortableHeader, parseSort } from "@/components/admin/SortableHeader";
 
 export const dynamic = "force-dynamic";
 
 interface SearchParams {
   q?: string;
   role?: string;
+  sort?: string;
+  page?: string;
+  perPage?: string;
 }
+
+const PATHNAME = "/admin/customers";
+
+const ROLE_BADGE: Record<string, string> = {
+  customer: "bg-ink/10 text-ink",
+  admin: "bg-maroon/10 text-maroon",
+  super_admin: "bg-gold/15 text-gold-deep"
+};
 
 export default async function AdminCustomersPage({
   searchParams
@@ -40,10 +53,48 @@ export default async function AdminCustomersPage({
     return true;
   });
 
-  const rows = filtered.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  // Sort
+  const sort = parseSort(sp.sort, "joined", "desc");
+  const sorted = filtered.slice().sort((a, b) => {
+    const dir = sort.dir === "asc" ? 1 : -1;
+    switch (sort.field) {
+      case "spend": {
+        const as = spendByUser.get(a.id)?.total ?? 0;
+        const bs = spendByUser.get(b.id)?.total ?? 0;
+        return (as - bs) * dir;
+      }
+      case "orders": {
+        const ac = spendByUser.get(a.id)?.count ?? 0;
+        const bc = spendByUser.get(b.id)?.count ?? 0;
+        return (ac - bc) * dir;
+      }
+      case "name":
+        return a.name.localeCompare(b.name) * dir;
+      case "joined":
+      default:
+        return a.createdAt.localeCompare(b.createdAt) * dir;
+    }
+  });
 
+  // Paginate
+  const perPage = resolvePerPage(sp.perPage);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
+  const page = resolvePage(sp.page, totalPages);
+  const rows = sorted.slice((page - 1) * perPage, page * perPage);
+
+  const superCount = users.filter((u) => u.role === "super_admin").length;
   const adminCount = users.filter((u) => u.role === "admin").length;
-  const customerCount = users.length - adminCount;
+  const customerCount = users.length - adminCount - superCount;
+
+  const isSuperAdmin = session?.role === "super_admin";
+
+  const serializedSp: Record<string, string | undefined> = {
+    q: sp.q,
+    role: sp.role,
+    sort: sp.sort,
+    page: sp.page,
+    perPage: sp.perPage
+  };
 
   return (
     <div className="space-y-6">
@@ -52,7 +103,7 @@ export default async function AdminCustomersPage({
         <h1 className="mt-2 font-display text-3xl">
           Customers
           <span className="ml-3 text-sm font-normal text-ink-muted">
-            {rows.length} of {users.length}
+            {sorted.length} of {users.length}
           </span>
         </h1>
       </header>
@@ -65,7 +116,8 @@ export default async function AdminCustomersPage({
             label: "Role",
             options: [
               { value: "customer", label: "Customer", count: customerCount },
-              { value: "admin", label: "Admin", count: adminCount }
+              { value: "admin", label: "Admin", count: adminCount },
+              { value: "super_admin", label: "Super admin", count: superCount }
             ]
           }
         ]}
@@ -75,12 +127,12 @@ export default async function AdminCustomersPage({
         <table className="w-full text-sm">
           <thead className="bg-ink/[.03] text-left text-[10px] uppercase tracking-widest text-ink-muted">
             <tr>
-              <th className="p-3">Name</th>
+              <SortableHeader field="name" label="Name" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
               <th className="p-3">Email</th>
               <th className="p-3">Role</th>
-              <th className="p-3">Orders</th>
-              <th className="p-3">Lifetime spend</th>
-              <th className="p-3">Joined</th>
+              <SortableHeader field="orders" label="Orders" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
+              <SortableHeader field="spend" label="Lifetime spend" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
+              <SortableHeader field="joined" label="Joined" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
               <th className="p-3"></th>
             </tr>
           </thead>
@@ -97,10 +149,10 @@ export default async function AdminCustomersPage({
                   <td className="p-3">
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-widest ${
-                        u.role === "admin" ? "bg-maroon/10 text-maroon" : "bg-ink/10 text-ink"
+                        ROLE_BADGE[u.role] ?? "bg-ink/10 text-ink"
                       }`}
                     >
-                      {u.role}
+                      {u.role.replace("_", " ")}
                     </span>
                   </td>
                   <td className="p-3">{s?.count ?? 0}</td>
@@ -114,6 +166,7 @@ export default async function AdminCustomersPage({
                       userName={u.name}
                       currentRole={u.role}
                       isSelf={session?.userId === u.id}
+                      canManage={isSuperAdmin}
                     />
                   </td>
                 </tr>
@@ -129,6 +182,14 @@ export default async function AdminCustomersPage({
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        page={page}
+        perPage={perPage}
+        total={sorted.length}
+        pathname={PATHNAME}
+        searchParams={serializedSp}
+      />
     </div>
   );
 }

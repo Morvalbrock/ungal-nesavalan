@@ -1,7 +1,8 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Search } from "lucide-react";
 import type { ProductQuestion } from "@/types/question";
 
 interface Row {
@@ -16,14 +17,22 @@ export function QuestionsClient({ rows }: { rows: Row[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [filter, setFilter] = useState<FilterKey>("pending");
+  const [search, setSearch] = useState("");
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
 
-  const filtered = rows.filter((r) => {
-    if (filter === "all") return true;
-    if (filter === "pending") return !r.question.answer;
-    return !!r.question.answer;
-  });
+  const filtered = useMemo(() => {
+    const n = search.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (filter === "pending" && r.question.answer) return false;
+      if (filter === "answered" && !r.question.answer) return false;
+      if (n) {
+        const hay = `${r.question.body} ${r.question.authorName} ${r.productName} ${r.question.answer?.body ?? ""}`.toLowerCase();
+        if (!hay.includes(n)) return false;
+      }
+      return true;
+    });
+  }, [rows, filter, search]);
 
   async function post(id: string, payload: object) {
     setBanner(null);
@@ -92,6 +101,17 @@ export function QuestionsClient({ rows }: { rows: Row[] }) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by question, author, product…"
+          className="w-full rounded-card border border-border bg-cream py-2 pl-9 pr-3 text-sm text-ink placeholder:text-ink-muted focus:border-ink focus:outline-none"
+        />
       </div>
 
       {banner && (

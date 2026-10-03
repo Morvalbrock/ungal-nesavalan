@@ -1,17 +1,34 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Search } from "lucide-react";
 import type { HeroSlide } from "@/types/hero-slide";
 import { HeroSlideForm } from "@/components/admin/HeroSlideForm";
 import { deleteHeroSlide, toggleHeroSlideActive } from "@/features/admin/actions";
+
+type ActiveFilter = "all" | "active" | "inactive";
 
 export function HeroSlidesClient({ initialSlides }: { initialSlides: HeroSlide[] }) {
   const router = useRouter();
   const [editing, setEditing] = useState<HeroSlide | null>(null);
   const [creating, setCreating] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<ActiveFilter>("all");
+
+  const filtered = useMemo(() => {
+    const n = search.trim().toLowerCase();
+    return initialSlides.filter((s) => {
+      if (filter === "active" && !s.active) return false;
+      if (filter === "inactive" && s.active) return false;
+      if (n) {
+        const hay = `${s.headline} ${s.headlineItalic ?? ""} ${s.eyebrow ?? ""} ${s.ctaPrimaryLabel ?? ""}`.toLowerCase();
+        if (!hay.includes(n)) return false;
+      }
+      return true;
+    });
+  }, [initialSlides, search, filter]);
 
   const refresh = () => {
     setEditing(null);
@@ -36,6 +53,31 @@ export function HeroSlidesClient({ initialSlides }: { initialSlides: HeroSlide[]
         )}
       </div>
 
+      <div className="flex flex-wrap items-center gap-3 rounded-card border border-border bg-cream p-3">
+        <div className="relative min-w-[220px] flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by headline, eyebrow, CTA…"
+            className="w-full rounded-card border border-border bg-white py-2 pl-9 pr-3 text-sm text-ink placeholder:text-ink-muted focus:border-ink focus:outline-none"
+          />
+        </div>
+        <label className="flex items-center gap-2 text-xs text-ink-muted">
+          <span className="uppercase tracking-widest">Status</span>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as ActiveFilter)}
+            className="rounded-card border border-border bg-white px-2 py-1.5 text-sm text-ink focus:border-ink focus:outline-none"
+          >
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </label>
+      </div>
+
       {creating && <HeroSlideForm onSaved={refresh} onCancel={() => setCreating(false)} />}
       {editing && (
         <HeroSlideForm slide={editing} onSaved={refresh} onCancel={() => setEditing(null)} />
@@ -54,14 +96,16 @@ export function HeroSlidesClient({ initialSlides }: { initialSlides: HeroSlide[]
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
-            {initialSlides.length === 0 ? (
+            {filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-ink-muted">
-                  No slides yet. Create one to populate the homepage banner.
+                  {initialSlides.length === 0
+                    ? "No slides yet. Create one to populate the homepage banner."
+                    : "No slides match your filters."}
                 </td>
               </tr>
             ) : (
-              initialSlides.map((s) => (
+              filtered.map((s) => (
                 <tr key={s.id}>
                   <td className="px-4 py-3">
                     <div className="relative h-14 w-24 overflow-hidden rounded-card bg-cream-warm">
