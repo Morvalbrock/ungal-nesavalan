@@ -10,6 +10,7 @@ import {
   BulkSelectInit
 } from "@/components/admin/BulkSelect";
 import { OrderBulkActions } from "@/components/admin/OrderBulkActions";
+import { ExportLink } from "@/components/admin/ExportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -87,14 +88,17 @@ export default async function AdminOrdersPage({
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Sales</p>
-        <h1 className="mt-2 font-display text-3xl">
-          Orders
-          <span className="ml-3 text-sm font-normal text-ink-muted">
-            {sorted.length} of {orders.length}
-          </span>
-        </h1>
+      <header className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Sales</p>
+          <h1 className="mt-2 font-display text-3xl">
+            Orders
+            <span className="ml-3 text-sm font-normal text-ink-muted">
+              {sorted.length} of {orders.length}
+            </span>
+          </h1>
+        </div>
+        <ExportLink entity="orders" />
       </header>
 
       <SearchFilter searchPlaceholder="Search by order number, customer name or email…" />

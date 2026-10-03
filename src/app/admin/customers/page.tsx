@@ -5,6 +5,7 @@ import { SearchFilter } from "@/components/admin/SearchFilter";
 import { CustomerRoleToggle } from "@/components/admin/CustomerRoleToggle";
 import { Pagination, resolvePage, resolvePerPage } from "@/components/admin/Pagination";
 import { SortableHeader, parseSort } from "@/components/admin/SortableHeader";
+import { ExportLink } from "@/components/admin/ExportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -98,14 +99,17 @@ export default async function AdminCustomersPage({
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">People</p>
-        <h1 className="mt-2 font-display text-3xl">
-          Customers
-          <span className="ml-3 text-sm font-normal text-ink-muted">
-            {sorted.length} of {users.length}
-          </span>
-        </h1>
+      <header className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">People</p>
+          <h1 className="mt-2 font-display text-3xl">
+            Customers
+            <span className="ml-3 text-sm font-normal text-ink-muted">
+              {sorted.length} of {users.length}
+            </span>
+          </h1>
+        </div>
+        <ExportLink entity="customers" />
       </header>
 
       <SearchFilter

@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { AlertTriangle, IndianRupee, PackageCheck, ShoppingBag, Users } from "lucide-react";
+import { AlertTriangle, IndianRupee, PackageCheck, ShoppingBag, ShoppingCart, UserPlus, Users } from "lucide-react";
 import { KpiCard } from "@/components/admin/KpiCard";
-import { orderRepo, productRepo, userRepo } from "@/server/repositories";
+import { DashboardFilters } from "@/components/admin/DashboardFilters";
+import { resolveRange } from "@/lib/date-range";
+import { abandonedCartRepo, orderRepo, userRepo } from "@/server/repositories";
 import { readCollection } from "@/server/db/json-store";
 import type { Product } from "@/types/product";
 import { formatINR } from "@/lib/utils";
@@ -18,19 +20,42 @@ const STATUS_CHIP: Record<string, string> = {
   refunded: "bg-maroon/10 text-maroon"
 };
 
-export default async function AdminDashboard() {
-  const [orders, users, products] = await Promise.all([
+interface SearchParams {
+  range?: string;
+  userId?: string;
+}
+
+export default async function AdminDashboard({
+  searchParams
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const [orders, users, products, abandoned] = await Promise.all([
     orderRepo.listAll(),
     userRepo.list(),
-    readCollection<Product>("products")
+    readCollection<Product>("products"),
+    abandonedCartRepo.listActive()
   ]);
+  const sp = await searchParams;
+  const { from, label: rangeLabel } = resolveRange(sp.range);
+  const userId = sp.userId?.trim() || null;
 
-  const paid = orders.filter((o) => ["paid", "packed", "shipped", "delivered"].includes(o.status));
-  const revenuePaise = paid.reduce((n, o) => n + o.totalPaise, 0);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayOrders = orders.filter((o) => new Date(o.createdAt) >= today);
-  const customerCount = users.filter((u) => u.role === "customer").length;
+  const inRange = (iso: string) => (from ? new Date(iso) >= from : true);
+  const matchesUser = (uid: string) => (userId ? uid === userId : true);
+
+  const rangeOrders = orders.filter((o) => inRange(o.createdAt) && matchesUser(o.userId));
+  const paidInRange = rangeOrders.filter((o) =>
+    ["paid", "packed", "shipped", "delivered"].includes(o.status)
+  );
+  const revenuePaise = paidInRange.reduce((n, o) => n + o.totalPaise, 0);
+
+  const pendingOrders = rangeOrders.filter((o) => o.status === "pending" || o.status === "paid");
+
+  const newSignups = users.filter((u) => inRange(u.createdAt) && matchesUser(u.id));
+
+  const rangeAbandoned = abandoned.filter(
+    (a) => !a.recoveredOrderId && inRange(a.updatedAt) && matchesUser(a.userId)
+  );
 
   const lowStock = products
     .flatMap((p) => p.variants.map((v) => ({ product: p, variant: v })))
@@ -39,25 +64,75 @@ export default async function AdminDashboard() {
     p.variants.filter((v) => v.stock === 0).map((v) => ({ product: p, variant: v }))
   );
 
-  const recent = orders.slice(0, 8);
+  const recent = rangeOrders.slice(0, 8);
+  const selectedCustomer = userId ? users.find((u) => u.id === userId) : null;
+
+  const customerOptions = users
+    .filter((u) => u.role !== "super_admin")
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((u) => ({ id: u.id, label: `${u.name} · ${u.email}` }));
 
   return (
     <div className="space-y-8">
       <header>
         <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Overview</p>
-        <h1 className="mt-2 font-display text-3xl">Dashboard</h1>
+        <h1 className="mt-2 font-display text-3xl">
+          Dashboard
+          <span className="ml-3 text-sm font-normal text-ink-muted">
+            {rangeLabel}
+            {selectedCustomer && (
+              <>
+                {" · "}
+                <span className="text-ink">{selectedCustomer.name}</span>
+              </>
+            )}
+          </span>
+        </h1>
       </header>
 
+      <DashboardFilters customers={customerOptions} />
+
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Revenue (paid)" value={formatINR(revenuePaise)} hint={`${paid.length} paid orders`} icon={IndianRupee} />
-        <KpiCard label="Orders today" value={String(todayOrders.length)} hint={`${orders.length} lifetime`} icon={ShoppingBag} />
-        <KpiCard label="Customers" value={String(customerCount)} icon={Users} />
+        <KpiCard
+          label="Revenue"
+          value={formatINR(revenuePaise)}
+          hint={`${paidInRange.length} paid order${paidInRange.length === 1 ? "" : "s"}`}
+          icon={IndianRupee}
+        />
+        <KpiCard
+          label="Orders"
+          value={String(rangeOrders.length)}
+          hint={pendingOrders.length > 0 ? `${pendingOrders.length} need action` : "nothing pending"}
+          tone={pendingOrders.length > 0 ? "warn" : "default"}
+          icon={ShoppingBag}
+        />
+        <KpiCard
+          label="New customers"
+          value={String(newSignups.length)}
+          icon={UserPlus}
+        />
+        <KpiCard
+          label="Abandoned carts"
+          value={String(rangeAbandoned.length)}
+          hint={rangeAbandoned.length > 0 ? "awaiting recovery" : "none"}
+          tone={rangeAbandoned.length > 0 ? "warn" : "default"}
+          icon={ShoppingCart}
+        />
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label="Low stock"
           value={String(lowStock.length + outOfStock.length)}
           hint={`${outOfStock.length} sold out`}
           tone={outOfStock.length > 0 ? "warn" : lowStock.length > 0 ? "success" : "default"}
           icon={AlertTriangle}
+        />
+        <KpiCard
+          label="Customers (all)"
+          value={String(users.filter((u) => u.role === "customer").length)}
+          hint="not time-filtered"
+          icon={Users}
         />
       </section>
 
@@ -70,7 +145,7 @@ export default async function AdminDashboard() {
             </Link>
           </div>
           {recent.length === 0 ? (
-            <p className="mt-4 text-sm text-ink-muted">No orders yet.</p>
+            <p className="mt-4 text-sm text-ink-muted">No orders in this range.</p>
           ) : (
             <ul className="mt-4 divide-y divide-border/70">
               {recent.map((o) => (

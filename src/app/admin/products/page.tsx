@@ -16,6 +16,7 @@ import {
   BulkSelectInit
 } from "@/components/admin/BulkSelect";
 import { ProductBulkActions } from "@/components/admin/ProductBulkActions";
+import { ExportLink } from "@/components/admin/ExportLink";
 
 export const dynamic = "force-dynamic";
 
@@ -115,9 +116,12 @@ export default async function AdminProductsPage({
             </span>
           </h1>
         </div>
-        <Link href="/admin/products/new" className="btn-primary inline-flex">
-          <Plus className="h-4 w-4" /> New product
-        </Link>
+        <div className="flex items-center gap-2">
+          <ExportLink entity="products" />
+          <Link href="/admin/products/new" className="btn-primary inline-flex">
+            <Plus className="h-4 w-4" /> New product
+          </Link>
+        </div>
       </header>
 
       <SearchFilter
