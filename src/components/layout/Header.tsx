@@ -13,16 +13,16 @@ export function Header() {
     <div className="sticky top-0 z-40">
       <AnnouncementBar />
       <header className="border-b border-border/70 bg-cream/95 backdrop-blur supports-[backdrop-filter]:bg-cream/85">
-        <Container className="flex h-[72px] items-center justify-between gap-6">
-          <div className="flex items-center gap-3 md:hidden">
+        <Container className="flex h-[64px] items-center justify-between gap-3 md:h-[72px] md:gap-6">
+          <div className="flex items-center gap-2 md:hidden">
             <MobileNav />
           </div>
 
-          <Link href="/" className="flex items-baseline gap-3">
-            <span className="font-display text-[22px] font-semibold leading-none tracking-tight text-ink">
+          <Link href="/" className="flex min-w-0 items-baseline gap-3">
+            <span className="whitespace-nowrap font-display text-[17px] font-semibold leading-none tracking-tight text-ink sm:text-[20px] md:text-[22px]">
               Ungal Nesavalan
             </span>
-            <span className="hidden text-[10px] uppercase tracking-widest2 text-ink-muted sm:inline">
+            <span className="hidden text-[10px] uppercase tracking-widest2 text-ink-muted lg:inline">
               · Handloom Sarees
             </span>
           </Link>
@@ -46,8 +46,8 @@ export function Header() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-1 text-ink">
-            <Link href="/search" aria-label="Search" className="rounded-full p-2 transition hover:bg-ink/5">
+          <div className="flex flex-shrink-0 items-center gap-0.5 text-ink sm:gap-1">
+            <Link href="/search" aria-label="Search" className="rounded-full p-1.5 transition hover:bg-ink/5 sm:p-2">
               <Search className="h-[18px] w-[18px]" />
             </Link>
             <WishlistHeaderLink />

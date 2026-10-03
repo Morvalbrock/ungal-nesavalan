@@ -12,7 +12,7 @@ import { GoogleSignInButton } from "./GoogleSignInButton";
 export function LoginForm() {
   const router = useRouter();
   const sp = useSearchParams();
-  const next = sp.get("next") || "/account/profile";
+  const next = sp.get("next") || "/";
   const { refresh } = useAuth();
   const oauthError = sp.get("error");
   const [serverError, setServerError] = useState<string | null>(

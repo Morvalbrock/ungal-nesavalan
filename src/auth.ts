@@ -20,16 +20,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      if (account?.provider !== "google") return false;
+      if (account?.provider !== "google") {
+        console.log("[auth/signIn] rejecting non-google provider=%s", account?.provider);
+        return false;
+      }
       const googleId = profile?.sub;
       const email = typeof profile?.email === "string" ? profile.email.trim().toLowerCase() : null;
-      if (!googleId || !email) return false;
+      if (!googleId || !email) {
+        console.log("[auth/signIn] missing googleId or email; googleId=%s email=%s", googleId, email);
+        return false;
+      }
 
       const existingByGoogle = await userRepo.findByGoogleId(googleId);
-      if (existingByGoogle) return true;
+      if (existingByGoogle) {
+        console.log("[auth/signIn] existing user by googleId; email=%s", email);
+        return true;
+      }
 
       const existingByEmail = await userRepo.findByEmail(email);
       if (existingByEmail) {
+        console.log("[auth/signIn] linking google to existing email account; email=%s", email);
         await userRepo.update(existingByEmail.id, {
           googleId,
           image: existingByEmail.image ?? (typeof profile?.picture === "string" ? profile.picture : undefined)
@@ -41,13 +51,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         (typeof profile?.name === "string" && profile.name.trim()) ||
         email.split("@")[0];
       const image = typeof profile?.picture === "string" ? profile.picture : undefined;
-      await userRepo.create({
+      const created = await userRepo.create({
         email,
         name,
         role: "customer",
         googleId,
         image
       });
+      console.log("[auth/signIn] created new user id=%s email=%s", created.id, email);
       return true;
     }
   },

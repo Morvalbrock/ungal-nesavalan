@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 export function GoogleSignInButton({ label = "Continue with Google" }: { label?: string }) {
   const sp = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const next = sp.get("next") || "/account/profile";
+  const next = sp.get("next") || "/";
 
   const onClick = async () => {
     setLoading(true);

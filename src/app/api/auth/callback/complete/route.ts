@@ -5,8 +5,8 @@ import { signForUser, SESSION_MAX_AGE_SEC } from "@/features/auth/jwt-auth.provi
 import { SESSION_COOKIE } from "@/features/auth/session";
 
 function safeNext(raw: string | null): string {
-  if (!raw) return "/account/profile";
-  if (!raw.startsWith("/") || raw.startsWith("//")) return "/account/profile";
+  if (!raw) return "/";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
   return raw;
 }
 
@@ -18,12 +18,16 @@ export async function GET(req: Request) {
 
   const session = await auth();
   const email = session?.user?.email?.trim().toLowerCase();
+  console.log("[oauth/complete] auth() session email=%j", email ?? null);
   if (!email) {
+    console.log("[oauth/complete] BAIL — auth() returned no session/email");
     return NextResponse.redirect(new URL("/login?error=google_signin_failed", req.url));
   }
 
   const user = await userRepo.findByEmail(email);
+  console.log("[oauth/complete] userRepo.findByEmail(%s) → %s", email, user ? user.id : "NOT FOUND");
   if (!user) {
+    console.log("[oauth/complete] BAIL — user not in DB (race with signIn callback create?)");
     return NextResponse.redirect(new URL("/login?error=google_signin_failed", req.url));
   }
 

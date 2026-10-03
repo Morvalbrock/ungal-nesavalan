@@ -76,9 +76,9 @@ export function ContactForm() {
         />
       </label>
       {error && <p className="text-sm text-maroon">{error}</p>}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[11px] text-ink-muted">We reply within one working day.</p>
-        <button type="submit" disabled={pending} className="btn-primary">
+        <button type="submit" disabled={pending} className="btn-primary whitespace-nowrap">
           {pending ? "Sending…" : "Send message"}
         </button>
       </div>

@@ -124,7 +124,7 @@ function Slide({
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink/60" />
       </div>
 
-      <Container className="relative grid min-h-[640px] items-center gap-12 py-24 lg:grid-cols-[1.15fr_0.85fr]">
+      <Container className="relative grid min-h-[520px] items-center gap-10 py-16 sm:min-h-[600px] sm:py-20 md:min-h-[640px] md:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
         <div className={cn("relative", active && "animate-fadeUp")}>
           {slide.eyebrow && (
             <div className="flex items-center gap-4">
@@ -133,7 +133,7 @@ function Slide({
             </div>
           )}
 
-          <h1 className="mt-6 font-display text-[52px] font-medium leading-[1.02] tracking-tight md:text-[76px]">
+          <h1 className="mt-6 font-display text-[38px] font-medium leading-[1.05] tracking-tight sm:text-[52px] sm:leading-[1.02] md:text-[76px]">
             {slide.headline}
             {slide.headlineItalic && (
               <span className="block italic text-gold-soft">{slide.headlineItalic}</span>
@@ -141,13 +141,13 @@ function Slide({
           </h1>
 
           {slide.subheadline && (
-            <p className="mt-7 max-w-lg text-[15px] leading-[1.7] text-cream/80">
+            <p className="mt-5 max-w-lg text-[14px] leading-[1.65] text-cream/80 sm:mt-7 sm:text-[15px] sm:leading-[1.7]">
               {slide.subheadline}
             </p>
           )}
 
           {(slide.ctaPrimaryLabel || slide.ctaSecondaryLabel) && (
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap gap-3 sm:mt-9">
               {slide.ctaPrimaryLabel && slide.ctaPrimaryHref && (
                 <Link href={slide.ctaPrimaryHref} className="btn-primary">
                   {slide.ctaPrimaryLabel}
@@ -161,11 +161,11 @@ function Slide({
             </div>
           )}
 
-          <div className="mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-cream/15 pt-6">
+          <div className="mt-10 grid max-w-md grid-cols-3 gap-3 border-t border-cream/15 pt-5 sm:mt-14 sm:gap-6 sm:pt-6">
             {STATS.map((s) => (
               <div key={s.v}>
-                <p className="font-display text-2xl text-cream">{s.k}</p>
-                <p className="mt-1 text-[11px] uppercase tracking-widest2 text-cream/60">{s.v}</p>
+                <p className="font-display text-xl text-cream sm:text-2xl">{s.k}</p>
+                <p className="mt-1 text-[10px] uppercase tracking-widest2 text-cream/60 sm:text-[11px]">{s.v}</p>
               </div>
             ))}
           </div>
