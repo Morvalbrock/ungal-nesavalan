@@ -22,8 +22,7 @@ const ERROR_LABEL: Record<string, string> = {
 
 const ROLE_LABEL: Record<string, string> = {
   customer: "Customer",
-  admin: "Admin",
-  super_admin: "Super admin"
+  admin: "Admin"
 };
 
 export function CustomerRoleToggle({
@@ -33,7 +32,7 @@ export function CustomerRoleToggle({
   isSelf,
   canManage
 }: CustomerRoleToggleProps) {
-  const [pendingRole, setPendingRole] = useState<"customer" | "admin" | "super_admin" | null>(null);
+  const [pendingRole, setPendingRole] = useState<"customer" | "admin" | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +41,9 @@ export function CustomerRoleToggle({
   }
   if (!canManage) {
     return null;
+  }
+  if (currentRole === "super_admin") {
+    return <span className="text-[11px] text-ink-muted">(super admin)</span>;
   }
 
   function doChange() {
@@ -63,7 +65,7 @@ export function CustomerRoleToggle({
       <select
         value={currentRole}
         onChange={(e) => {
-          const target = e.target.value as "customer" | "admin" | "super_admin";
+          const target = e.target.value as "customer" | "admin";
           if (target !== currentRole) setPendingRole(target);
         }}
         disabled={pending}
@@ -72,7 +74,6 @@ export function CustomerRoleToggle({
       >
         <option value="customer">Customer</option>
         <option value="admin">Admin</option>
-        <option value="super_admin">Super admin</option>
       </select>
       {error && <p className="mt-1 text-[10px] text-maroon">{error}</p>}
       <ConfirmModal
@@ -81,12 +82,10 @@ export function CustomerRoleToggle({
         body={
           pendingRole === "customer"
             ? `${userName} will lose admin access immediately.`
-            : pendingRole === "super_admin"
-            ? `${userName} will gain FULL control — including deleting products, demoting admins, and changing roles.`
             : `${userName} will gain admin access to orders, products, customers.`
         }
         confirmLabel="Change role"
-        danger={pendingRole === "super_admin" || currentRole === "super_admin"}
+        danger={pendingRole === "customer"}
         busy={pending}
         onConfirm={doChange}
         onCancel={() => setPendingRole(null)}
