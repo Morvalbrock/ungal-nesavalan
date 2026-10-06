@@ -235,6 +235,7 @@ export default async function AdminProductsPage({
                       productName={p.name}
                       published={p.published}
                       featured={p.featured}
+                      canDelete={isSuperAdmin}
                     />
                   </td>
                 </tr>

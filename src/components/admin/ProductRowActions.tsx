@@ -15,13 +15,15 @@ export interface ProductRowActionsProps {
   productName: string;
   published: boolean;
   featured: boolean;
+  canDelete: boolean;
 }
 
 export function ProductRowActions({
   productId,
   productName,
   published,
-  featured
+  featured,
+  canDelete
 }: ProductRowActionsProps) {
   const [open, setOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -104,19 +106,23 @@ export function ProductRowActions({
               <Star className={`h-3.5 w-3.5 ${featured ? "fill-gold text-gold" : ""}`} />
               {featured ? "Unfeature" : "Feature"}
             </button>
-            <div className="border-t border-border/70" />
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => {
-                setOpen(false);
-                setConfirmDelete(true);
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-maroon hover:bg-maroon/5 disabled:opacity-50"
-              role="menuitem"
-            >
-              <Trash2 className="h-3.5 w-3.5" /> Delete
-            </button>
+            {canDelete && (
+              <>
+                <div className="border-t border-border/70" />
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => {
+                    setOpen(false);
+                    setConfirmDelete(true);
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-maroon hover:bg-maroon/5 disabled:opacity-50"
+                  role="menuitem"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Delete
+                </button>
+              </>
+            )}
           </div>
         </>
       )}
