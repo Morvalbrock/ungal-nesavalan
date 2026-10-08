@@ -39,6 +39,10 @@ export interface Order {
   currency: "INR";
   paymentId?: string;
   notes?: string;
+  paymentMode?: "prepaid" | "cod";
+  amountPaidPaise?: number;
+  amountDuePaise?: number;
+  preferredCourier?: string;
   trackingId?: string;
   courier?: string;
   createdAt: string;

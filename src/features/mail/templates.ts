@@ -60,10 +60,15 @@ export function shippedEmail(
     trackingId || courier
       ? `<p>Tracking: <strong>${escapeHtml(trackingId ?? "—")}</strong>${courier ? ` via ${escapeHtml(courier)}` : ""}</p>`
       : "";
+  const codLine =
+    order.paymentMode === "cod" && (order.amountDuePaise ?? 0) > 0
+      ? `<p style="padding:10px 12px;background:#e8dcc0;border-radius:8px;">Please have <strong>${inr(order.amountDuePaise ?? 0)}</strong> ready in cash for the delivery agent.</p>`
+      : "";
   const html = shell(`
 <p style="font-size:20px;">Your saree is on the way</p>
 <p>Order <strong>${order.orderNumber}</strong> has shipped.</p>
 ${trackingLine}
+${codLine}
 <p style="margin-top:24px;">
 <a href="${SITE_URL}/account/orders/${order.id}" style="display:inline-block;background:#1a1a1a;color:#f5eddc;padding:10px 18px;text-decoration:none;border-radius:8px;">Track order</a>
 </p>`);

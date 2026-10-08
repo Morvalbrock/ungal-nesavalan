@@ -18,6 +18,8 @@ export function CheckoutFlow({ prefill }: { prefill?: { name?: string; email?: s
   const { user } = useAuth();
   const [step, setStep] = useState<Step>("address");
   const [address, setAddress] = useState<AddressForm | null>(null);
+  const [preferredCourier, setPreferredCourier] = useState<string>("");
+  const [paymentMode, setPaymentMode] = useState<"prepaid" | "cod">("prepaid");
 
   // Fire begin_checkout once per checkout mount with a non-empty cart.
   useEffect(() => {
@@ -100,7 +102,14 @@ export function CheckoutFlow({ prefill }: { prefill?: { name?: string; email?: s
           />
         )}
         {step === "review" && address && (
-          <ReviewStep address={address} onEdit={() => setStep("address")} />
+          <ReviewStep
+            address={address}
+            onEdit={() => setStep("address")}
+            preferredCourier={preferredCourier}
+            onPreferredCourierChange={setPreferredCourier}
+            paymentMode={paymentMode}
+            onPaymentModeChange={setPaymentMode}
+          />
         )}
       </div>
     </Container>

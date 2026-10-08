@@ -12,6 +12,8 @@ export interface OrderRepository {
   listAll(): Promise<Order[]>;
   updateStatus(id: string, status: OrderStatus): Promise<Order | null>;
   updateShipping(id: string, shipping: { trackingId?: string; courier?: string }): Promise<Order | null>;
+  recordAmountPaid(id: string, amountPaise: number): Promise<Order | null>;
+  markCodCollected(id: string): Promise<Order | null>;
   attachPayment(id: string, paymentId: string): Promise<Order | null>;
   findEligibleForReview(userId: string, productId: string): Promise<Order | null>;
 }
@@ -88,6 +90,33 @@ export const jsonOrderRepo: OrderRepository = {
           ...o,
           trackingId: nextTrackingId,
           courier: nextCourier,
+          updatedAt: nowIso()
+        };
+        return updated;
+      })
+    );
+    return updated;
+  },
+  async recordAmountPaid(id, amountPaise) {
+    let updated: Order | null = null;
+    await mutateCollection<Order>(COLLECTION, [], (rows) =>
+      rows.map((o) => {
+        if (o.id !== id) return o;
+        updated = { ...o, amountPaidPaise: amountPaise, updatedAt: nowIso() };
+        return updated;
+      })
+    );
+    return updated;
+  },
+  async markCodCollected(id) {
+    let updated: Order | null = null;
+    await mutateCollection<Order>(COLLECTION, [], (rows) =>
+      rows.map((o) => {
+        if (o.id !== id) return o;
+        updated = {
+          ...o,
+          amountPaidPaise: o.totalPaise,
+          amountDuePaise: 0,
           updatedAt: nowIso()
         };
         return updated;

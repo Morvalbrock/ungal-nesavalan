@@ -438,6 +438,20 @@ export async function bulkSetProductFeatured(
   return { ok: true, data: { updated } };
 }
 
+export async function markCodCollected(orderId: string): Promise<ActionResult> {
+  await requireAdmin();
+  const order = await orderRepo.findById(orderId);
+  if (!order) return { ok: false, error: "not_found" };
+  if (order.paymentMode !== "cod") return { ok: false, error: "not_a_cod_order" };
+  if ((order.amountDuePaise ?? 0) <= 0) return { ok: false, error: "nothing_due" };
+  const updated = await orderRepo.markCodCollected(orderId);
+  if (!updated) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath(`/account/orders/${orderId}`);
+  return { ok: true };
+}
+
 export async function bulkUpdateOrderStatus(
   orderIds: string[],
   status: OrderStatus
@@ -472,12 +486,18 @@ export async function decideReturn(
       if (payment?.providerPaymentId) {
         try {
           const provider = getPaymentProvider();
-          const refund = await provider.refund({
-            providerPaymentId: payment.providerPaymentId,
-            amountPaise: order.totalPaise,
-            notes: { orderId: order.id, returnId: ret.id }
-          });
-          refundId = refund.refundId;
+          const refundablePaise =
+            order.paymentMode === "cod"
+              ? Math.min(order.amountPaidPaise ?? 0, payment.amountPaise)
+              : order.totalPaise;
+          if (refundablePaise > 0) {
+            const refund = await provider.refund({
+              providerPaymentId: payment.providerPaymentId,
+              amountPaise: refundablePaise,
+              notes: { orderId: order.id, returnId: ret.id }
+            });
+            refundId = refund.refundId;
+          }
         } catch (err) {
           return { ok: false, error: `refund_failed:${(err as Error).message}` };
         }

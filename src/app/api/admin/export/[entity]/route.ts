@@ -3,10 +3,30 @@ import { requireAdmin } from "@/features/admin/guard";
 import { readCollection } from "@/server/db/json-store";
 import { orderRepo, userRepo } from "@/server/repositories";
 import type { Product } from "@/types/product";
+import type { Payment } from "@/types/payment";
 import { toCsv, csvFilename } from "@/lib/csv";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Format an ISO timestamp as "YYYY-MM-DD HH:mm" in IST so Excel displays it
+// cleanly in the default column width (ISO strings with "T" trigger auto-date
+// parsing and render as ####).
+function fmtDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).formatToParts(d);
+  const g = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${g("year")}-${g("month")}-${g("day")} ${g("hour")}:${g("minute")}`;
+}
 
 type Entity = "products" | "orders" | "customers";
 
@@ -97,15 +117,20 @@ async function buildProductsCsv(sp: Record<string, string>): Promise<string> {
     p.variants.reduce((n, v) => n + v.stock, 0),
     p.published ? "yes" : "no",
     p.featured ? "yes" : "no",
-    p.createdAt,
-    p.updatedAt
+    fmtDateTime(p.createdAt),
+    fmtDateTime(p.updatedAt)
   ]);
   return toCsv(header, rows);
 }
 
 async function buildOrdersCsv(sp: Record<string, string>): Promise<string> {
-  const [orders, users] = await Promise.all([orderRepo.listAll(), userRepo.list()]);
+  const [orders, users, payments] = await Promise.all([
+    orderRepo.listAll(),
+    userRepo.list(),
+    readCollection<Payment>("payments")
+  ]);
   const userMap = new Map(users.map((u) => [u.id, u]));
+  const paymentMap = new Map(payments.map((p) => [p.id, p]));
   const needle = sp.q?.trim().toLowerCase() ?? "";
   const filtered = orders.filter((o) => {
     if (sp.status && o.status !== sp.status) return false;
@@ -125,10 +150,25 @@ async function buildOrdersCsv(sp: Record<string, string>): Promise<string> {
     "Customer email",
     "Items",
     "Total (INR)",
+    "Payment mode",
+    "Payment status",
+    "Amount paid (INR)",
+    "Amount due (INR)",
+    "Razorpay payment ID",
+    "Ship-to name",
+    "Ship-to phone",
+    "Address line 1",
+    "Address line 2",
+    "City",
+    "State",
+    "Pincode",
+    "Country",
     "Created"
   ];
   const rows = filtered.map((o) => {
     const u = userMap.get(o.userId);
+    const a = o.addressSnapshot;
+    const p = o.paymentId ? paymentMap.get(o.paymentId) : undefined;
     return [
       o.orderNumber,
       o.id,
@@ -137,7 +177,20 @@ async function buildOrdersCsv(sp: Record<string, string>): Promise<string> {
       u?.email ?? "",
       o.items.length,
       (o.totalPaise / 100).toFixed(2),
-      o.createdAt
+      o.paymentMode ?? "prepaid",
+      p?.status ?? "not_initiated",
+      ((o.amountPaidPaise ?? 0) / 100).toFixed(2),
+      ((o.amountDuePaise ?? 0) / 100).toFixed(2),
+      p?.providerPaymentId ?? "",
+      a?.fullName ?? "",
+      a?.phone ?? "",
+      a?.line1 ?? "",
+      a?.line2 ?? "",
+      a?.city ?? "",
+      a?.state ?? "",
+      a?.pincode ?? "",
+      a?.country ?? "",
+      fmtDateTime(o.createdAt)
     ];
   });
   return toCsv(header, rows);
@@ -183,7 +236,7 @@ async function buildCustomersCsv(sp: Record<string, string>): Promise<string> {
       u.role,
       s?.count ?? 0,
       s ? (s.total / 100).toFixed(2) : "0.00",
-      u.createdAt
+      fmtDateTime(u.createdAt)
     ];
   });
   return toCsv(header, rows);

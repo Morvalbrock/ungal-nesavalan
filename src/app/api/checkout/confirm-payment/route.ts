@@ -54,6 +54,7 @@ export async function POST(req: Request) {
       signature: razorpaySignature
     });
     await orderRepo.updateStatus(order.id, "paid");
+    await orderRepo.recordAmountPaid(order.id, payment.amountPaise);
     await productRepo.adjustStock(
       order.items.map((i) => ({ productId: i.productId, variantId: i.variantId, delta: -i.quantity }))
     );

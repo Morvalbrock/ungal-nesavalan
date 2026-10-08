@@ -43,12 +43,18 @@ export function PayButton({
   address,
   disabled,
   amountPaise,
-  couponCode
+  couponCode,
+  preferredCourier,
+  paymentMode = "prepaid",
+  dueOnDeliveryPaise = 0
 }: {
   address: AddressForm;
   disabled?: boolean;
   amountPaise: number;
   couponCode?: string;
+  preferredCourier?: string;
+  paymentMode?: "prepaid" | "cod";
+  dueOnDeliveryPaise?: number;
 }) {
   const router = useRouter();
   const items = useCartStore((s) => s.items);
@@ -93,6 +99,8 @@ export function PayButton({
       body: JSON.stringify({
         address,
         couponCode,
+        preferredCourier,
+        paymentMode,
         items: items.map((i) => ({
           productId: i.productId,
           variantId: i.variantId,
@@ -156,7 +164,7 @@ export function PayButton({
       }
     });
     rzp.open();
-  }, [address, items, couponCode, confirm, router]);
+  }, [address, items, couponCode, preferredCourier, paymentMode, confirm, router]);
 
   return (
     <div>
@@ -171,8 +179,17 @@ export function PayButton({
         disabled={disabled || busy || items.length === 0}
         className="btn-primary w-full sm:w-auto"
       >
-        {busy ? "Processing…" : `Pay ${formatINR(amountPaise)}`}
+        {busy
+          ? "Processing…"
+          : paymentMode === "cod"
+            ? `Pay ${formatINR(amountPaise)} deposit`
+            : `Pay ${formatINR(amountPaise)}`}
       </button>
+      {paymentMode === "cod" && dueOnDeliveryPaise > 0 && (
+        <p className="mt-2 text-xs text-ink-soft">
+          {formatINR(dueOnDeliveryPaise)} will be collected in cash on delivery.
+        </p>
+      )}
       {error && <p className="mt-3 text-xs text-maroon">{error}</p>}
       <p className="mt-3 text-[11px] uppercase tracking-widest text-ink-muted">
         {scriptReady ? "Powered by Razorpay · UPI · Cards · Netbanking" : "Loading secure payment…"}

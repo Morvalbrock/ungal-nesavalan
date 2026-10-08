@@ -16,6 +16,8 @@ import { couponErrorMessage, evaluateCoupon } from "@/features/coupons/evaluate"
 const bodySchema = z.object({
   address: addressSchema,
   couponCode: z.string().trim().min(1).max(64).optional(),
+  preferredCourier: z.string().trim().min(1).max(50).optional(),
+  paymentMode: z.enum(["prepaid", "cod"]).optional(),
   items: z
     .array(
       z.object({
@@ -26,6 +28,16 @@ const bodySchema = z.object({
     )
     .min(1)
 });
+
+const COD_MIN_TOTAL_PAISE = 100000; // ₹1,000
+const COD_MIN_DEPOSIT_PAISE = 9900; // ₹99
+const COD_DEPOSIT_PCT = 0.10;
+
+function computeCodDeposit(totalPaise: number): number {
+  const tenPct = Math.ceil(totalPaise * COD_DEPOSIT_PCT);
+  const deposit = Math.max(tenPct, COD_MIN_DEPOSIT_PAISE);
+  return Math.min(deposit, totalPaise);
+}
 
 export async function POST(req: Request) {
   const session = await getSession();
@@ -40,7 +52,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_input", issues: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { address, items, couponCode } = parsed.data;
+  const { address, items, couponCode, preferredCourier, paymentMode: requestedMode } = parsed.data;
 
   let built;
   try {
@@ -78,6 +90,11 @@ export async function POST(req: Request) {
 
   const totalPaise = Math.max(0, built.subtotalPaise - discountPaise + built.shippingPaise);
 
+  const paymentMode: "prepaid" | "cod" =
+    requestedMode === "cod" && totalPaise >= COD_MIN_TOTAL_PAISE ? "cod" : "prepaid";
+  const chargeNowPaise = paymentMode === "cod" ? computeCodDeposit(totalPaise) : totalPaise;
+  const amountDuePaise = paymentMode === "cod" ? totalPaise - chargeNowPaise : 0;
+
   const order = await orderRepo.create({
     userId: user.id,
     items: built.items,
@@ -99,7 +116,11 @@ export async function POST(req: Request) {
     couponSnapshot,
     totalPaise,
     currency: "INR",
-    notes: address.notes
+    notes: address.notes,
+    preferredCourier,
+    paymentMode,
+    amountPaidPaise: 0,
+    amountDuePaise
   });
 
   if (couponForRedemption && discountPaise > 0) {
@@ -115,9 +136,9 @@ export async function POST(req: Request) {
 
   const provider = getPaymentProvider();
   const providerOrder = await provider.createOrder({
-    amountPaise: order.totalPaise,
+    amountPaise: chargeNowPaise,
     receipt: order.orderNumber,
-    notes: { orderId: order.id, userId: user.id }
+    notes: { orderId: order.id, userId: user.id, paymentMode }
   });
 
   const payment = await paymentRepo.create({

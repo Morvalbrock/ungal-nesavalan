@@ -79,6 +79,18 @@ export default async function CheckoutSuccessPage({
               <dt>Total</dt>
               <dd>{formatINR(order.totalPaise)}</dd>
             </div>
+            {order.paymentMode === "cod" && (order.amountDuePaise ?? 0) > 0 && (
+              <>
+                <div className="flex justify-between pt-2 text-emerald-700">
+                  <dt>Deposit paid</dt>
+                  <dd>{formatINR(order.amountPaidPaise ?? 0)}</dd>
+                </div>
+                <div className="flex justify-between text-maroon">
+                  <dt>Due on delivery (cash)</dt>
+                  <dd>{formatINR(order.amountDuePaise ?? 0)}</dd>
+                </div>
+              </>
+            )}
           </dl>
         </div>
       </div>

@@ -100,6 +100,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               )}
               <div className="flex justify-between"><dt className="text-ink-muted">Shipping</dt><dd>{order.shippingPaise === 0 ? "Free" : formatINR(order.shippingPaise)}</dd></div>
               <div className="flex justify-between border-t border-border/70 pt-2 font-medium"><dt>Total</dt><dd>{formatINR(order.totalPaise)}</dd></div>
+              {order.paymentMode === "cod" && (order.amountDuePaise ?? 0) > 0 && (
+                <>
+                  <div className="flex justify-between pt-2 text-emerald-700">
+                    <dt>Deposit paid</dt>
+                    <dd>{formatINR(order.amountPaidPaise ?? 0)}</dd>
+                  </div>
+                  <div className="flex justify-between text-maroon">
+                    <dt>Due on delivery (cash)</dt>
+                    <dd>{formatINR(order.amountDuePaise ?? 0)}</dd>
+                  </div>
+                </>
+              )}
             </dl>
           </div>
 

@@ -89,6 +89,11 @@ export default async function AdminOrderDetailPage({
             current={order.status}
             trackingId={order.trackingId}
             courier={order.courier}
+            preferredCourier={order.preferredCourier}
+            paymentMode={order.paymentMode}
+            amountPaidPaise={order.amountPaidPaise ?? 0}
+            amountDuePaise={order.amountDuePaise ?? 0}
+            totalPaise={order.totalPaise}
           />
 
           <div className="rounded-card border border-border bg-cream p-4">
