@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
 import { MoreHorizontal, Edit, Trash2, Eye, EyeOff, Star } from "lucide-react";
 import {
   deleteProduct,
@@ -18,6 +18,9 @@ export interface ProductRowActionsProps {
   canDelete: boolean;
 }
 
+const MENU_WIDTH = 192;
+const MENU_GAP = 4;
+
 export function ProductRowActions({
   productId,
   productName,
@@ -29,6 +32,34 @@ export function ProductRowActions({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setMenuPos(null);
+      return;
+    }
+    const place = () => {
+      const btn = buttonRef.current;
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const left = Math.max(8, rect.right - MENU_WIDTH);
+      setMenuPos({ top: rect.bottom + MENU_GAP, left });
+    };
+    place();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [open]);
 
   function doToggle(fn: () => Promise<{ ok: boolean; error?: string }>) {
     setError(null);
@@ -55,6 +86,7 @@ export function ProductRowActions({
   return (
     <div className="relative inline-block text-left">
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="rounded-card p-2 text-ink-muted hover:bg-ink/5 hover:text-ink"
@@ -65,12 +97,13 @@ export function ProductRowActions({
         <MoreHorizontal className="h-4 w-4" />
       </button>
 
-      {open && (
+      {open && menuPos && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div
             role="menu"
-            className="absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-card border border-border bg-cream shadow-elev"
+            style={{ top: menuPos.top, left: menuPos.left, width: MENU_WIDTH }}
+            className="fixed z-50 overflow-hidden rounded-card border border-border bg-cream shadow-elev"
           >
             <Link
               href={`/admin/products/${productId}`}

@@ -13,6 +13,8 @@ interface QuoteResponse {
   qualifiesForFreeShipping: boolean;
   freeShippingRemainingPaise: number;
   etaLabel: string;
+  serviceable: boolean;
+  locationLabel: string | null;
 }
 
 export function DeliveryChecker({ subtotalPaise }: Props) {
@@ -63,24 +65,37 @@ export function DeliveryChecker({ subtotalPaise }: Props) {
       {error && <p className="mt-2 text-xs text-maroon">{error}</p>}
       {quote && (
         <div className="mt-3 space-y-1 text-sm text-ink-soft">
-          <p>
-            <span className="text-ink-muted">Zone:</span> {quote.zoneLabel}
-          </p>
-          <p>
-            <span className="text-ink-muted">Delivery:</span> {quote.etaLabel}
-          </p>
-          <p>
-            <span className="text-ink-muted">Shipping:</span>{" "}
-            {quote.ratePaise === 0 ? (
-              <span className="font-medium text-emerald-700">Free</span>
-            ) : (
-              formatINR(quote.ratePaise)
-            )}
-          </p>
-          {!quote.qualifiesForFreeShipping && quote.freeShippingRemainingPaise > 0 && (
-            <p className="text-xs text-ink-muted">
-              Add {formatINR(quote.freeShippingRemainingPaise)} more for free shipping to this zone.
+          {quote.locationLabel && (
+            <p>
+              <span className="text-ink-muted">Location:</span> {quote.locationLabel}
             </p>
+          )}
+          {!quote.serviceable ? (
+            <p className="rounded-card bg-maroon/5 px-3 py-2 text-xs text-maroon">
+              We don’t typically deliver to this pincode. Please contact us before placing an order.
+            </p>
+          ) : (
+            <>
+              <p>
+                <span className="text-ink-muted">Zone:</span> {quote.zoneLabel}
+              </p>
+              <p>
+                <span className="text-ink-muted">Delivery:</span> {quote.etaLabel}
+              </p>
+              <p>
+                <span className="text-ink-muted">Shipping:</span>{" "}
+                {quote.ratePaise === 0 ? (
+                  <span className="font-medium text-emerald-700">Free</span>
+                ) : (
+                  formatINR(quote.ratePaise)
+                )}
+              </p>
+              {!quote.qualifiesForFreeShipping && quote.freeShippingRemainingPaise > 0 && (
+                <p className="text-xs text-ink-muted">
+                  Add {formatINR(quote.freeShippingRemainingPaise)} more for free shipping to this zone.
+                </p>
+              )}
+            </>
           )}
         </div>
       )}

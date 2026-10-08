@@ -96,15 +96,6 @@ ${couponCode ? `<p style="margin-top:20px;padding:12px;background:#e8dcc0;border
   return { subject: "Your bag is still waiting at Ungal Nesavalan", html };
 }
 
-export function passwordResetEmail({ customerName, resetUrl }: { customerName: string; resetUrl: string }) {
-  const html = shell(`
-<p style="font-size:20px;">Reset your password</p>
-<p>Hi ${escapeHtml(customerName)}, click the button below to reset your password. The link expires in 60 minutes.</p>
-<p><a href="${resetUrl}" style="display:inline-block;background:#1a1a1a;color:#f5eddc;padding:10px 18px;text-decoration:none;border-radius:8px;">Reset password</a></p>
-<p style="color:#888;font-size:12px;">If you didn't ask for this, you can ignore the email.</p>`);
-  return { subject: "Reset your Ungal Nesavalan password", html };
-}
-
 export function newsletterWelcomeEmail() {
   const html = shell(`
 <p style="font-size:20px;">Welcome to the loom notes</p>
@@ -144,6 +135,27 @@ export function returnDecisionEmail({
 ${body}
 ${note ? `<p style="color:#666;">Note from our team: ${escapeHtml(note)}</p>` : ""}`);
   return { subject: `${title} — ${orderNumber}`, html };
+}
+
+export function passwordResetEmail({
+  customerName,
+  resetUrl,
+  expiresInMinutes
+}: {
+  customerName: string;
+  resetUrl: string;
+  expiresInMinutes: number;
+}) {
+  const html = shell(`
+<p style="font-size:20px;">Reset your ${BRAND} password</p>
+<p>Hi ${escapeHtml(customerName)},</p>
+<p>We received a request to reset your password. Click the button below to choose a new one. This link expires in ${expiresInMinutes} minutes.</p>
+<p style="margin:24px 0;">
+<a href="${resetUrl}" style="display:inline-block;background:#1a1a1a;color:#f5eddc;padding:12px 22px;text-decoration:none;border-radius:8px;">Reset password</a>
+</p>
+<p style="font-size:12px;color:#8a7a5c;">If you didn't request this, you can safely ignore this email — your password won't change.</p>
+<p style="font-size:12px;color:#8a7a5c;">Or paste this link into your browser:<br><span style="word-break:break-all;">${resetUrl}</span></p>`);
+  return { subject: `Reset your ${BRAND} password`, html };
 }
 
 function escapeHtml(s: string): string {

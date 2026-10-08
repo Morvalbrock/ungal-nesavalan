@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
@@ -64,7 +65,16 @@ export function MobileNav() {
           <div className="absolute inset-0 bg-ink/50" onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-[86%] max-w-sm overflow-y-auto bg-cream p-6 shadow-elev">
             <div className="flex items-center justify-between">
-              <span className="font-display text-lg font-semibold">Ungal Nesavalan</span>
+              <div className="flex items-center gap-2.5">
+                <Image
+                  src="/images/logo.png"
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 shrink-0"
+                />
+                <span className="font-display text-lg font-semibold">Ungal Nesavalan</span>
+              </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}

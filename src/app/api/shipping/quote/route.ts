@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { estimatedDeliveryLabel, shippingQuote } from "@/features/shipping/calculate";
+import { lookupPincode } from "@/features/shipping/serviceability";
 
 const querySchema = z.object({
   pincode: z.string().trim().regex(/^\d{6}$/),
@@ -20,8 +21,11 @@ export async function GET(req: Request) {
     pincode: parsed.data.pincode,
     subtotalPaise: parsed.data.subtotalPaise
   });
+  const pincodeInfo = await lookupPincode(parsed.data.pincode);
   return NextResponse.json({
     ...quote,
-    etaLabel: estimatedDeliveryLabel(quote)
+    etaLabel: estimatedDeliveryLabel(quote),
+    serviceable: pincodeInfo.serviceable,
+    locationLabel: pincodeInfo.locationLabel ?? null
   });
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "./Container";
 import { NewsletterForm } from "./NewsletterForm";
 import { Ornament } from "@/components/home/Ornament";
@@ -52,7 +53,16 @@ export function Footer() {
       <Container className="py-20">
         <div className="grid gap-14 lg:grid-cols-[1.2fr_2fr]">
           <div>
-            <p className="font-display text-[30px] font-medium leading-none">Ungal Nesavalan</p>
+            <div className="flex items-center gap-3">
+              <Image
+                src="/images/logo.png"
+                alt=""
+                width={56}
+                height={56}
+                className="h-12 w-12 shrink-0"
+              />
+              <p className="font-display text-[30px] font-medium leading-none">Ungal Nesavalan</p>
+            </div>
             <p className="mt-2 text-[11px] uppercase tracking-widest2 text-cream/60">
               Loomed by hand · Since a very long time ago
             </p>

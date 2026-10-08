@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Search } from "lucide-react";
 import { Container } from "./Container";
 import { AnnouncementBar } from "./AnnouncementBar";
@@ -18,7 +19,15 @@ export function Header() {
             <MobileNav />
           </div>
 
-          <Link href="/" className="flex min-w-0 items-baseline gap-3">
+          <Link href="/" className="flex min-w-0 items-center gap-2.5 md:gap-3">
+            <Image
+              src="/images/logo.png"
+              alt=""
+              width={40}
+              height={40}
+              priority
+              className="h-8 w-8 shrink-0 md:h-10 md:w-10"
+            />
             <span className="whitespace-nowrap font-display text-[17px] font-semibold leading-none tracking-tight text-ink sm:text-[20px] md:text-[22px]">
               Ungal Nesavalan
             </span>
