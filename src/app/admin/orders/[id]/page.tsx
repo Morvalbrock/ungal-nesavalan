@@ -84,7 +84,12 @@ export default async function AdminOrderDetailPage({
         </div>
 
         <div className="space-y-4 text-sm">
-          <OrderStatusForm orderId={order.id} current={order.status} />
+          <OrderStatusForm
+            orderId={order.id}
+            current={order.status}
+            trackingId={order.trackingId}
+            courier={order.courier}
+          />
 
           <div className="rounded-card border border-border bg-cream p-4">
             <p className="text-[11px] uppercase tracking-widest text-ink-muted">Customer</p>

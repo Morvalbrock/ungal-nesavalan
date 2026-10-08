@@ -50,11 +50,20 @@ ${itemsTable(order)}
   return { subject: `Order confirmed — ${order.orderNumber}`, html };
 }
 
-export function shippedEmail(order: Order, tracking?: string) {
+export function shippedEmail(
+  order: Order,
+  tracking?: { trackingId?: string; courier?: string }
+) {
+  const trackingId = tracking?.trackingId?.trim();
+  const courier = tracking?.courier?.trim();
+  const trackingLine =
+    trackingId || courier
+      ? `<p>Tracking: <strong>${escapeHtml(trackingId ?? "—")}</strong>${courier ? ` via ${escapeHtml(courier)}` : ""}</p>`
+      : "";
   const html = shell(`
 <p style="font-size:20px;">Your saree is on the way</p>
 <p>Order <strong>${order.orderNumber}</strong> has shipped.</p>
-${tracking ? `<p>Tracking: <a href="${tracking}">${tracking}</a></p>` : ""}
+${trackingLine}
 <p style="margin-top:24px;">
 <a href="${SITE_URL}/account/orders/${order.id}" style="display:inline-block;background:#1a1a1a;color:#f5eddc;padding:10px 18px;text-decoration:none;border-radius:8px;">Track order</a>
 </p>`);

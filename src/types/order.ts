@@ -39,6 +39,8 @@ export interface Order {
   currency: "INR";
   paymentId?: string;
   notes?: string;
+  trackingId?: string;
+  courier?: string;
   createdAt: string;
   updatedAt: string;
 }

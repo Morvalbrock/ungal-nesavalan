@@ -77,6 +77,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               {order.addressSnapshot.country} · {order.addressSnapshot.phone}
             </p>
           </div>
+
+          {(order.trackingId || order.courier) && (
+            <div>
+              <h3 className="text-xs uppercase tracking-widest text-ink-muted">Tracking</h3>
+              <p className="mt-2 leading-relaxed">
+                {order.trackingId && <span className="font-medium">{order.trackingId}</span>}
+                {order.trackingId && order.courier && <span className="text-ink-muted"> · </span>}
+                {order.courier && <span>{order.courier}</span>}
+              </p>
+            </div>
+          )}
           <div>
             <h3 className="text-xs uppercase tracking-widest text-ink-muted">Payment</h3>
             <dl className="mt-2 space-y-1">

@@ -260,11 +260,21 @@ const ORDER_STATUSES: OrderStatus[] = [
   "refunded"
 ];
 
-export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<ActionResult> {
+export async function updateOrderStatus(
+  orderId: string,
+  status: OrderStatus,
+  shipping?: { trackingId?: string; courier?: string }
+): Promise<ActionResult> {
   await requireAdmin();
   if (!ORDER_STATUSES.includes(status)) return { ok: false, error: "invalid_status" };
-  const updated = await orderRepo.updateStatus(orderId, status);
+
+  let updated = await orderRepo.updateStatus(orderId, status);
   if (!updated) return { ok: false, error: "not_found" };
+
+  if (shipping) {
+    const withShipping = await orderRepo.updateShipping(orderId, shipping);
+    if (withShipping) updated = withShipping;
+  }
 
   if (status === "shipped" || status === "delivered") {
     void sendStatusEmail(updated, status).catch((err) =>
@@ -283,7 +293,10 @@ async function sendStatusEmail(order: Awaited<ReturnType<typeof orderRepo.findBy
   if (!order) return;
   const user = await userRepo.findById(order.userId);
   if (!user) return;
-  const { subject, html } = status === "shipped" ? shippedEmail(order) : deliveredEmail(order);
+  const { subject, html } =
+    status === "shipped"
+      ? shippedEmail(order, { trackingId: order.trackingId, courier: order.courier })
+      : deliveredEmail(order);
   await getMailProvider().send({
     to: user.email,
     subject,
