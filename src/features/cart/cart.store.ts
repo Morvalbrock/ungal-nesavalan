@@ -76,7 +76,8 @@ export function useCartTotals() {
     useShallow((s) => {
       const subtotal = s.items.reduce((n, i) => n + i.unitPricePaise * i.quantity, 0);
       const count = s.items.reduce((n, i) => n + i.quantity, 0);
-      const shipping = subtotal === 0 || subtotal >= 500000 ? 0 : 9900;
+      const allFreeShipping = s.items.length > 0 && s.items.every((i) => i.freeShipping);
+      const shipping = subtotal === 0 || subtotal >= 500000 || allFreeShipping ? 0 : 9900;
       const total = subtotal + shipping;
       return { subtotal, shipping, total, count };
     })

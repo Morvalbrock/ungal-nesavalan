@@ -15,7 +15,7 @@ export function CartSummary({ showCheckoutButton = true }: { showCheckoutButton?
     <div className="rounded-card border border-border bg-cream-warm/40 p-6">
       <h2 className="font-display text-xl">Order Summary</h2>
 
-      {subtotal > 0 && freeShippingRemaining > 0 && (
+      {subtotal > 0 && freeShippingRemaining > 0 && shipping > 0 && (
         <p className="mt-3 rounded-card bg-gold/10 px-3 py-2 text-xs text-ink-soft">
           Add {formatINR(freeShippingRemaining)} more for free shipping.
         </p>

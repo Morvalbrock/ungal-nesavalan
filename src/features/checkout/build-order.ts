@@ -78,12 +78,14 @@ export async function buildOrderFromCart(
     });
   }
 
+  const allFreeShipping = products.length > 0 && products.every((p) => p?.freeShipping);
   const quote = shippingQuote({ subtotalPaise: subtotal, pincode: opts.pincode });
+  const shippingPaise = allFreeShipping ? 0 : quote.ratePaise;
   return {
     items,
     subtotalPaise: subtotal,
-    shippingPaise: quote.ratePaise,
+    shippingPaise,
     shippingZone: quote.zone,
-    totalPaise: subtotal + quote.ratePaise
+    totalPaise: subtotal + shippingPaise
   };
 }

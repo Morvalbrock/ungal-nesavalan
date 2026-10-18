@@ -44,7 +44,12 @@ const productSchema = z.object({
     .array(
       z.object({
         id: z.string().optional(),
-        url: z.string().url("Enter a valid image URL"),
+        url: z
+          .string()
+          .refine(
+            (u) => u.startsWith("/") || /^https?:\/\//i.test(u),
+            "Enter a valid image URL or path"
+          ),
         alt: z.string().trim().default(""),
         sort: z.coerce.number().default(0)
       })
@@ -65,7 +70,8 @@ const productSchema = z.object({
     )
     .min(1, "Add at least one variant"),
   featured: z.boolean().default(false),
-  published: z.boolean().default(true)
+  published: z.boolean().default(true),
+  freeShipping: z.boolean().default(false)
 });
 
 export type ProductFormValues = z.input<typeof productSchema>;
@@ -123,7 +129,8 @@ export async function upsertProduct(values: ProductFormValues): Promise<ActionRe
     images,
     variants,
     featured: data.featured,
-    published: data.published
+    published: data.published,
+    freeShipping: data.freeShipping ?? false
   };
 
   if (data.id) {

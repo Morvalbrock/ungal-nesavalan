@@ -5,6 +5,7 @@ import { formatINR } from "@/lib/utils";
 
 interface Props {
   subtotalPaise: number;
+  freeShipping?: boolean;
 }
 
 interface QuoteResponse {
@@ -17,7 +18,7 @@ interface QuoteResponse {
   locationLabel: string | null;
 }
 
-export function DeliveryChecker({ subtotalPaise }: Props) {
+export function DeliveryChecker({ subtotalPaise, freeShipping }: Props) {
   const [pincode, setPincode] = useState("");
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,7 @@ export function DeliveryChecker({ subtotalPaise }: Props) {
     }
     startTransition(async () => {
       const res = await fetch(
-        `/api/shipping/quote?pincode=${encodeURIComponent(pincode.trim())}&subtotalPaise=${subtotalPaise}`
+        `/api/shipping/quote?pincode=${encodeURIComponent(pincode.trim())}&subtotalPaise=${subtotalPaise}${freeShipping ? "&freeShipping=true" : ""}`
       );
       if (!res.ok) {
         setError("We couldn't fetch a rate. Try again.");

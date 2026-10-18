@@ -33,7 +33,8 @@ export function PurchasePanel({ product }: { product: Product }) {
       image: product.images[0]?.url ?? "",
       unitPricePaise: unitPrice,
       quantity,
-      maxStock: variant.stock
+      maxStock: variant.stock,
+      freeShipping: product.freeShipping
     });
     track.addToCart({
       productId: product.id,

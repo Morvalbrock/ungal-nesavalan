@@ -40,10 +40,14 @@ export function ReviewStep({
   const applied = useAppliedCouponStore((s) => s.coupon);
   const discount = applied?.subtotalPaise === totals.subtotal ? applied.discountPaise : 0;
 
-  const quote = useMemo(
-    () => shippingQuote({ subtotalPaise: totals.subtotal, pincode: address.pincode }),
-    [totals.subtotal, address.pincode]
-  );
+  const allFreeShipping = items.length > 0 && items.every((i) => i.freeShipping);
+  const quote = useMemo(() => {
+    const q = shippingQuote({ subtotalPaise: totals.subtotal, pincode: address.pincode });
+    if (allFreeShipping) {
+      return { ...q, ratePaise: 0, qualifiesForFreeShipping: true };
+    }
+    return q;
+  }, [totals.subtotal, address.pincode, allFreeShipping]);
   const payable = Math.max(0, totals.subtotal - discount + quote.ratePaise);
 
   // Custom "Other" courier handling

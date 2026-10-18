@@ -61,6 +61,7 @@ export interface Product {
   published: boolean;
   createdAt: string;
   updatedAt: string;
+  freeShipping?: boolean;
 }
 
 export type ProductSummary = Pick<
@@ -76,6 +77,7 @@ export type ProductSummary = Pick<
   | "images"
   | "categoryId"
   | "featured"
+  | "freeShipping"
 >;
 
 export interface ProductQuery {

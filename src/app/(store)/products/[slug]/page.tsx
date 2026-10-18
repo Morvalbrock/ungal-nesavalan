@@ -169,7 +169,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </>
             )}
           </div>
-          <p className="mt-1.5 text-[12px] text-ink-muted">Inclusive of all taxes · Free shipping on orders ₹5,000+</p>
+          <p className="mt-1.5 text-[12px] text-ink-muted">
+            Inclusive of all taxes · {product.freeShipping ? "Free shipping on this item" : "Free shipping on orders ₹5,000+"}
+          </p>
 
           <Ornament className="mt-6 h-4 w-40" tone="gold" />
 
@@ -204,7 +206,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <PurchasePanel product={product} />
           </div>
 
-          <DeliveryChecker subtotalPaise={displayPrice} />
+          <DeliveryChecker subtotalPaise={displayPrice} freeShipping={product.freeShipping} />
 
           <div className="mt-8 grid grid-cols-3 gap-4 rounded-card border border-border/70 bg-cream-warm/40 p-4 text-center">
             <div>

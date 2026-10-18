@@ -8,4 +8,5 @@ export interface CartItem {
   unitPricePaise: number;
   quantity: number;
   maxStock: number;
+  freeShipping?: boolean;
 }
