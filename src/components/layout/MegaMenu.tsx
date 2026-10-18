@@ -118,8 +118,8 @@ export function MegaMenu() {
               className="group relative block aspect-[4/5] overflow-hidden rounded-card"
             >
               <Image
-                src="https://picsum.photos/seed/mega-bridal/640/800"
-                alt="Bridal edit"
+                src="/images/elegant_south_indian.png"
+                alt="The Bridal Edit"
                 fill
                 sizes="320px"
                 className="object-cover transition duration-700 group-hover:scale-105"
