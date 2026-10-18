@@ -1,24 +1,19 @@
 import type { Metadata } from "next";
-import { Container } from "@/components/layout/Container";
 import { Hero } from "@/components/home/Hero";
-import { UspStrip } from "@/components/home/UspStrip";
-import { SectionHeading } from "@/components/home/SectionHeading";
-import { CategoryMosaic } from "@/components/home/CategoryMosaic";
-import { WeaverStory } from "@/components/home/WeaverStory";
-import { Testimonials } from "@/components/home/Testimonials";
-import { JournalPreview } from "@/components/home/JournalPreview";
-import { InstagramGrid } from "@/components/home/InstagramGrid";
-import { NewsletterCta } from "@/components/home/NewsletterCta";
-import { FeaturedRail } from "@/components/home/FeaturedRail";
-import { HeritageStrip } from "@/components/home/HeritageStrip";
-import { productRepo, categoryRepo, getInStockCraftClusters } from "@/server/repositories";
+import { ProvenanceStatsBar } from "@/components/home/ProvenanceStatsBar";
+import { HeirloomGallery } from "@/components/home/HeirloomGallery";
+import { BridalSpotlight } from "@/components/home/BridalSpotlight";
+import { DirectFromLooms } from "@/components/home/DirectFromLooms";
+import { PatronReflections } from "@/components/home/PatronReflections";
+import { TrustAccreditations } from "@/components/home/TrustAccreditations";
+import { productRepo } from "@/server/repositories";
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Ungal Nesavalan — Handwoven Sarees, Loomed by Hand",
   description:
-    "Discover Kanjivaram, Banarasi, Chanderi, Patola, Uppada and more — handloom sarees sourced directly from master weavers across India. Free shipping on orders above ₹5,000.",
+    "Discover Kanjivaram, Banarasi, Chanderi, Patola, Uppada and more — handloom sarees sourced directly from master weavers across India. Complimentary insured delivery on pure zari heirlooms.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Ungal Nesavalan — Handwoven Sarees",
@@ -31,68 +26,33 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featured, bridal, newest, categories, clusters] = await Promise.all([
-    productRepo.featured(8),
-    productRepo.list({ category: "cat_bridal", perPage: 4, sort: "featured" }),
-    productRepo.list({ sort: "newest", perPage: 4 }),
-    categoryRepo.listWithStock(),
-    getInStockCraftClusters()
+  const [featured, facets] = await Promise.all([
+    productRepo.featured(16),
+    productRepo.getAvailableFacets()
   ]);
 
   return (
-    <>
+    <div className="flex flex-col w-full bg-[#FBF9F5]">
+      {/* 1. DYNAMIC BANNER / HERO SECTION (Admin Controlled) */}
       <Hero />
-      <UspStrip />
 
-      <FeaturedRail
-        products={featured}
-        eyebrow="Curator's selection"
-        title="Featured drapes"
-        subtitle="A rotating shortlist from the studio — chosen for weave, story and season."
-        href="/products"
-      />
+      {/* 2. PROVENANCE GUILD STATS BAR */}
+      <ProvenanceStatsBar />
 
-      <section className="border-t border-border/60 bg-cream-warm/50 py-24">
-        <Container>
-          <SectionHeading
-            eyebrow="Shop by weave"
-            title="Explore the collection"
-            subtitle="From soft silks to crisp cottons — explore our curated collection of handcrafted sarees for every occasion."
-          />
-          <div className="mt-14">
-            <CategoryMosaic categories={categories} />
-          </div>
-        </Container>
-      </section>
+      {/* 3. CURATED WEAVE CLUSTERS & THE HEIRLOOM GALLERY SHOWCASE */}
+      <HeirloomGallery products={featured} availableWeaves={facets.weaves} />
 
-      <WeaverStory />
+      {/* 4. COUTURE SPOTLIGHT: THE BRIDAL ATELIER & MASTERCRAFT */}
+      <BridalSpotlight />
 
-      <FeaturedRail
-        products={bridal.items}
-        eyebrow="For the biggest day"
-        title="The Bridal Edit"
-        subtitle="Kanjivaram, Banarasi, Baluchari — bridal drapes with room in the border for a lineage."
-        href="/category/bridal-sarees"
-        tone="warm"
-      />
+      {/* 5. HERITAGE STORYTELLING: DIRECT FROM OUR LOOMS */}
+      <DirectFromLooms />
 
-      <HeritageStrip clusters={clusters} />
+      {/* 6. PATRON REFLECTIONS (5-STAR EDITORIAL REVIEWS) */}
+      <PatronReflections />
 
-      <FeaturedRail
-        products={newest.items}
-        eyebrow="Off the loom"
-        title="New arrivals"
-        subtitle="This month's drapes, freshly cut from the beam."
-        href="/products?sort=newest"
-      />
-
-      <Testimonials />
-
-      <JournalPreview />
-
-      <InstagramGrid />
-
-      <NewsletterCta />
-    </>
+      {/* 7. TRUST & HERITAGE ACCREDITATIONS BAR */}
+      <TrustAccreditations />
+    </div>
   );
 }

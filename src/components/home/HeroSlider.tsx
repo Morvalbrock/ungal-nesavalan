@@ -11,12 +11,6 @@ import { cn } from "@/lib/utils";
 
 const AUTOPLAY_MS = 6000;
 
-const STATS = [
-  { k: "40+", v: "Weaving clusters" },
-  { k: "180", v: "Master weavers" },
-  { k: "0", v: "Middlemen" }
-];
-
 export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -160,15 +154,6 @@ function Slide({
               )}
             </div>
           )}
-
-          <div className="mt-10 grid max-w-md grid-cols-3 gap-3 border-t border-cream/15 pt-5 sm:mt-14 sm:gap-6 sm:pt-6">
-            {STATS.map((s) => (
-              <div key={s.v}>
-                <p className="font-display text-xl text-cream sm:text-2xl">{s.k}</p>
-                <p className="mt-1 text-[10px] uppercase tracking-widest2 text-cream/60 sm:text-[11px]">{s.v}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
         {slide.featureImageUrl && (
