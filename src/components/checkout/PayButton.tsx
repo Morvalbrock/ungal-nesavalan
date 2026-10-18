@@ -32,6 +32,7 @@ interface RazorpayOptions {
 }
 interface RazorpayInstance {
   open: () => void;
+  on?: (event: string, callback: (response: { error?: { description?: string; code?: string } }) => void) => void;
 }
 declare global {
   interface Window {
@@ -163,6 +164,12 @@ export function PayButton({
         });
       }
     });
+
+    rzp.on?.("payment.failed", (response) => {
+      setError(response.error?.description || "Payment failed. Please try again or use another payment method.");
+      setBusy(false);
+    });
+
     rzp.open();
   }, [address, items, couponCode, preferredCourier, paymentMode, confirm, router]);
 

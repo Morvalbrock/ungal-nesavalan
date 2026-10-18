@@ -132,14 +132,29 @@ export async function POST(req: Request) {
     });
   }
 
-  await abandonedCartRepo.markRecovered(user.id, order.id);
+  if (chargeNowPaise < 100) {
+    return NextResponse.json(
+      { error: "invalid_amount", message: "Order amount must be at least 100 paise (₹1.00)" },
+      { status: 400 }
+    );
+  }
 
   const provider = getPaymentProvider();
-  const providerOrder = await provider.createOrder({
-    amountPaise: chargeNowPaise,
-    receipt: order.orderNumber,
-    notes: { orderId: order.id, userId: user.id, paymentMode }
-  });
+  let providerOrder;
+  try {
+    providerOrder = await provider.createOrder({
+      amountPaise: chargeNowPaise,
+      receipt: order.orderNumber,
+      notes: { orderId: order.id, userId: user.id, paymentMode }
+    });
+  } catch (err: unknown) {
+    console.error("[create-order] Payment order creation failed:", err);
+    await orderRepo.updateStatus(order.id, "cancelled");
+    const msg = (err as { message?: string })?.message || "Failed to initialize payment with Razorpay";
+    return NextResponse.json({ error: "payment_failed", message: msg }, { status: 500 });
+  }
+
+  await abandonedCartRepo.markRecovered(user.id, order.id);
 
   const payment = await paymentRepo.create({
     orderId: order.id,
