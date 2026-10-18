@@ -1,4 +1,4 @@
-// One-shot migration: pushes every data/*.json into the Neon `collections` table.
+// One-shot migration: pushes every data/*.json into the MySQL `collections` table.
 // Idempotent — running twice overwrites with the current file contents.
 //
 // Usage:
@@ -9,29 +9,35 @@
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
+import mysql from "mysql2/promise";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = path.join(ROOT, "data");
 
-if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL is not set. Add it to .env.local and retry.");
+if (!process.env.DB_HOST) {
+  console.error("DB_HOST is not set. Add DB_HOST/DB_USER/DB_PASS/DB_NAME to .env.local and retry.");
   process.exit(1);
 }
 
-neonConfig.webSocketConstructor = ws;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT ?? 3306),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+});
 
 async function main() {
-  const client = await pool.connect();
+  const conn = await pool.getConnection();
   try {
-    await client.query(`
+    await conn.execute(`
       CREATE TABLE IF NOT EXISTS collections (
-        name TEXT PRIMARY KEY,
-        rows JSONB NOT NULL DEFAULT '[]'::jsonb,
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        name VARCHAR(191) PRIMARY KEY,
+        \`rows\` JSON NOT NULL,
+        updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
       )
     `);
 
@@ -61,9 +67,8 @@ async function main() {
         skipped++;
         continue;
       }
-      await client.query(
-        `INSERT INTO collections (name, rows) VALUES ($1, $2::jsonb)
-         ON CONFLICT (name) DO UPDATE SET rows = EXCLUDED.rows, updated_at = NOW()`,
+      await conn.execute(
+        "INSERT INTO collections (name, `rows`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `rows` = VALUES(`rows`), updated_at = NOW()",
         [name, JSON.stringify(rows)]
       );
       console.log(`OK ${name} (${rows.length} rows)`);
@@ -72,7 +77,7 @@ async function main() {
 
     console.log(`\nDone. Migrated ${migrated}, skipped ${skipped}.`);
   } finally {
-    client.release();
+    conn.release();
     await pool.end();
   }
 }

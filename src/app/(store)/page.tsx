@@ -56,7 +56,7 @@ export default async function HomePage() {
           <SectionHeading
             eyebrow="Shop by weave"
             title="Explore the collection"
-            subtitle="From the pit looms of Kanchipuram to the jala looms of Bishnupur — each collection is a region, a story, a rhythm of the shuttle."
+            subtitle="From soft silks to crisp cottons — explore our curated collection of handcrafted sarees for every occasion."
           />
           <div className="mt-14">
             <CategoryMosaic categories={categories} />

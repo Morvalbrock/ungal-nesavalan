@@ -1,9 +1,9 @@
 const OFFERS = [
-  "Free shipping on orders above ₹5,000",
-  "Cash on delivery available across India",
+  "Free shipping across Tamil Nadu",
+  "Cash on delivery available",
   "Handloom Mark certified · direct from master weavers",
   "Complimentary blouse piece with every drape",
-  "7-day easy returns · reverse pickup available"
+  "Returns subject to policy · Unboxing video mandatory"
 ];
 
 export function AnnouncementBar() {

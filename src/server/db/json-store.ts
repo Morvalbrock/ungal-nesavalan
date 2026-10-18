@@ -1,81 +1,69 @@
 import { promises as fs, existsSync } from "node:fs";
 import path from "node:path";
-import net from "node:net";
-import { setDefaultResultOrder } from "node:dns";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
+import mysql from "mysql2/promise";
+import type { RowDataPacket } from "mysql2";
 
-// Neon's WS endpoint has multiple A/AAAA records. Node's happy-eyeballs
-// default `autoSelectFamilyAttemptTimeout` is 250ms — shorter than the RTT
-// to us-east-2 from many networks, so every attempt is aborted and the
-// connection dies with a synthetic ETIMEDOUT AggregateError. Bump it, and
-// prefer IPv4 so we skip AAAA records on hosts without a v6 route.
-setDefaultResultOrder("ipv4first");
-net.setDefaultAutoSelectFamilyAttemptTimeout(2000);
-
-// Storage layer for all 16 repositories.
-// - With DATABASE_URL set: backs onto Neon Postgres, one row per collection in `collections`.
-// - Without DATABASE_URL: falls back to file-based JSON under ./data (local dev only).
-// The public API is identical to the previous file-only implementation, so
-// no repository needs to change.
+// Storage layer for all repositories.
+// - With DB_HOST set: backs onto MySQL, one row per collection in `collections`.
+// - Without DB_HOST: falls back to file-based JSON under ./data (local dev only).
+// The public API is identical to the previous implementation.
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const SEED_DIR = path.join(DATA_DIR, "seed");
-const DATABASE_URL = process.env.DATABASE_URL;
-const USE_DB = Boolean(DATABASE_URL);
-
-if (process.env.VERCEL_ENV && !DATABASE_URL) {
-  console.error(
-    "[json-store] FATAL: DATABASE_URL is missing on Vercel " +
-      (process.env.VERCEL_ENV ?? "?") +
-      ". Runtime will attempt filesystem writes and crash with EROFS. " +
-      "Set DATABASE_URL in Vercel Project Settings → Environment Variables → Production."
-  );
-}
+const USE_DB = Boolean(process.env.DB_HOST);
 
 // ---------------------------------------------------------------------------
-// Neon pool (cached on globalThis so hot-reload in dev doesn't leak sockets)
+// MySQL pool (cached on globalThis so hot-reload in dev doesn't leak connections)
 // ---------------------------------------------------------------------------
 
 declare global {
   // eslint-disable-next-line no-var
-  var __neonPool: Pool | undefined;
+  var __mysqlPool: mysql.Pool | undefined;
   // eslint-disable-next-line no-var
-  var __neonSchemaInit: Promise<void> | undefined;
+  var __mysqlSchemaInit: Promise<void> | undefined;
 }
 
-function getPool(): Pool {
-  if (!globalThis.__neonPool) {
-    // Always use `ws`. Node 22+ ships a global `WebSocket` (undici) that
-    // isn't wire-compatible with @neondatabase/serverless and surfaces as
-    // `[object ErrorEvent]` on connect.
-    neonConfig.webSocketConstructor = ws as unknown as typeof WebSocket;
-    globalThis.__neonPool = new Pool({ connectionString: DATABASE_URL });
+function getPool(): mysql.Pool {
+  if (!globalThis.__mysqlPool) {
+    globalThis.__mysqlPool = mysql.createPool({
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT ?? 3306),
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
+      waitForConnections: true,
+      connectionLimit: 10,
+    });
   }
-  return globalThis.__neonPool!;
+  return globalThis.__mysqlPool;
 }
 
 async function ensureSchema(): Promise<void> {
-  if (!globalThis.__neonSchemaInit) {
-    globalThis.__neonSchemaInit = (async () => {
-      const client = await getPool().connect();
+  if (!globalThis.__mysqlSchemaInit) {
+    globalThis.__mysqlSchemaInit = (async () => {
+      const conn = await getPool().getConnection();
       try {
-        await client.query(`
+        await conn.execute(`
           CREATE TABLE IF NOT EXISTS collections (
-            name TEXT PRIMARY KEY,
-            rows JSONB NOT NULL DEFAULT '[]'::jsonb,
-            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            name VARCHAR(191) PRIMARY KEY,
+            \`rows\` JSON NOT NULL,
+            updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
           )
         `);
       } finally {
-        client.release();
+        conn.release();
       }
     })().catch((err) => {
-      globalThis.__neonSchemaInit = undefined;
+      globalThis.__mysqlSchemaInit = undefined;
       throw err;
     });
   }
-  return globalThis.__neonSchemaInit;
+  return globalThis.__mysqlSchemaInit;
+}
+
+function parseRows<T>(val: unknown): T[] {
+  if (typeof val === "string") return JSON.parse(val) as T[];
+  return val as T[];
 }
 
 async function loadSeed<T>(name: string, fallback: T[]): Promise<T[]> {
@@ -91,95 +79,89 @@ async function loadSeed<T>(name: string, fallback: T[]): Promise<T[]> {
 }
 
 // ---------------------------------------------------------------------------
-// Postgres implementation
+// MySQL implementation
 // ---------------------------------------------------------------------------
 
-async function pgRead<T>(name: string, fallback: T[]): Promise<T[]> {
+async function dbRead<T>(name: string, fallback: T[]): Promise<T[]> {
   await ensureSchema();
-  const client = await getPool().connect();
+  const conn = await getPool().getConnection();
   try {
-    const existing = await client.query<{ rows: T[] }>(
-      "SELECT rows FROM collections WHERE name = $1",
+    const existing = (await conn.execute<RowDataPacket[]>(
+      "SELECT `rows` FROM collections WHERE name = ?",
       [name]
-    );
-    if (existing.rows.length > 0) return existing.rows[0].rows;
+    ))[0];
+    if (existing.length > 0) return parseRows<T>(existing[0].rows);
     const seeded = await loadSeed(name, fallback);
-    await client.query(
-      `INSERT INTO collections (name, rows) VALUES ($1, $2::jsonb)
-       ON CONFLICT (name) DO NOTHING`,
+    await conn.execute(
+      "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
       [name, JSON.stringify(seeded)]
     );
-    // Re-read to win over a concurrent mutator that inserted first.
-    const after = await client.query<{ rows: T[] }>(
-      "SELECT rows FROM collections WHERE name = $1",
+    const after = (await conn.execute<RowDataPacket[]>(
+      "SELECT `rows` FROM collections WHERE name = ?",
       [name]
-    );
-    return after.rows[0]?.rows ?? seeded;
+    ))[0];
+    return after[0] ? parseRows<T>(after[0].rows) : seeded;
   } finally {
-    client.release();
+    conn.release();
   }
 }
 
-async function pgWrite<T>(name: string, rows: T[]): Promise<void> {
+async function dbWrite<T>(name: string, rows: T[]): Promise<void> {
   await ensureSchema();
-  const client = await getPool().connect();
+  const conn = await getPool().getConnection();
   try {
-    await client.query(
-      `INSERT INTO collections (name, rows) VALUES ($1, $2::jsonb)
-       ON CONFLICT (name) DO UPDATE SET rows = EXCLUDED.rows, updated_at = NOW()`,
+    await conn.execute(
+      "INSERT INTO collections (name, `rows`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `rows` = VALUES(`rows`), updated_at = NOW()",
       [name, JSON.stringify(rows)]
     );
   } finally {
-    client.release();
+    conn.release();
   }
 }
 
-async function pgMutate<T>(
+async function dbMutate<T>(
   name: string,
   fallback: T[],
   fn: (rows: T[]) => T[] | Promise<T[]>
 ): Promise<T[]> {
   await ensureSchema();
-  const client = await getPool().connect();
+  const conn = await getPool().getConnection();
   try {
-    await client.query("BEGIN");
+    await conn.beginTransaction();
 
     // SELECT FOR UPDATE locks the row so concurrent mutators serialize.
-    // If the row doesn't exist yet, seed it (idempotent under ON CONFLICT)
-    // then re-lock the now-existing row.
-    let locked = await client.query<{ rows: T[] }>(
-      "SELECT rows FROM collections WHERE name = $1 FOR UPDATE",
+    let locked = (await conn.execute<RowDataPacket[]>(
+      "SELECT `rows` FROM collections WHERE name = ? FOR UPDATE",
       [name]
-    );
+    ))[0];
     let current: T[];
-    if (locked.rows.length === 0) {
+    if (locked.length === 0) {
       const seeded = await loadSeed(name, fallback);
-      await client.query(
-        `INSERT INTO collections (name, rows) VALUES ($1, $2::jsonb)
-         ON CONFLICT (name) DO NOTHING`,
+      await conn.execute(
+        "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
         [name, JSON.stringify(seeded)]
       );
-      locked = await client.query<{ rows: T[] }>(
-        "SELECT rows FROM collections WHERE name = $1 FOR UPDATE",
+      locked = (await conn.execute<RowDataPacket[]>(
+        "SELECT `rows` FROM collections WHERE name = ? FOR UPDATE",
         [name]
-      );
-      current = locked.rows[0]?.rows ?? seeded;
+      ))[0];
+      current = locked[0] ? parseRows<T>(locked[0].rows) : seeded;
     } else {
-      current = locked.rows[0].rows;
+      current = parseRows<T>(locked[0].rows);
     }
 
     const next = await fn(current);
-    await client.query(
-      "UPDATE collections SET rows = $2::jsonb, updated_at = NOW() WHERE name = $1",
-      [name, JSON.stringify(next)]
+    await conn.execute(
+      "UPDATE collections SET `rows` = ?, updated_at = NOW() WHERE name = ?",
+      [JSON.stringify(next), name]
     );
-    await client.query("COMMIT");
+    await conn.commit();
     return next;
   } catch (err) {
-    await client.query("ROLLBACK").catch(() => undefined);
+    await conn.rollback().catch(() => undefined);
     throw err;
   } finally {
-    client.release();
+    conn.release();
   }
 }
 
@@ -259,11 +241,11 @@ async function fileMutate<T>(
 // ---------------------------------------------------------------------------
 
 export async function readCollection<T>(name: string, fallback: T[] = []): Promise<T[]> {
-  return USE_DB ? pgRead(name, fallback) : fileRead(name, fallback);
+  return USE_DB ? dbRead(name, fallback) : fileRead(name, fallback);
 }
 
 export async function writeCollection<T>(name: string, rows: T[]): Promise<void> {
-  return USE_DB ? pgWrite(name, rows) : fileWrite(name, rows);
+  return USE_DB ? dbWrite(name, rows) : fileWrite(name, rows);
 }
 
 export async function mutateCollection<T>(
@@ -271,7 +253,7 @@ export async function mutateCollection<T>(
   fallback: T[],
   fn: (rows: T[]) => T[] | Promise<T[]>
 ): Promise<T[]> {
-  return USE_DB ? pgMutate(name, fallback, fn) : fileMutate(name, fallback, fn);
+  return USE_DB ? dbMutate(name, fallback, fn) : fileMutate(name, fallback, fn);
 }
 
 export function newId(prefix = ""): string {

@@ -18,32 +18,33 @@ export function WeaverStory() {
 
       <div className="mx-auto grid w-full max-w-[1200px] gap-16 px-6 py-24 lg:grid-cols-2">
         <div className="max-w-lg">
-          <p className="eyebrow-cream">Meet the loom</p>
+          <p className="eyebrow-cream">Our story</p>
           <h2 className="mt-4 font-display text-[36px] leading-[1.1] md:text-[46px]">
-            Every saree begins as
-            <span className="block italic text-gold-soft">a promise between two hands.</span>
+            Direct from Our Looms.
+            <span className="block italic text-gold-soft">Made with Care.</span>
           </h2>
           <Ornament className="mt-6 h-4 w-40" tone="gold" />
-          <p className="mt-6 text-[15px] leading-[1.8] text-cream/80">
-            Muniyandi has been at the pit loom in Kanchipuram for thirty-two years —
-            long enough to see his fingers memorise the count of a temple border. Every
-            drape we send you carries the name of the weaver who wove it, the cluster it
-            came from, and the day it left the loom.
+          <p className="mt-2 text-[14px] italic leading-[1.6] text-gold-soft/80">
+            Every Saree Has a Story. Every Thread Deserves Quality.
+          </p>
+          <p className="mt-5 text-[15px] leading-[1.8] text-cream/80">
+            At Ungal Nesavalan, we bring you beautiful sarees that celebrate the richness
+            of Indian tradition and craftsmanship.
+          </p>
+          <p className="mt-4 text-[15px] leading-[1.8] text-cream/80">
+            Every saree you choose is crafted by us and sold directly to you, without
+            unnecessary middlemen. We focus on premium quality, elegant designs and
+            attention to detail to offer you the best value.
+          </p>
+          <p className="mt-4 text-[15px] leading-[1.8] text-cream/80">
+            Our promise is simple — premium quality, trusted service and beautiful sarees
+            for every special moment.
           </p>
 
-          <div className="mt-8 grid grid-cols-3 gap-6 border-t border-cream/15 pt-6">
-            <div>
-              <p className="font-display text-2xl">92%</p>
-              <p className="mt-1 text-[11px] uppercase tracking-widest2 text-cream/60">To weavers</p>
-            </div>
-            <div>
-              <p className="font-display text-2xl">14</p>
-              <p className="mt-1 text-[11px] uppercase tracking-widest2 text-cream/60">GI-tagged clusters</p>
-            </div>
-            <div>
-              <p className="font-display text-2xl">180</p>
-              <p className="mt-1 text-[11px] uppercase tracking-widest2 text-cream/60">Artisan families</p>
-            </div>
+          <div className="mt-8 border-t border-cream/15 pt-6">
+            <p className="text-[13px] uppercase tracking-widest2 text-cream/60">
+              Quality You Can Trust. Elegance You Deserve.
+            </p>
           </div>
 
           <Link href="/about" className="btn-outline-cream mt-10">

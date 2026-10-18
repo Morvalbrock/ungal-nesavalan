@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import withPWA from "@ducanh2912/next-pwa";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["ws", "@neondatabase/serverless", "@react-pdf/renderer", "pdfkit"],
+  serverExternalPackages: ["mysql2", "@react-pdf/renderer", "pdfkit"],
   outputFileTracingIncludes: {
     "/api/orders/*/invoice": [
       "./node_modules/pdfkit/js/**/*",
