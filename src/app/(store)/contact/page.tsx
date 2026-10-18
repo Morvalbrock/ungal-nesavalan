@@ -25,13 +25,19 @@ export default function ContactPage() {
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Care team</p>
             <p className="mt-2">
-              <a className="link-underline" href="mailto:care@ungal-nesavalan.in">care@ungal-nesavalan.in</a>
+              <a className="link-underline" href="mailto:ungalnesavalan01@gmail.com">
+                ungalnesavalan01@gmail.com
+              </a>
             </p>
             <p>Mon–Sat, 10:00–19:00 IST</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">WhatsApp</p>
-            <p className="mt-2">+91 98400 00000</p>
+            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">WhatsApp / Phone</p>
+            <p className="mt-2">
+              <a className="link-underline" href="tel:+918825810897">
+                +91 88258 10897
+              </a>
+            </p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Studio</p>

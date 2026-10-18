@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getSession } from "@/features/auth/session";
 import { orderRepo, paymentRepo, productRepo } from "@/server/repositories";
 import { getPaymentProvider } from "@/features/payments";
+import { sendOrderPlacedNotifications } from "@/features/checkout/order-notification";
 
 const bodySchema = z.object({
   orderId: z.string().min(1),
@@ -58,6 +59,9 @@ export async function POST(req: Request) {
     await productRepo.adjustStock(
       order.items.map((i) => ({ productId: i.productId, variantId: i.variantId, delta: -i.quantity }))
     );
+
+    // Send order emails to store admin (ungalnesavalan01@gmail.com) and customer
+    void sendOrderPlacedNotifications(order.id);
   }
 
   return NextResponse.json({ orderId: order.id, orderNumber: order.orderNumber });

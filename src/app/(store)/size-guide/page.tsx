@@ -66,7 +66,7 @@ export default function SizeGuidePage() {
         <p className="mt-3">
           We don't currently stitch blouses in-house. Every trusted tailor in India can work from the unstitched piece
           in a week. If you'd like a recommendation in your city, write to us at
-          <a className="underline" href="mailto:care@ungal-nesavalan.in"> care@ungal-nesavalan.in</a>.
+          <a className="underline" href="mailto:ungalnesavalan01@gmail.com"> ungalnesavalan01@gmail.com</a>.
         </p>
       </section>
     </LegalShell>

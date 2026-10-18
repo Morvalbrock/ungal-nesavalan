@@ -62,7 +62,7 @@ export default function ShippingReturnsPage() {
       <section>
         <h2 className="font-display text-2xl text-ink">Damaged in transit?</h2>
         <p className="mt-3">
-          Write to <a className="underline" href="mailto:care@ungal-nesavalan.in">care@ungal-nesavalan.in</a> within 48
+          Write to <a className="underline" href="mailto:ungalnesavalan01@gmail.com">ungalnesavalan01@gmail.com</a> within 48
           hours of delivery with photos of the parcel and the saree. We'll organise a replacement or full refund at our
           cost.
         </p>

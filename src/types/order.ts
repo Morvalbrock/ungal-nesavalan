@@ -45,6 +45,7 @@ export interface Order {
   preferredCourier?: string;
   trackingId?: string;
   courier?: string;
+  notifiedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

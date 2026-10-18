@@ -30,7 +30,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       brand: {
         name: "Ungal Nesavalan",
         tagline: "Handloom sarees, loomed by hand.",
-        supportEmail: process.env.SUPPORT_EMAIL ?? "care@ungalnesavalan.example"
+        supportEmail: process.env.SUPPORT_EMAIL ?? "ungalnesavalan01@gmail.com"
       }
     })
   );

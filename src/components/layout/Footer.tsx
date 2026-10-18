@@ -118,8 +118,17 @@ export function Footer() {
           </div>
           <div>
             <p className="text-[10.5px] uppercase tracking-widest2 text-cream/50">Reach us</p>
-            <p className="mt-3 text-[13px] text-cream/80">care@ungalnesavalan.com</p>
-            <p className="text-[13px] text-cream/80">+91 90000 00000 · Mon–Sat 10am–7pm</p>
+            <p className="mt-3 text-[13px] text-cream/80">
+              <a href="mailto:ungalnesavalan01@gmail.com" className="transition hover:text-gold-soft">
+                ungalnesavalan01@gmail.com
+              </a>
+            </p>
+            <p className="text-[13px] text-cream/80">
+              <a href="tel:+918825810897" className="transition hover:text-gold-soft">
+                +91 88258 10897
+              </a>{" "}
+              · Mon–Sat 10am–7pm
+            </p>
           </div>
         </div>
       </Container>

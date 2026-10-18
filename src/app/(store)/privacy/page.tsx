@@ -58,7 +58,7 @@ export default function PrivacyPage() {
         <h2 className="font-display text-2xl text-ink">Your rights</h2>
         <p className="mt-3">
           You can access, correct, or export your data from the Account section, or by writing to
-          <a className="underline" href="mailto:privacy@ungal-nesavalan.in"> privacy@ungal-nesavalan.in</a>. Deletion
+          <a className="underline" href="mailto:ungalnesavalan01@gmail.com"> ungalnesavalan01@gmail.com</a>. Deletion
           requests are honoured within 30 days, subject to the retention notice above.
         </p>
       </section>

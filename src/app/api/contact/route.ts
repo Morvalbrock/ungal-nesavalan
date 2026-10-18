@@ -10,7 +10,7 @@ const bodySchema = z.object({
   message: z.string().trim().min(10).max(4000)
 });
 
-const CARE_INBOX = process.env.CONTACT_INBOX ?? "care@ungal-nesavalan.in";
+const CARE_INBOX = process.env.CONTACT_INBOX ?? "ungalnesavalan01@gmail.com";
 
 function escapeHtml(s: string): string {
   return s

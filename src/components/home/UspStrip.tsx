@@ -31,7 +31,7 @@ const USPS = [
   },
   {
     title: "Return or Exchange",
-    body: "Eligible genuine issues only. Unboxing video mandatory. WhatsApp: 8825810897",
+    body: "Eligible genuine issues only. Unboxing video mandatory. WhatsApp: +91 88258 10897",
     icon: (
       <svg viewBox="0 0 32 32" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.4">
         <path d="M28 16A12 12 0 1 0 6.5 23" strokeLinecap="round" />

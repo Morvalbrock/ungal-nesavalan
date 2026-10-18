@@ -15,6 +15,7 @@ export interface OrderRepository {
   recordAmountPaid(id: string, amountPaise: number): Promise<Order | null>;
   markCodCollected(id: string): Promise<Order | null>;
   attachPayment(id: string, paymentId: string): Promise<Order | null>;
+  markNotified(id: string): Promise<Order | null>;
   findEligibleForReview(userId: string, productId: string): Promise<Order | null>;
 }
 
@@ -130,6 +131,17 @@ export const jsonOrderRepo: OrderRepository = {
       rows.map((o) => {
         if (o.id !== id) return o;
         updated = { ...o, paymentId, updatedAt: nowIso() };
+        return updated;
+      })
+    );
+    return updated;
+  },
+  async markNotified(id) {
+    let updated: Order | null = null;
+    await mutateCollection<Order>(COLLECTION, [], (rows) =>
+      rows.map((o) => {
+        if (o.id !== id) return o;
+        updated = { ...o, notifiedAt: nowIso(), updatedAt: nowIso() };
         return updated;
       })
     );

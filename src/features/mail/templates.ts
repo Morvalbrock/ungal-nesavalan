@@ -8,11 +8,12 @@ function shell(content: string): string {
 <html><head><meta charset="utf-8"><title>${BRAND}</title></head>
 <body style="margin:0;background:#f5eddc;font-family:Georgia,serif;color:#1a1a1a;">
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
-<div style="font-size:22px;font-weight:700;letter-spacing:2px;">${BRAND}</div>
+<div style="font-size:22px;font-weight:700;letter-spacing:2px;color:#7a1f2b;">${BRAND}</div>
 <hr style="border:0;border-top:1px solid #d9c9a9;margin:24px 0;" />
 ${content}
 <hr style="border:0;border-top:1px solid #d9c9a9;margin:32px 0;" />
-<p style="font-size:12px;color:#8a7a5c;">You're receiving this because you have an account at ${SITE_URL}.</p>
+<p style="font-size:12px;color:#8a7a5c;margin:4px 0;">Support: <a href="mailto:ungalnesavalan01@gmail.com" style="color:#7a1f2b;text-decoration:none;">ungalnesavalan01@gmail.com</a> · WhatsApp/Phone: <a href="tel:+918825810897" style="color:#7a1f2b;text-decoration:none;">+91 88258 10897</a></p>
+<p style="font-size:12px;color:#8a7a5c;margin:4px 0;">You're receiving this from ${SITE_URL}.</p>
 </div></body></html>`;
 }
 
@@ -40,14 +41,81 @@ ${order.discountPaise > 0 ? `<tr><td colspan="2" style="text-align:right;color:#
 }
 
 export function orderConfirmationEmail(order: Order, customerName: string) {
+  const addr = order.addressSnapshot;
+  const addressText = `${escapeHtml(addr.fullName)}, ${escapeHtml(addr.line1)}${addr.line2 ? `, ${escapeHtml(addr.line2)}` : ""}, ${escapeHtml(addr.city)}, ${escapeHtml(addr.state)} - ${escapeHtml(addr.pincode)}`;
+
   const html = shell(`
 <p style="font-size:20px;">Thank you for your order, ${escapeHtml(customerName)}.</p>
-<p>Order <strong>${order.orderNumber}</strong> — we'll write again when it ships.</p>
+<p>Order <strong>${order.orderNumber}</strong> has been received — we will carefully inspect and package your saree, and write to you again as soon as it ships.</p>
+
+<div style="background:#fdfcf9;border:1px solid #d9c9a9;border-radius:8px;padding:14px;margin:20px 0;font-size:13px;line-height:1.6;">
+  <p style="margin:0 0 4px 0;font-weight:bold;color:#7a1f2b;">Delivery Address:</p>
+  <p style="margin:0;color:#444;">${addressText}</p>
+  <p style="margin:4px 0 0 0;color:#666;">Phone: ${escapeHtml(addr.phone)}</p>
+</div>
+
 ${itemsTable(order)}
+
 <p style="margin-top:24px;">
 <a href="${SITE_URL}/account/orders/${order.id}" style="display:inline-block;background:#1a1a1a;color:#f5eddc;padding:10px 18px;text-decoration:none;border-radius:8px;">View order</a>
-</p>`);
+</p>
+
+<div style="margin-top:24px;padding:14px;background:#e8dcc0;border-radius:8px;font-size:13px;">
+  <strong>Need help or have questions?</strong><br />
+  Reach us at <a href="mailto:ungalnesavalan01@gmail.com" style="color:#7a1f2b;font-weight:bold;">ungalnesavalan01@gmail.com</a> or WhatsApp/Call <a href="tel:+918825810897" style="color:#7a1f2b;font-weight:bold;">+91 88258 10897</a>.
+</div>`);
   return { subject: `Order confirmed — ${order.orderNumber}`, html };
+}
+
+export function adminNewOrderEmail(
+  order: Order,
+  customer: { name?: string; email?: string; phone?: string }
+) {
+  const customerName = escapeHtml(customer.name || order.addressSnapshot.fullName || "Customer");
+  const customerEmail = escapeHtml(customer.email || "—");
+  const customerPhone = escapeHtml(customer.phone || order.addressSnapshot.phone || "—");
+  const addr = order.addressSnapshot;
+  const addressHtml = `
+    <strong>${escapeHtml(addr.fullName)}</strong><br />
+    ${escapeHtml(addr.line1)}${addr.line2 ? `, ${escapeHtml(addr.line2)}` : ""}<br />
+    ${escapeHtml(addr.city)}, ${escapeHtml(addr.state)} - ${escapeHtml(addr.pincode)}<br />
+    ${escapeHtml(addr.country ?? "India")}<br />
+    <strong>Phone:</strong> ${escapeHtml(addr.phone)}
+  `;
+
+  const html = shell(`
+<div style="background:#7a1f2b;color:#f5eddc;padding:12px 16px;border-radius:6px;font-size:14px;font-weight:bold;margin-bottom:20px;text-align:center;letter-spacing:1px;">
+  ★ NEW ORDER RECEIVED ★
+</div>
+
+<p style="font-size:18px;margin-bottom:8px;">A new order <strong>#${order.orderNumber}</strong> has been placed!</p>
+<p style="color:#666;font-size:13px;margin-top:0;">Payment Mode: <strong>${(order.paymentMode ?? "prepaid").toUpperCase()}</strong> · Status: <strong>${order.status.toUpperCase()}</strong></p>
+
+<div style="background:#fff;border:1px solid #d9c9a9;border-radius:8px;padding:16px;margin:20px 0;font-size:13px;line-height:1.6;">
+  <p style="margin:0 0 8px 0;font-size:14px;font-weight:bold;color:#7a1f2b;text-transform:uppercase;letter-spacing:0.5px;">Customer Details</p>
+  <table style="width:100%;font-size:13px;">
+    <tr><td style="color:#666;width:120px;padding:3px 0;">Name:</td><td><strong>${customerName}</strong></td></tr>
+    <tr><td style="color:#666;padding:3px 0;">Email:</td><td><a href="mailto:${customerEmail}">${customerEmail}</a></td></tr>
+    <tr><td style="color:#666;padding:3px 0;">Phone:</td><td><a href="tel:${customerPhone}">${customerPhone}</a></td></tr>
+  </table>
+  <hr style="border:0;border-top:1px solid #eee;margin:12px 0;" />
+  <p style="margin:0 0 6px 0;font-size:14px;font-weight:bold;color:#7a1f2b;text-transform:uppercase;letter-spacing:0.5px;">Shipping Address</p>
+  <div style="color:#333;">${addressHtml}</div>
+  ${order.notes ? `<p style="margin:10px 0 0 0;color:#555;"><strong>Delivery notes:</strong> ${escapeHtml(order.notes)}</p>` : ""}
+  ${order.preferredCourier ? `<p style="margin:4px 0 0 0;color:#555;"><strong>Preferred courier:</strong> ${escapeHtml(order.preferredCourier)}</p>` : ""}
+</div>
+
+<p style="font-size:15px;font-weight:bold;margin-top:24px;margin-bottom:8px;">Items Ordered</p>
+${itemsTable(order)}
+
+<div style="margin-top:28px;text-align:center;">
+  <a href="${SITE_URL}/admin/orders/${order.id}" style="display:inline-block;background:#7a1f2b;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:14px;">View Order in Admin Panel</a>
+</div>`);
+
+  return {
+    subject: `New Order #${order.orderNumber} placed by ${customerName} (₹${(order.totalPaise / 100).toLocaleString("en-IN")})`,
+    html
+  };
 }
 
 export function shippedEmail(
