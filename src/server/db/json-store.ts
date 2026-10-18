@@ -10,7 +10,18 @@ import type { RowDataPacket } from "mysql2";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const SEED_DIR = path.join(DATA_DIR, "seed");
-const USE_DB = Boolean(process.env.DB_HOST);
+const DATABASE_URL = process.env.DATABASE_URL;
+const DB_HOST = process.env.DB_HOST;
+const USE_DB = Boolean(DATABASE_URL || DB_HOST);
+
+if (process.env.VERCEL_ENV && !USE_DB) {
+  console.error(
+    "[json-store] FATAL: Database credentials (DATABASE_URL or DB_HOST) are missing on Vercel " +
+      (process.env.VERCEL_ENV ?? "?") +
+      ". Runtime will attempt filesystem writes and crash with EROFS. " +
+      "Set DATABASE_URL or DB_HOST/DB_USER/DB_PASS/DB_NAME in Vercel Project Settings → Environment Variables."
+  );
+}
 
 // ---------------------------------------------------------------------------
 // MySQL pool (cached on globalThis so hot-reload in dev doesn't leak connections)
@@ -25,15 +36,19 @@ declare global {
 
 function getPool(): mysql.Pool {
   if (!globalThis.__mysqlPool) {
-    globalThis.__mysqlPool = mysql.createPool({
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT ?? 3306),
-      user: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      waitForConnections: true,
-      connectionLimit: 10,
-    });
+    if (DATABASE_URL) {
+      globalThis.__mysqlPool = mysql.createPool(DATABASE_URL);
+    } else {
+      globalThis.__mysqlPool = mysql.createPool({
+        host: DB_HOST,
+        port: Number(process.env.DB_PORT ?? 3306),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        database: process.env.DB_NAME,
+        waitForConnections: true,
+        connectionLimit: 10,
+      });
+    }
   }
   return globalThis.__mysqlPool;
 }
@@ -67,10 +82,12 @@ function parseRows<T>(val: unknown): T[] {
 }
 
 async function loadSeed<T>(name: string, fallback: T[]): Promise<T[]> {
+  const dataFile = path.join(DATA_DIR, `${name}.json`);
   const seedFile = path.join(SEED_DIR, `${name}.json`);
-  if (!existsSync(seedFile)) return [...fallback];
+  const fileToUse = existsSync(dataFile) ? dataFile : existsSync(seedFile) ? seedFile : null;
+  if (!fileToUse) return [...fallback];
   try {
-    const raw = await fs.readFile(seedFile, "utf8");
+    const raw = await fs.readFile(fileToUse, "utf8");
     if (!raw.trim()) return [...fallback];
     return JSON.parse(raw) as T[];
   } catch {
@@ -83,39 +100,57 @@ async function loadSeed<T>(name: string, fallback: T[]): Promise<T[]> {
 // ---------------------------------------------------------------------------
 
 async function dbRead<T>(name: string, fallback: T[]): Promise<T[]> {
-  await ensureSchema();
-  const conn = await getPool().getConnection();
   try {
-    const existing = (await conn.execute<RowDataPacket[]>(
-      "SELECT `rows` FROM collections WHERE name = ?",
-      [name]
-    ))[0];
-    if (existing.length > 0) return parseRows<T>(existing[0].rows);
-    const seeded = await loadSeed(name, fallback);
-    await conn.execute(
-      "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
-      [name, JSON.stringify(seeded)]
-    );
-    const after = (await conn.execute<RowDataPacket[]>(
-      "SELECT `rows` FROM collections WHERE name = ?",
-      [name]
-    ))[0];
-    return after[0] ? parseRows<T>(after[0].rows) : seeded;
-  } finally {
-    conn.release();
+    await ensureSchema();
+    const conn = await getPool().getConnection();
+    try {
+      const existing = (await conn.execute<RowDataPacket[]>(
+        "SELECT `rows` FROM collections WHERE name = ?",
+        [name]
+      ))[0];
+      if (existing.length > 0) return parseRows<T>(existing[0].rows);
+      const seeded = await loadSeed(name, fallback);
+      await conn.execute(
+        "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
+        [name, JSON.stringify(seeded)]
+      );
+      const after = (await conn.execute<RowDataPacket[]>(
+        "SELECT `rows` FROM collections WHERE name = ?",
+        [name]
+      ))[0];
+      return after[0] ? parseRows<T>(after[0].rows) : seeded;
+    } finally {
+      conn.release();
+    }
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code;
+    if (code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT" || code === "ER_ACCESS_DENIED_ERROR") {
+      console.warn(`[json-store] Database unreachable (${code}). Falling back to local file storage for "${name}".`);
+      return fileRead(name, fallback);
+    }
+    throw err;
   }
 }
 
 async function dbWrite<T>(name: string, rows: T[]): Promise<void> {
-  await ensureSchema();
-  const conn = await getPool().getConnection();
   try {
-    await conn.execute(
-      "INSERT INTO collections (name, `rows`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `rows` = VALUES(`rows`), updated_at = NOW()",
-      [name, JSON.stringify(rows)]
-    );
-  } finally {
-    conn.release();
+    await ensureSchema();
+    const conn = await getPool().getConnection();
+    try {
+      await conn.execute(
+        "INSERT INTO collections (name, `rows`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `rows` = VALUES(`rows`), updated_at = NOW()",
+        [name, JSON.stringify(rows)]
+      );
+    } finally {
+      conn.release();
+    }
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code;
+    if (code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT" || code === "ER_ACCESS_DENIED_ERROR") {
+      console.warn(`[json-store] Database unreachable (${code}). Falling back to file storage for "${name}".`);
+      return fileWrite(name, rows);
+    }
+    throw err;
   }
 }
 
@@ -124,44 +159,53 @@ async function dbMutate<T>(
   fallback: T[],
   fn: (rows: T[]) => T[] | Promise<T[]>
 ): Promise<T[]> {
-  await ensureSchema();
-  const conn = await getPool().getConnection();
   try {
-    await conn.beginTransaction();
+    await ensureSchema();
+    const conn = await getPool().getConnection();
+    try {
+      await conn.beginTransaction();
 
-    // SELECT FOR UPDATE locks the row so concurrent mutators serialize.
-    let locked = (await conn.execute<RowDataPacket[]>(
-      "SELECT `rows` FROM collections WHERE name = ? FOR UPDATE",
-      [name]
-    ))[0];
-    let current: T[];
-    if (locked.length === 0) {
-      const seeded = await loadSeed(name, fallback);
-      await conn.execute(
-        "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
-        [name, JSON.stringify(seeded)]
-      );
-      locked = (await conn.execute<RowDataPacket[]>(
+      // SELECT FOR UPDATE locks the row so concurrent mutators serialize.
+      let locked = (await conn.execute<RowDataPacket[]>(
         "SELECT `rows` FROM collections WHERE name = ? FOR UPDATE",
         [name]
       ))[0];
-      current = locked[0] ? parseRows<T>(locked[0].rows) : seeded;
-    } else {
-      current = parseRows<T>(locked[0].rows);
-    }
+      let current: T[];
+      if (locked.length === 0) {
+        const seeded = await loadSeed(name, fallback);
+        await conn.execute(
+          "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
+          [name, JSON.stringify(seeded)]
+        );
+        locked = (await conn.execute<RowDataPacket[]>(
+          "SELECT `rows` FROM collections WHERE name = ? FOR UPDATE",
+          [name]
+        ))[0];
+        current = locked[0] ? parseRows<T>(locked[0].rows) : seeded;
+      } else {
+        current = parseRows<T>(locked[0].rows);
+      }
 
-    const next = await fn(current);
-    await conn.execute(
-      "UPDATE collections SET `rows` = ?, updated_at = NOW() WHERE name = ?",
-      [JSON.stringify(next), name]
-    );
-    await conn.commit();
-    return next;
-  } catch (err) {
-    await conn.rollback().catch(() => undefined);
+      const next = await fn(current);
+      await conn.execute(
+        "UPDATE collections SET `rows` = ?, updated_at = NOW() WHERE name = ?",
+        [JSON.stringify(next), name]
+      );
+      await conn.commit();
+      return next;
+    } catch (err) {
+      await conn.rollback().catch(() => undefined);
+      throw err;
+    } finally {
+      conn.release();
+    }
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code;
+    if (code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT" || code === "ER_ACCESS_DENIED_ERROR") {
+      console.warn(`[json-store] Database unreachable (${code}). Falling back to file storage for "${name}".`);
+      return fileMutate(name, fallback, fn);
+    }
     throw err;
-  } finally {
-    conn.release();
   }
 }
 
