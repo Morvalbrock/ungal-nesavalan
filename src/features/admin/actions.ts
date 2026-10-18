@@ -12,7 +12,8 @@ import {
   productRepo,
   questionRepo,
   returnRepo,
-  userRepo
+  userRepo,
+  announcementRepo
 } from "@/server/repositories";
 import { getPaymentProvider } from "@/features/payments";
 import { getMailProvider } from "@/features/mail";
@@ -606,3 +607,54 @@ export async function toggleHeroSlideActive(id: string, active: boolean): Promis
   revalidatePath("/");
   return { ok: true };
 }
+
+const announcementSchema = z.object({
+  id: z.string().optional(),
+  text: z.string().trim().min(1, "Text is required"),
+  link: z.string().trim().default(""),
+  sort: z.coerce.number().int().default(0),
+  active: z.boolean().default(true)
+});
+
+export type AnnouncementFormValues = z.input<typeof announcementSchema>;
+
+export async function upsertAnnouncement(values: AnnouncementFormValues): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = announcementSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "invalid_input",
+      issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
+    };
+  }
+  const { id, ...payload } = parsed.data;
+  if (id) {
+    const updated = await announcementRepo.update(id, payload);
+    if (!updated) return { ok: false, error: "not_found" };
+  } else {
+    await announcementRepo.create(payload);
+  }
+  revalidatePath("/admin/announcements");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function deleteAnnouncement(id: string): Promise<ActionResult> {
+  await requireAdmin();
+  const removed = await announcementRepo.remove(id);
+  if (!removed) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/announcements");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function toggleAnnouncementActive(id: string, active: boolean): Promise<ActionResult> {
+  await requireAdmin();
+  const updated = await announcementRepo.update(id, { active });
+  if (!updated) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/announcements");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+

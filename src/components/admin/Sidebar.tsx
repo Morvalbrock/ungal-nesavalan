@@ -13,6 +13,7 @@ import {
   Clock,
   MessageCircle,
   Images,
+  Megaphone,
   ExternalLink,
   LogOut
 } from "lucide-react";
@@ -21,6 +22,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/hero-slides", label: "Hero slides", icon: Images },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: Layers },

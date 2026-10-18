@@ -14,6 +14,7 @@ export { jsonNewsletterRepo as newsletterRepo } from "./newsletter.repository";
 export { jsonQuestionRepo as questionRepo } from "./questions.repository";
 export { jsonHeroSlideRepo as heroSlideRepo } from "./hero-slides.repository";
 export { jsonPasswordResetRepo as passwordResetRepo } from "./password-reset.repository";
+export { jsonAnnouncementRepo as announcementRepo } from "./announcements.repository";
 export type { ProductRepository } from "./products.repository";
 export type { CategoryRepository } from "./categories.repository";
 export type { UserRepository } from "./users.repository";
@@ -30,3 +31,5 @@ export type { NewsletterRepository } from "./newsletter.repository";
 export type { QuestionRepository } from "./questions.repository";
 export type { HeroSlideRepository } from "./hero-slides.repository";
 export type { PasswordResetRepository } from "./password-reset.repository";
+export type { AnnouncementRepository } from "./announcements.repository";
+
