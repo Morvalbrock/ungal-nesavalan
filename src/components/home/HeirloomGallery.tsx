@@ -31,6 +31,7 @@ export function HeirloomGallery({ products, availableWeaves = [] }: HeirloomGall
       });
     } else {
       list.push(
+        { id: "elampillai", label: "Elampillai Weave" },
         { id: "kanjivaram", label: "Kanchipuram Silk" },
         { id: "jamdani", label: "Bishnupur Jamdani" },
         { id: "banarasi", label: "Banarasi Brocade" },
@@ -70,10 +71,10 @@ export function HeirloomGallery({ products, availableWeaves = [] }: HeirloomGall
   };
 
   const qvExtra = quickViewProduct as unknown as { region?: string; description?: string } | null;
-  const qvRegion = qvExtra?.region || "Kanchipuram";
+  const qvRegion = qvExtra?.region || "Elampillai";
   const qvDesc =
     qvExtra?.description ||
-    "Authentic handloom drape woven with generational mastery, pure natural silks, and artisanal pride.";
+    "Authentic handloom drape from our Elampillai master weavers, woven with pure natural silks and generational pride.";
 
   return (
     <>

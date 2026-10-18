@@ -39,8 +39,8 @@ export function BridalSpotlight() {
             <div className="relative p-3 bg-[#FBF9F5] border border-[#C69C55]/30 shadow-2xl">
               <div className="relative w-full aspect-[4/5] overflow-hidden bg-[#EFEEEA]">
                 <Image
-                  src="https://lh3.googleusercontent.com/aida/AEtjO1VWKjFizC3zpTVpbEtYQRkmOjnW3WIJbohg4GhqnFvVi6K_yJkgvQRBqlO06onalZvxiAC_HBxEhQz09v_S2uXd45w_kN9zYB-SUReG8qNKqaUtWZD0iK3LOhUGhcJOkQEKghGsv3K285RzlxrcurnBfobffpCaabBQILY4X2j-_NM8XO__kmwYkUhWbZRKaZEyiUzoGvw6nW2ZWrH-54xHXfS8dO5iinV-lI-9U3Tii3KFHZQ5mm4a"
-                  alt="The Bridal Edit South Indian Bride in Crimson Red Kanjivaram"
+                  src="/images/generating.png"
+                  alt="The Bridal Edit Elampillai Handloom Pure Silk Saree"
                   width={720}
                   height={900}
                   className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105"
@@ -57,7 +57,7 @@ export function BridalSpotlight() {
               <div className="absolute -bottom-4 -left-4 w-20 h-20 md:w-24 md:h-24 rounded-full border border-[#C69C55]/40 bg-[#FBF9F5]/95 backdrop-blur-md flex flex-col items-center justify-center p-2 text-center shadow-lg">
                 <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-[#7A5817]" />
                 <span className="text-[8px] md:text-[9px] uppercase tracking-tighter text-[#1B1C1A] font-bold mt-0.5">
-                  Korvai Guild
+                  Elampillai Guild
                 </span>
               </div>
             </div>
@@ -68,7 +68,7 @@ export function BridalSpotlight() {
             <div className="inline-flex items-center gap-2 mb-2">
               <span className="h-px w-8 bg-[#7A5817]"></span>
               <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#7A5817]">
-                Couture Spotlight · The Bridal Edit
+                Couture Spotlight · The Bridal Edit · Elampillai Looms
               </span>
             </div>
 
@@ -78,7 +78,7 @@ export function BridalSpotlight() {
             </h2>
 
             <p className="text-sm md:text-base text-[#4D4541] leading-relaxed mb-6">
-              Each bridal saree takes between 24 to 45 artisan days, woven using 3-ply twisted mulberry silk and certified pure gold-dipped silver zari threads. No mass production. Strictly authentic.
+              Handcrafted in the legendary handloom weaving hub of Elampillai, Salem. Each bridal drape is individually created using authentic twisted mulberry silks, rich traditional zari motifs, and ancestral pit-loom artistry. No mass production. Directly from our looms to you.
             </p>
 
             {/* Feature Pills */}

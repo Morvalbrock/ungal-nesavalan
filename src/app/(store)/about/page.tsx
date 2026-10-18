@@ -25,6 +25,7 @@ export default async function AboutPage() {
       <section>
         <h2 className="font-display text-2xl text-ink">Where we buy</h2>
         <ul className="mt-3 list-disc space-y-2 pl-5">
+          <li><strong>Elampillai, Salem, Tamil Nadu</strong> — Our foundational weaving heartland, famed for generational jacquard handloom mastery, soft silk drapes, and intricate zari artistry.</li>
           <li><strong>Kanchipuram, Tamil Nadu</strong> — Silk mark Kanjivaram in temple borders and korvai palus.</li>
           <li><strong>Varanasi, Uttar Pradesh</strong> — Katan silk Banarasi with kadhwa and jamdani weaves.</li>
           <li><strong>Chanderi, Madhya Pradesh</strong> — Silk-cotton with the transparent sheen and buti motifs.</li>
@@ -52,10 +53,9 @@ export default async function AboutPage() {
       </section>
 
       <section>
-        <h2 className="font-display text-2xl text-ink">Studio</h2>
+        <h2 className="font-display text-2xl text-ink">Studio & Dispatch Hub</h2>
         <p className="mt-3">
-          Our small team of five works out of a converted colonial bungalow in Kanchipuram. Inspection, folding, and
-          dispatch happen here. If you're in town, write ahead and drop by — chai is on us.
+          Our studio and dispatch hub is located at GRT parcel service, Elampillai, main road, near Salem, Edaganasalai, Tamil Nadu 637502. Inspection, hand folding, and express dispatch happen here. If you're in town, write ahead and drop by — chai is on us.
         </p>
       </section>
     </LegalShell>

@@ -40,19 +40,19 @@ export default function ContactPage() {
             </p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Studio</p>
-            <p className="mt-2">
-              47, Silk Weavers Street
+            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Studio & Dispatch Hub</p>
+            <p className="mt-2 leading-relaxed">
+              GRT parcel service, Elampillai,
               <br />
-              Kanchipuram 631502
+              Main Road, near Salem,
               <br />
-              Tamil Nadu, India
+              Edaganasalai, Tamil Nadu 637502
             </p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Press</p>
+            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Support & Queries</p>
             <p className="mt-2">
-              <a className="link-underline" href="mailto:press@ungal-nesavalan.in">press@ungal-nesavalan.in</a>
+              <a className="link-underline" href="mailto:ungalnesavalan01@gmail.com">ungalnesavalan01@gmail.com</a>
             </p>
           </div>
         </aside>

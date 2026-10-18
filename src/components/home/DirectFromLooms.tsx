@@ -23,7 +23,7 @@ export function DirectFromLooms() {
 
           <div className="space-y-4 text-white/85 text-sm md:text-base leading-relaxed mb-8">
             <p>
-              At Ungal Nesavalan, we bring you beautiful sarees that celebrate the richness of Indian tradition and craftsmanship. Every saree you choose is crafted by us and sold directly to you, without unnecessary middlemen. We focus on premium quality, elegant designs and attention to detail to offer you the best value. Our promise is simple — premium quality, trusted service and beautiful sarees for every special moment.
+              At Ungal Nesavalan, we bring you beautiful sarees rooted in Elampillai, Salem — the historic hub of master craftsmanship and exquisite handlooms. Every saree you choose is crafted by us and sold directly to you, without unnecessary middlemen. We focus on premium quality, elegant designs and attention to detail to offer you the best value. Our promise is simple — premium quality, trusted service and beautiful sarees for every special moment.
             </p>
           </div>
 
@@ -33,7 +33,7 @@ export function DirectFromLooms() {
               &ldquo;When you drape this cloth, you wear three generations of our home&apos;s patience.&rdquo;
             </p>
             <span className="text-[10.5px] uppercase tracking-widest text-[#E5C378] block font-semibold">
-              — Ramanathan K., 4th Generation Master Weaver, Pillaiyarpalayam Loom
+              — Ramanathan K., 4th Generation Master Weaver, Elampillai Weavers Guild
             </span>
           </div>
 
@@ -61,7 +61,7 @@ export function DirectFromLooms() {
               />
             </div>
             <div className="p-3 flex items-center justify-between text-[10px] uppercase font-semibold tracking-wider text-white/70">
-              <span>Kanchipuram Guild Atelier #04</span>
+              <span>Elampillai Guild Atelier #04</span>
               <span>Hand-Thrown Shuttle</span>
             </div>
           </div>

@@ -45,7 +45,7 @@ export const ZONE_RATES: Record<ShippingZone, ZoneRate> = {
 };
 
 // India pincode → zone based on first 1-2 digits.
-// Origin: Kanchipuram, Tamil Nadu (631502). Zones are courier-realistic buckets.
+// Origin: Elampillai, Salem, Tamil Nadu (637502). Zones are courier-realistic buckets.
 export function zoneForPincode(pincode: string): ShippingZone {
   const clean = pincode.trim();
   if (!/^\d{6}$/.test(clean)) return "national";

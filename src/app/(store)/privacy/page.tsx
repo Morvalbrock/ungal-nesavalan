@@ -66,7 +66,7 @@ export default function PrivacyPage() {
       <section>
         <h2 className="font-display text-2xl text-ink">Contact</h2>
         <p className="mt-3">
-          Ungal Nesavalan · 47 Silk Weavers Street · Kanchipuram 631502 · Tamil Nadu · India.
+          Ungal Nesavalan · GRT parcel service, Elampillai, main road, near Salem, Edaganasalai, Tamil Nadu 637502 · India.
         </p>
       </section>
     </LegalShell>

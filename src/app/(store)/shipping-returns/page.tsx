@@ -13,7 +13,7 @@ export default function ShippingReturnsPage() {
     <LegalShell
       kicker="Support"
       title="Shipping & Returns"
-      lede="Every saree is inspected, folded in cotton muslin, and dispatched from our Kanchipuram studio. Here's what to expect."
+      lede="Every saree is inspected, folded in cotton muslin, and dispatched from our Elampillai studio hub in Salem, Tamil Nadu. Here's what to expect."
     >
       <section>
         <h2 className="font-display text-2xl text-ink">Shipping timelines</h2>
