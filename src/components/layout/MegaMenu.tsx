@@ -42,7 +42,19 @@ const COLUMNS = [
   }
 ];
 
-export function MegaMenu() {
+interface MegaMenuProps {
+  availableWeaves?: string[];
+  availableFabrics?: string[];
+  availableOccasions?: string[];
+  showBridalPromo?: boolean;
+}
+
+export function MegaMenu({
+  availableWeaves,
+  availableFabrics,
+  availableOccasions,
+  showBridalPromo = true
+}: MegaMenuProps = {}) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,6 +77,27 @@ export function MegaMenu() {
     cancelClose();
     closeTimer.current = setTimeout(() => setOpen(false), 120);
   };
+
+  const filteredColumns = COLUMNS.map((col) => {
+    let links = col.links;
+    if (col.heading === "Weave" && availableWeaves) {
+      links = links.filter((l) => {
+        const val = l.href.split("weave=")[1]?.toLowerCase();
+        return val ? availableWeaves.includes(val) : true;
+      });
+    } else if (col.heading === "Fabric" && availableFabrics) {
+      links = links.filter((l) => {
+        const val = l.href.split("fabric=")[1]?.toLowerCase();
+        return val ? availableFabrics.includes(val) : true;
+      });
+    } else if (col.heading === "Occasion" && availableOccasions) {
+      links = links.filter((l) => {
+        const val = l.href.split("occasion=")[1]?.toLowerCase();
+        return val ? availableOccasions.includes(val) : true;
+      });
+    }
+    return { ...col, links };
+  }).filter((col) => col.links.length > 0);
 
   return (
     <div
@@ -92,8 +125,8 @@ export function MegaMenu() {
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
-          <div className="mx-auto grid w-full max-w-[1200px] gap-10 px-6 py-10 lg:grid-cols-[repeat(3,1fr)_320px]">
-            {COLUMNS.map((col) => (
+          <div className={`mx-auto grid w-full max-w-[1200px] gap-10 px-6 py-10 ${showBridalPromo ? "lg:grid-cols-[repeat(3,1fr)_320px]" : "lg:grid-cols-3"}`}>
+            {filteredColumns.map((col) => (
               <div key={col.heading}>
                 <p className="eyebrow">Shop by {col.heading}</p>
                 <ul className="mt-4 space-y-2.5">
@@ -112,25 +145,27 @@ export function MegaMenu() {
               </div>
             ))}
 
-            <Link
-              href="/category/bridal-sarees"
-              onClick={() => setOpen(false)}
-              className="group relative block aspect-[4/5] overflow-hidden rounded-card"
-            >
-              <Image
-                src="/images/elegant_south_indian.png"
-                alt="The Bridal Edit"
-                fill
-                sizes="320px"
-                className="object-cover transition duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-5 text-cream">
-                <p className="eyebrow-cream">Featured</p>
-                <p className="mt-1 font-display text-2xl">The Bridal Edit</p>
-                <p className="mt-1 text-[13px] text-cream/80">Kanjivaram, Banarasi & Baluchari</p>
-              </div>
-            </Link>
+            {showBridalPromo && (
+              <Link
+                href="/category/bridal-sarees"
+                onClick={() => setOpen(false)}
+                className="group relative block aspect-[4/5] overflow-hidden rounded-card"
+              >
+                <Image
+                  src="/images/elegant_south_indian.png"
+                  alt="The Bridal Edit"
+                  fill
+                  sizes="320px"
+                  className="object-cover transition duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-5 text-cream">
+                  <p className="eyebrow-cream">Featured</p>
+                  <p className="mt-1 font-display text-2xl">The Bridal Edit</p>
+                  <p className="mt-1 text-[13px] text-cream/80">Kanjivaram, Banarasi & Baluchari</p>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
       )}

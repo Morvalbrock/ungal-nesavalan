@@ -11,7 +11,7 @@ import { InstagramGrid } from "@/components/home/InstagramGrid";
 import { NewsletterCta } from "@/components/home/NewsletterCta";
 import { FeaturedRail } from "@/components/home/FeaturedRail";
 import { HeritageStrip } from "@/components/home/HeritageStrip";
-import { productRepo, categoryRepo } from "@/server/repositories";
+import { productRepo, categoryRepo, getInStockCraftClusters } from "@/server/repositories";
 
 export const revalidate = 60;
 
@@ -31,11 +31,12 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featured, bridal, newest, categories] = await Promise.all([
+  const [featured, bridal, newest, categories, clusters] = await Promise.all([
     productRepo.featured(8),
     productRepo.list({ category: "cat_bridal", perPage: 4, sort: "featured" }),
     productRepo.list({ sort: "newest", perPage: 4 }),
-    categoryRepo.list()
+    categoryRepo.listWithStock(),
+    getInStockCraftClusters()
   ]);
 
   return (
@@ -75,7 +76,7 @@ export default async function HomePage() {
         tone="warm"
       />
 
-      <HeritageStrip />
+      <HeritageStrip clusters={clusters} />
 
       <FeaturedRail
         products={newest.items}

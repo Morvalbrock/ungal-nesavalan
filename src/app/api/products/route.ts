@@ -27,7 +27,8 @@ export async function GET(req: Request) {
     maxPrice: parseNumber(sp, "maxPrice"),
     sort: (sp.get("sort") as ProductQuery["sort"]) ?? undefined,
     page: parseNumber(sp, "page"),
-    perPage: parseNumber(sp, "perPage")
+    perPage: parseNumber(sp, "perPage"),
+    includeOutOfStock: sp.get("includeOutOfStock") === "true"
   };
   const result = await productRepo.list(query);
   return NextResponse.json(result);

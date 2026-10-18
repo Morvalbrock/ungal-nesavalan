@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalShell } from "@/components/layout/LegalShell";
+import { pageBannerRepo } from "@/server/repositories";
 
 export const metadata: Metadata = {
   title: "Our Weavers",
@@ -8,12 +9,18 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" }
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const banner = await pageBannerRepo.findByPage("/about");
+
   return (
     <LegalShell
       kicker="Company"
-      title="Our Weavers"
-      lede="Ungal Nesavalan means 'your weaver'. Every saree on this site is bought directly from the loom that made it — no middlemen, fair wages, on-time payment."
+      title={banner?.title || "Our Weavers"}
+      lede={
+        banner?.subtitle ||
+        "Ungal Nesavalan means 'your weaver'. Every saree on this site is bought directly from the loom that made it — no middlemen, fair wages, on-time payment."
+      }
+      bannerImage={banner?.imageUrl}
     >
       <section>
         <h2 className="font-display text-2xl text-ink">Where we buy</h2>

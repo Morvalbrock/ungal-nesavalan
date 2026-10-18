@@ -75,6 +75,7 @@ export function readQueryFromSearchParams(
     maxPrice: readNumber(sp, "maxPrice"),
     sort: (readString(sp, "sort") as ProductQuery["sort"]) ?? undefined,
     page: readNumber(sp, "page"),
-    perPage: readNumber(sp, "perPage")
+    perPage: readNumber(sp, "perPage"),
+    includeOutOfStock: readString(sp, "includeOutOfStock") === "true"
   };
 }

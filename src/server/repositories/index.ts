@@ -1,4 +1,10 @@
-export { jsonProductRepo as productRepo } from "./products.repository";
+export {
+  jsonProductRepo as productRepo,
+  hasStock,
+  getInStockCraftClusters,
+  ALL_CRAFT_CLUSTERS
+} from "./products.repository";
+export type { AvailableFacets, AvailableFacetItem, CraftCluster } from "./products.repository";
 export { jsonCategoryRepo as categoryRepo } from "./categories.repository";
 export { jsonUserRepo as userRepo } from "./users.repository";
 export { jsonOrderRepo as orderRepo } from "./orders.repository";
@@ -15,6 +21,7 @@ export { jsonQuestionRepo as questionRepo } from "./questions.repository";
 export { jsonHeroSlideRepo as heroSlideRepo } from "./hero-slides.repository";
 export { jsonPasswordResetRepo as passwordResetRepo } from "./password-reset.repository";
 export { jsonAnnouncementRepo as announcementRepo } from "./announcements.repository";
+export { jsonPageBannerRepo as pageBannerRepo } from "./page-banners.repository";
 export type { ProductRepository } from "./products.repository";
 export type { CategoryRepository } from "./categories.repository";
 export type { UserRepository } from "./users.repository";
@@ -32,4 +39,5 @@ export type { QuestionRepository } from "./questions.repository";
 export type { HeroSlideRepository } from "./hero-slides.repository";
 export type { PasswordResetRepository } from "./password-reset.repository";
 export type { AnnouncementRepository } from "./announcements.repository";
+export type { PageBannerRepository } from "./page-banners.repository";
 

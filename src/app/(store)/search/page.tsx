@@ -21,7 +21,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   const [{ items, total }, categories] = await Promise.all([
     q ? productRepo.list({ ...query, perPage: 60 }) : Promise.resolve({ items: [], total: 0 }),
-    categoryRepo.list()
+    categoryRepo.listWithStock()
   ]);
   const ratings = items.length ? await reviewRepo.aggregateForMany(items.map((p) => p.id)) : {};
 

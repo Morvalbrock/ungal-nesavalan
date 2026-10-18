@@ -89,4 +89,5 @@ export interface ProductQuery {
   sort?: "newest" | "price-asc" | "price-desc" | "featured";
   page?: number;
   perPage?: number;
+  includeOutOfStock?: boolean;
 }

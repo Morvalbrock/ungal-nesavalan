@@ -22,7 +22,9 @@ const ALLOWED = new Map<string, string>([
 
 const FOLDERS = new Map<string, string>([
   ["products", "products"],
-  ["hero", "images/hero"]
+  ["hero", "images/hero"],
+  ["categories", "images/categories"],
+  ["banners", "images/banners"]
 ]);
 
 const USE_CLOUDINARY = Boolean(process.env.CLOUDINARY_URL);

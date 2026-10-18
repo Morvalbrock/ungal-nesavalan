@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Menu, X, Heart, User, ChevronRight } from "lucide-react";
 
 const SECTIONS = [
   {
@@ -38,16 +39,143 @@ const SECTIONS = [
   }
 ];
 
-export function MobileNav() {
+interface MobileNavProps {
+  inStockSlugs?: string[];
+  availableWeaves?: string[];
+}
+
+export function MobileNav({ inStockSlugs, availableWeaves }: MobileNavProps = {}) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
     return () => {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  const filteredSections = SECTIONS.map((s) => {
+    let links = s.links;
+    if (s.heading === "Shop" && inStockSlugs) {
+      links = links.filter((l) => {
+        if (l.href === "/products") return true;
+        const slug = l.href.split("/category/")[1];
+        return slug ? inStockSlugs.includes(slug) : true;
+      });
+    } else if (s.heading === "By Weave" && availableWeaves) {
+      links = links.filter((l) => {
+        const weave = l.href.split("weave=")[1]?.toLowerCase();
+        return weave ? availableWeaves.includes(weave) : true;
+      });
+    }
+    return { ...s, links };
+  }).filter((s) => s.links.length > 0);
+
+  const drawerContent = (
+    <div className="fixed inset-0 z-50 flex">
+      {/* Full screen backdrop */}
+      <div
+        className="fixed inset-0 bg-ink/60 backdrop-blur-sm transition-opacity"
+        onClick={() => setOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Slide-out drawer panel */}
+      <div className="relative z-10 flex h-full w-[85%] max-w-sm flex-col bg-cream shadow-2xl">
+        {/* Drawer Header */}
+        <div className="flex items-center justify-between border-b border-border/80 px-6 py-5">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/images/logo.png"
+              alt=""
+              width={36}
+              height={36}
+              className="h-8 w-8 shrink-0"
+            />
+            <div>
+              <span className="font-display text-base font-semibold text-ink">Ungal Nesavalan</span>
+              <span className="block text-[9px] uppercase tracking-widest text-ink-muted">Handloom Sarees</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Close menu"
+            className="rounded-full p-2 text-ink hover:bg-ink/5"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Scrollable sections */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="space-y-7">
+            {filteredSections.map((s) => (
+              <div key={s.heading}>
+                <p className="eyebrow text-ink-muted/80">{s.heading}</p>
+                <ul className="mt-2.5 space-y-1">
+                  {s.links.map((l) => (
+                    <li key={l.label}>
+                      <Link
+                        href={l.href}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center justify-between rounded-card px-2.5 py-2 text-[14.5px] font-medium text-ink-soft transition hover:bg-cream-warm hover:text-maroon"
+                      >
+                        <span>{l.label}</span>
+                        <ChevronRight className="h-3.5 w-3.5 text-ink-muted/40" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* Account & Wishlist quick links */}
+          <div className="mt-8 border-t border-border/80 pt-6">
+            <div className="grid grid-cols-2 gap-2 text-[13px]">
+              <Link
+                href="/account/wishlist"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-card border border-border bg-cream-warm/40 py-2.5 text-ink-soft transition hover:border-ink hover:text-ink"
+              >
+                <Heart className="h-4 w-4 text-maroon" />
+                <span>Wishlist</span>
+              </Link>
+              <Link
+                href="/account/profile"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-card border border-border bg-cream-warm/40 py-2.5 text-ink-soft transition hover:border-ink hover:text-ink"
+              >
+                <User className="h-4 w-4 text-ink-muted" />
+                <span>Account</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Drawer footer CTA */}
+        <div className="border-t border-border/80 p-5">
+          <Link
+            href="/products"
+            onClick={() => setOpen(false)}
+            className="btn-primary w-full justify-center text-center"
+          >
+            Explore All Sarees
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -60,62 +188,7 @@ export function MobileNav() {
         <Menu className="h-5 w-5" />
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-ink/50" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-0 h-full w-[86%] max-w-sm overflow-y-auto bg-cream p-6 shadow-elev">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <Image
-                  src="/images/logo.png"
-                  alt=""
-                  width={36}
-                  height={36}
-                  className="h-9 w-9 shrink-0"
-                />
-                <span className="font-display text-lg font-semibold">Ungal Nesavalan</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Close menu"
-                className="rounded-full p-2 hover:bg-ink/5"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="mt-6 space-y-8">
-              {SECTIONS.map((s) => (
-                <div key={s.heading}>
-                  <p className="eyebrow">{s.heading}</p>
-                  <ul className="mt-3 space-y-3">
-                    {s.links.map((l) => (
-                      <li key={l.label}>
-                        <Link
-                          href={l.href}
-                          onClick={() => setOpen(false)}
-                          className="text-[15px] text-ink-soft transition hover:text-maroon"
-                        >
-                          {l.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <Link
-              href="/products"
-              onClick={() => setOpen(false)}
-              className="btn-primary mt-8 w-full"
-            >
-              Shop the collection
-            </Link>
-          </div>
-        </div>
-      )}
+      {open && mounted && createPortal(drawerContent, document.body)}
     </>
   );
 }

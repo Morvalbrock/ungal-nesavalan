@@ -1,32 +1,40 @@
 import Link from "next/link";
 import { Container } from "@/components/layout/Container";
 import { SectionHeading } from "./SectionHeading";
+import type { CraftCluster } from "@/server/repositories";
+import { ALL_CRAFT_CLUSTERS } from "@/server/repositories";
 
-const CLUSTERS = [
-  { weave: "Kanjivaram", place: "Kanchipuram, TN", href: "/products?weave=kanjivaram" },
-  { weave: "Banarasi", place: "Varanasi, UP", href: "/products?weave=banarasi" },
-  { weave: "Chanderi", place: "Chanderi, MP", href: "/products?weave=chanderi" },
-  { weave: "Patola", place: "Patan, Gujarat", href: "/products?weave=patola" },
-  { weave: "Jamdani", place: "Uppada, AP", href: "/products?weave=jamdani" },
-  { weave: "Ikat", place: "Pochampally / Sambalpur", href: "/products?weave=ikat" },
-  { weave: "Paithani", place: "Paithan, Maharashtra", href: "/products?weave=paithani" },
-  { weave: "Bandhani", place: "Kutch, Gujarat", href: "/products?weave=bandhani" },
-  { weave: "Muga", place: "Sualkuchi, Assam", href: "/products" },
-  { weave: "Baluchari", place: "Bishnupur, WB", href: "/products" }
-];
+const NUMBER_WORDS: Record<number, string> = {
+  1: "One",
+  2: "Two",
+  3: "Three",
+  4: "Four",
+  5: "Five",
+  6: "Six",
+  7: "Seven",
+  8: "Eight",
+  9: "Nine",
+  10: "Ten"
+};
 
-export function HeritageStrip() {
+export function HeritageStrip({ clusters }: { clusters?: CraftCluster[] }) {
+  const displayClusters = clusters ?? ALL_CRAFT_CLUSTERS;
+  if (displayClusters.length === 0) return null;
+
+  const countWord = NUMBER_WORDS[displayClusters.length] ?? String(displayClusters.length);
+  const title = `${countWord} weave${displayClusters.length === 1 ? "" : "s"}. One country.`;
+
   return (
     <section className="border-t border-border/60 bg-cream py-24">
       <Container>
         <SectionHeading
           eyebrow="Cartography of craft"
-          title="Ten weaves. One country."
+          title={title}
           subtitle="A short atlas of the looms we work with, from the Coromandel to the Konkan."
         />
 
         <div className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-5">
-          {CLUSTERS.map((c, i) => (
+          {displayClusters.map((c, i) => (
             <Link
               key={c.weave}
               href={c.href}

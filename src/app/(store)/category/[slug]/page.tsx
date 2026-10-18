@@ -30,20 +30,23 @@ export default async function CategoryPage({
   if (!category) notFound();
 
   const query = readQueryFromSearchParams(sp);
-  const { items, total } = await productRepo.list({
-    ...query,
-    category: category.id,
-    perPage: 60
-  });
+  const [{ items, total }, facets] = await Promise.all([
+    productRepo.list({
+      ...query,
+      category: category.id,
+      perPage: 60
+    }),
+    productRepo.getAvailableFacets()
+  ]);
   const ratings = await reviewRepo.aggregateForMany(items.map((p) => p.id));
 
   return (
     <>
       <section className="relative overflow-hidden bg-ink text-cream">
-        {category.image && (
+        {(category.headerImage || category.image) && (
           <div className="absolute inset-0">
             <Image
-              src={category.image}
+              src={category.headerImage || category.image!}
               alt={category.name}
               fill
               priority
@@ -80,7 +83,12 @@ export default async function CategoryPage({
           <SortSelect />
         </div>
         <div className="mt-10 grid gap-10 lg:grid-cols-[240px_1fr]">
-          <FilterSidebar hideCategory />
+          <FilterSidebar
+            hideCategory
+            weaves={facets.weaves}
+            fabrics={facets.fabrics}
+            occasions={facets.occasions}
+          />
           <ProductGrid items={items} ratings={ratings} />
         </div>
       </Container>

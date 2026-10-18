@@ -25,7 +25,7 @@ const NAV = [
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/hero-slides", label: "Hero slides", icon: Images },
   { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/categories", label: "Categories", icon: Layers },
+  { href: "/admin/categories", label: "Categories & Banners", icon: Layers },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/coupons", label: "Coupons", icon: Tag },
   { href: "/admin/returns", label: "Returns", icon: RotateCcw },

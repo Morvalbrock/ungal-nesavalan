@@ -122,6 +122,8 @@ export function PurchasePanel({ product }: { product: Product }) {
           <>
             <Check className="h-4 w-4" /> Added to cart
           </>
+        ) : outOfStock ? (
+          "Sold out"
         ) : (
           <>
             <ShoppingBag className="h-4 w-4" /> Add to cart · {formatINR(unitPrice * quantity)}

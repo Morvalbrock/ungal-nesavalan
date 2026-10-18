@@ -13,7 +13,8 @@ import {
   questionRepo,
   returnRepo,
   userRepo,
-  announcementRepo
+  announcementRepo,
+  pageBannerRepo
 } from "@/server/repositories";
 import { getPaymentProvider } from "@/features/payments";
 import { getMailProvider } from "@/features/mail";
@@ -208,7 +209,8 @@ const categorySchema = z.object({
   name: z.string().trim().min(2),
   slug: z.string().trim().optional(),
   description: z.string().trim().optional(),
-  image: z.union([z.string().url(), z.literal("")]).optional(),
+  image: z.string().optional(),
+  headerImage: z.string().optional(),
   sort: z.coerce.number().default(0)
 });
 
@@ -229,6 +231,7 @@ export async function upsertCategory(values: z.input<typeof categorySchema>): Pr
     name: d.name,
     description: d.description || undefined,
     image: d.image || undefined,
+    headerImage: d.headerImage || undefined,
     sort: d.sort
   };
   if (d.id) {
@@ -239,6 +242,8 @@ export async function upsertCategory(values: z.input<typeof categorySchema>): Pr
   }
   revalidatePath("/admin/categories");
   revalidatePath("/");
+  revalidatePath("/products");
+  revalidatePath(`/category/${slug}`);
   return { ok: true };
 }
 
@@ -247,6 +252,39 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   const removed = await categoryRepo.remove(id);
   if (!removed) return { ok: false, error: "not_found" };
   revalidatePath("/admin/categories");
+  revalidatePath("/");
+  revalidatePath("/products");
+  return { ok: true };
+}
+
+const pageBannerSchema = z.object({
+  id: z.string().trim().min(1),
+  page: z.string().trim().min(1),
+  title: z.string().trim().min(1),
+  subtitle: z.string().trim().optional(),
+  imageUrl: z.string().optional()
+});
+
+export async function upsertPageBanner(values: z.input<typeof pageBannerSchema>): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = pageBannerSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "invalid_input",
+      issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
+    };
+  }
+  const d = parsed.data;
+  await pageBannerRepo.upsert({
+    id: d.id,
+    page: d.page,
+    title: d.title,
+    subtitle: d.subtitle || undefined,
+    imageUrl: d.imageUrl || undefined
+  });
+  revalidatePath("/admin/categories");
+  revalidatePath(d.page);
   return { ok: true };
 }
 

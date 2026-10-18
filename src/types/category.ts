@@ -4,6 +4,7 @@ export interface Category {
   name: string;
   parentId?: string;
   image?: string;
+  headerImage?: string;
   description?: string;
   sort: number;
 }

@@ -1,8 +1,11 @@
 import type { Category } from "@/types/category";
+import type { Product } from "@/types/product";
 import { mutateCollection, newId, readCollection } from "@/server/db/json-store";
+import { hasStock } from "./products.repository";
 
 export interface CategoryRepository {
   list(): Promise<Category[]>;
+  listWithStock(): Promise<Category[]>;
   findBySlug(slug: string): Promise<Category | null>;
   findById(id: string): Promise<Category | null>;
   create(input: Omit<Category, "id">): Promise<Category>;
@@ -16,6 +19,21 @@ export const jsonCategoryRepo: CategoryRepository = {
   async list() {
     const rows = await readCollection<Category>(COLLECTION);
     return rows.slice().sort((a, b) => a.sort - b.sort);
+  },
+  async listWithStock() {
+    const [categories, products] = await Promise.all([
+      readCollection<Category>(COLLECTION),
+      readCollection<Product>("products")
+    ]);
+    const inStockCategoryIds = new Set(
+      products
+        .filter((p) => p.published && hasStock(p))
+        .map((p) => p.categoryId)
+    );
+    return categories
+      .filter((c) => inStockCategoryIds.has(c.id))
+      .slice()
+      .sort((a, b) => a.sort - b.sort);
   },
   async findBySlug(slug) {
     const rows = await readCollection<Category>(COLLECTION);

@@ -7,7 +7,7 @@ const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, cats, posts] = await Promise.all([
     productRepo.list({ perPage: 500 }),
-    categoryRepo.list(),
+    categoryRepo.listWithStock(),
     listPosts()
   ]);
   const now = new Date();
