@@ -6,8 +6,8 @@ import { useCartStore, useCartTotals } from "@/features/cart/cart.store";
 import { useAppliedCouponStore } from "@/features/coupons/applied-coupon.store";
 import type { AddressForm } from "@/features/checkout/checkout.schema";
 import { shippingQuote, estimatedDeliveryLabel } from "@/features/shipping/calculate";
-import { RECOMMENDED_COURIERS } from "@/features/shipping/couriers";
-import { formatINR } from "@/lib/utils";
+import { RECOMMENDED_COURIERS, isRecommendedCourier } from "@/features/shipping/couriers";
+import { cn, formatINR } from "@/lib/utils";
 import { CouponBox } from "./CouponBox";
 import { PayButton } from "./PayButton";
 
@@ -46,31 +46,11 @@ export function ReviewStep({
   );
   const payable = Math.max(0, totals.subtotal - discount + quote.ratePaise);
 
-  // Custom "Other" courier handling
-  const presetList = RECOMMENDED_COURIERS as readonly string[];
-  const [customMode, setCustomMode] = useState<boolean>(() =>
-    preferredCourier !== "" && !presetList.includes(preferredCourier)
-  );
-  const [otherText, setOtherText] = useState<string>(() =>
-    preferredCourier !== "" && !presetList.includes(preferredCourier) ? preferredCourier : ""
-  );
-
-  function selectNone() {
-    setCustomMode(false);
-    onPreferredCourierChange("");
-  }
-  function selectPreset(name: string) {
-    setCustomMode(false);
-    onPreferredCourierChange(name);
-  }
-  function selectCustom() {
-    setCustomMode(true);
-    onPreferredCourierChange(otherText.trim());
-  }
-  function updateOtherText(v: string) {
-    setOtherText(v);
-    if (customMode) onPreferredCourierChange(v.trim());
-  }
+  useEffect(() => {
+    if (!preferredCourier || !isRecommendedCourier(preferredCourier)) {
+      onPreferredCourierChange(RECOMMENDED_COURIERS[0]);
+    }
+  }, [preferredCourier, onPreferredCourierChange]);
 
   // Payment method handling
   const canUseCod = payable >= COD_MIN_TOTAL_PAISE;
@@ -116,55 +96,32 @@ export function ReviewStep({
         <section>
           <h2 className="font-display text-2xl">Preferred courier</h2>
           <p className="mt-1 text-xs text-ink-muted">
-            Optional. We’ll do our best to ship via your pick when it’s available.
+            Select your preferred courier service for delivery.
           </p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <label className="flex cursor-pointer items-center gap-2 rounded-card border border-border p-3 text-sm hover:border-ink">
-              <input
-                type="radio"
-                name="preferredCourier"
-                checked={!customMode && preferredCourier === ""}
-                onChange={selectNone}
-                className="accent-ink"
-              />
-              <span>No preference</span>
-            </label>
-            {RECOMMENDED_COURIERS.map((c) => (
-              <label
-                key={c}
-                className="flex cursor-pointer items-center gap-2 rounded-card border border-border p-3 text-sm hover:border-ink"
-              >
-                <input
-                  type="radio"
-                  name="preferredCourier"
-                  checked={!customMode && preferredCourier === c}
-                  onChange={() => selectPreset(c)}
-                  className="accent-ink"
-                />
-                <span>{c}</span>
-              </label>
-            ))}
-            <label className="flex cursor-pointer items-center gap-2 rounded-card border border-border p-3 text-sm hover:border-ink sm:col-span-2">
-              <input
-                type="radio"
-                name="preferredCourier"
-                checked={customMode}
-                onChange={selectCustom}
-                className="accent-ink"
-              />
-              <span className="shrink-0">Other:</span>
-              <input
-                type="text"
-                value={otherText}
-                onChange={(e) => updateOtherText(e.target.value)}
-                onFocus={() => {
-                  if (!customMode) selectCustom();
-                }}
-                placeholder="Type a courier name"
-                maxLength={50}
-                className="flex-1 rounded-card border border-border bg-transparent px-2 py-1 text-sm focus:border-ink focus:outline-none"
-              />
-            </label>
+            {RECOMMENDED_COURIERS.map((c) => {
+              const selected = preferredCourier === c;
+              return (
+                <label
+                  key={c}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-3 rounded-card border p-3 text-sm transition",
+                    selected
+                      ? "border-ink bg-cream/40 font-medium text-ink shadow-xs"
+                      : "border-border hover:border-ink/60 text-ink-soft hover:text-ink"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="preferredCourier"
+                    checked={selected}
+                    onChange={() => onPreferredCourierChange(c)}
+                    className="accent-ink"
+                  />
+                  <span>{c}</span>
+                </label>
+              );
+            })}
           </div>
         </section>
 

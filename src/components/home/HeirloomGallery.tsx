@@ -65,7 +65,7 @@ export function HeirloomGallery({ products, availableWeaves = [] }: HeirloomGall
       image: product.images[0]?.url || "/images/placeholder.jpg",
       unitPricePaise: product.salePrice ?? product.basePrice,
       quantity: 1,
-      maxStock: 10
+      maxStock: 30
     });
     setQuickViewProduct(null);
   };

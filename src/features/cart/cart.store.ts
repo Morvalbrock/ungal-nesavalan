@@ -16,6 +16,8 @@ function keyFor(item: Pick<CartItem, "productId" | "variantId">) {
   return `${item.productId}::${item.variantId}`;
 }
 
+const MAX_PURCHASE_LIMIT = 30;
+
 export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
@@ -24,17 +26,18 @@ export const useCartStore = create<CartState>()(
         set((state) => {
           const key = keyFor(item);
           const existing = state.items.find((x) => keyFor(x) === key);
+          const maxAllowed = Math.min(MAX_PURCHASE_LIMIT, item.maxStock);
           if (existing) {
             return {
               items: state.items.map((x) =>
                 keyFor(x) === key
-                  ? { ...x, quantity: Math.min(item.maxStock, x.quantity + item.quantity) }
+                  ? { ...x, quantity: Math.min(maxAllowed, x.quantity + item.quantity) }
                   : x
               )
             };
           }
           return {
-            items: [...state.items, { ...item, quantity: Math.min(item.maxStock, item.quantity) }]
+            items: [...state.items, { ...item, quantity: Math.min(maxAllowed, item.quantity) }]
           };
         }),
       removeItem: (variantId) =>
@@ -44,7 +47,7 @@ export const useCartStore = create<CartState>()(
           items: state.items
             .map((x) =>
               x.variantId === variantId
-                ? { ...x, quantity: Math.max(1, Math.min(x.maxStock, quantity)) }
+                ? { ...x, quantity: Math.max(1, Math.min(Math.min(MAX_PURCHASE_LIMIT, x.maxStock), quantity)) }
                 : x
             )
             .filter((x) => x.quantity > 0)

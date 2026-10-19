@@ -18,7 +18,7 @@ export function CheckoutFlow({ prefill }: { prefill?: { name?: string; email?: s
   const { user } = useAuth();
   const [step, setStep] = useState<Step>("address");
   const [address, setAddress] = useState<AddressForm | null>(null);
-  const [preferredCourier, setPreferredCourier] = useState<string>("");
+  const [preferredCourier, setPreferredCourier] = useState<string>("ST Courier");
   const [paymentMode, setPaymentMode] = useState<"prepaid" | "cod">("prepaid");
 
   // Fire begin_checkout once per checkout mount with a non-empty cart.

@@ -40,8 +40,8 @@ export async function POST(req: Request) {
       variantLabel: variant.color,
       image: product.images[0]?.url ?? "",
       unitPricePaise: unit,
-      quantity: Math.min(line.quantity, variant.stock),
-      maxStock: variant.stock
+      quantity: Math.min(line.quantity, Math.min(30, variant.stock)),
+      maxStock: Math.min(30, variant.stock)
     });
   }
 

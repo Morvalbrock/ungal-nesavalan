@@ -2,13 +2,67 @@
 import Image from "next/image";
 import Link from "next/link";
 import { X } from "lucide-react";
+import { useEffect, useState } from "react";
 import type { CartItem } from "@/features/cart/cart.types";
 import { useCartStore } from "@/features/cart/cart.store";
 import { formatINR } from "@/lib/utils";
 
+const MAX_PURCHASE_LIMIT = 30;
+
 export function CartLine({ item, compact = false }: { item: CartItem; compact?: boolean }) {
   const setQuantity = useCartStore((s) => s.setQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
+  const maxAllowed = Math.min(MAX_PURCHASE_LIMIT, item.maxStock);
+
+  const [typedQty, setTypedQty] = useState(String(item.quantity));
+
+  useEffect(() => {
+    setTypedQty(String(item.quantity));
+  }, [item.quantity]);
+
+  const handleStep = (delta: number) => {
+    const current = parseInt(typedQty, 10) || item.quantity;
+    const next = Math.max(1, Math.min(maxAllowed, current + delta));
+    setQuantity(item.variantId, next);
+    setTypedQty(String(next));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === "") {
+      setTypedQty("");
+      return;
+    }
+    const clean = val.replace(/\D/g, "");
+    if (clean === "") {
+      setTypedQty("");
+      return;
+    }
+    const num = parseInt(clean, 10);
+    if (isNaN(num)) {
+      setTypedQty("");
+      return;
+    }
+    if (num > maxAllowed) {
+      setQuantity(item.variantId, maxAllowed);
+      setTypedQty(String(maxAllowed));
+    } else {
+      setQuantity(item.variantId, num);
+      setTypedQty(clean);
+    }
+  };
+
+  const handleInputBlur = () => {
+    const parsed = parseInt(typedQty, 10);
+    if (!typedQty || isNaN(parsed) || parsed < 1) {
+      setQuantity(item.variantId, 1);
+      setTypedQty("1");
+    } else {
+      const clamped = Math.max(1, Math.min(maxAllowed, parsed));
+      setQuantity(item.variantId, clamped);
+      setTypedQty(String(clamped));
+    }
+  };
 
   return (
     <div className="flex gap-4 border-b border-border/70 py-4 last:border-b-0">
@@ -42,22 +96,31 @@ export function CartLine({ item, compact = false }: { item: CartItem; compact?: 
         </div>
 
         <div className="mt-auto flex items-center justify-between pt-2">
-          <div className="inline-flex items-center rounded-card border border-border text-sm">
+          <div className="inline-flex items-center rounded-card border border-border bg-white text-sm">
             <button
               type="button"
-              onClick={() => setQuantity(item.variantId, item.quantity - 1)}
-              className="px-2 py-1 text-ink-muted hover:text-ink disabled:opacity-40"
+              onClick={() => handleStep(-1)}
+              className="h-8 w-8 flex items-center justify-center text-ink-muted hover:text-ink hover:bg-cream/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
               disabled={item.quantity <= 1}
               aria-label="Decrease"
             >
               −
             </button>
-            <span className="w-6 text-center">{item.quantity}</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={typedQty}
+              onChange={handleInputChange}
+              onBlur={handleInputBlur}
+              className="h-8 w-10 border-x border-border/60 bg-transparent text-center text-xs font-semibold text-ink focus:bg-cream/30 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              aria-label="Quantity"
+            />
             <button
               type="button"
-              onClick={() => setQuantity(item.variantId, item.quantity + 1)}
-              className="px-2 py-1 text-ink-muted hover:text-ink disabled:opacity-40"
-              disabled={item.quantity >= item.maxStock}
+              onClick={() => handleStep(1)}
+              className="h-8 w-8 flex items-center justify-center text-ink-muted hover:text-ink hover:bg-cream/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
+              disabled={item.quantity >= maxAllowed}
               aria-label="Increase"
             >
               +

@@ -7,6 +7,8 @@ import { track } from "@/features/analytics/track";
 import { cn, formatINR } from "@/lib/utils";
 import { WishlistButton } from "./WishlistButton";
 
+const MAX_PURCHASE_LIMIT = 30;
+
 export function PurchasePanel({ product }: { product: Product }) {
   const firstInStock = useMemo(
     () => product.variants.find((v) => v.stock > 0) ?? product.variants[0],
@@ -14,16 +16,66 @@ export function PurchasePanel({ product }: { product: Product }) {
   );
   const [variantId, setVariantId] = useState<string>(firstInStock?.id ?? "");
   const [quantity, setQuantity] = useState(1);
+  const [typedQty, setTypedQty] = useState("1");
   const [justAdded, setJustAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
 
   const variant = product.variants.find((v) => v.id === variantId) ?? firstInStock;
   const unitPrice = variant?.priceOverride ?? product.salePrice ?? product.basePrice;
   const outOfStock = !variant || variant.stock === 0;
-  const maxQty = Math.max(1, Math.min(10, variant?.stock ?? 1));
+  const maxQty = Math.max(1, Math.min(MAX_PURCHASE_LIMIT, variant?.stock ?? 1));
+
+  const handleStep = (delta: number) => {
+    if (outOfStock) return;
+    const current = parseInt(typedQty, 10) || quantity;
+    const next = Math.max(1, Math.min(maxQty, current + delta));
+    setQuantity(next);
+    setTypedQty(String(next));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === "") {
+      setTypedQty("");
+      return;
+    }
+    const clean = val.replace(/\D/g, "");
+    if (clean === "") {
+      setTypedQty("");
+      return;
+    }
+    const num = parseInt(clean, 10);
+    if (isNaN(num)) {
+      setTypedQty("");
+      return;
+    }
+    if (num > maxQty) {
+      setQuantity(maxQty);
+      setTypedQty(String(maxQty));
+    } else {
+      setQuantity(num);
+      setTypedQty(clean);
+    }
+  };
+
+  const handleInputBlur = () => {
+    const parsed = parseInt(typedQty, 10);
+    if (!typedQty || isNaN(parsed) || parsed < 1) {
+      setQuantity(1);
+      setTypedQty("1");
+    } else {
+      const clamped = Math.max(1, Math.min(maxQty, parsed));
+      setQuantity(clamped);
+      setTypedQty(String(clamped));
+    }
+  };
+
+  const effectiveQty = Math.max(1, Math.min(maxQty, parseInt(typedQty, 10) || quantity || 1));
 
   const handleAdd = () => {
     if (!variant || outOfStock) return;
+    setQuantity(effectiveQty);
+    setTypedQty(String(effectiveQty));
     addItem({
       productId: product.id,
       variantId: variant.id,
@@ -32,8 +84,8 @@ export function PurchasePanel({ product }: { product: Product }) {
       variantLabel: variant.color,
       image: product.images[0]?.url ?? "",
       unitPricePaise: unitPrice,
-      quantity,
-      maxStock: variant.stock
+      quantity: effectiveQty,
+      maxStock: Math.min(MAX_PURCHASE_LIMIT, variant.stock)
     });
     track.addToCart({
       productId: product.id,
@@ -61,6 +113,7 @@ export function PurchasePanel({ product }: { product: Product }) {
                 onClick={() => {
                   setVariantId(v.id);
                   setQuantity(1);
+                  setTypedQty("1");
                 }}
                 disabled={disabled}
                 aria-label={v.color}
@@ -83,30 +136,45 @@ export function PurchasePanel({ product }: { product: Product }) {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="inline-flex items-center rounded-card border border-border">
+        <div className="inline-flex items-center rounded-card border border-border bg-white shadow-xs">
           <button
             type="button"
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="px-3 py-2 text-lg text-ink-muted hover:text-ink disabled:opacity-40"
-            disabled={quantity <= 1 || outOfStock}
+            onClick={() => handleStep(-1)}
+            className="flex h-10 w-10 items-center justify-center text-lg text-ink-muted transition hover:text-ink hover:bg-cream/40 disabled:opacity-30 disabled:cursor-not-allowed"
+            disabled={effectiveQty <= 1 || outOfStock}
             aria-label="Decrease quantity"
           >
             −
           </button>
-          <span className="w-8 text-center text-sm">{quantity}</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={typedQty}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            disabled={outOfStock}
+            className="h-10 w-12 border-x border-border/60 bg-transparent text-center text-sm font-semibold text-ink focus:bg-cream/30 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            aria-label="Quantity"
+          />
           <button
             type="button"
-            onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
-            className="px-3 py-2 text-lg text-ink-muted hover:text-ink disabled:opacity-40"
-            disabled={quantity >= maxQty || outOfStock}
+            onClick={() => handleStep(1)}
+            className="flex h-10 w-10 items-center justify-center text-lg text-ink-muted transition hover:text-ink hover:bg-cream/40 disabled:opacity-30 disabled:cursor-not-allowed"
+            disabled={effectiveQty >= maxQty || outOfStock}
             aria-label="Increase quantity"
           >
             +
           </button>
         </div>
-        <span className="text-sm text-ink-muted">
-          {outOfStock ? "Out of stock" : `${variant?.stock} available`}
-        </span>
+        <div className="flex flex-col">
+          <span className="text-sm text-ink-muted">
+            {outOfStock ? "Out of stock" : `${variant?.stock} available`}
+          </span>
+          {!outOfStock && variant && variant.stock > MAX_PURCHASE_LIMIT && (
+            <span className="text-[11px] text-ink-muted/80">Max 30 per order</span>
+          )}
+        </div>
       </div>
 
       <button
@@ -126,7 +194,7 @@ export function PurchasePanel({ product }: { product: Product }) {
           "Sold out"
         ) : (
           <>
-            <ShoppingBag className="h-4 w-4" /> Add to cart · {formatINR(unitPrice * quantity)}
+            <ShoppingBag className="h-4 w-4" /> Add to cart · {formatINR(unitPrice * effectiveQty)}
           </>
         )}
       </button>

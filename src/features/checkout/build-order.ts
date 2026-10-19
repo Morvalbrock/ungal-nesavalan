@@ -64,6 +64,12 @@ export async function buildOrderFromCart(
         `Only ${variant.stock} ${product.name} (${variant.color}) available`
       );
     }
+    if (line.quantity > 30) {
+      throw new OrderBuildError(
+        "insufficient_stock",
+        `Maximum allowed purchase quantity is 30 for ${product.name} (${variant.color})`
+      );
+    }
     const unit = priceOf(product, variant);
     subtotal += unit * line.quantity;
     items.push({

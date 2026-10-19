@@ -105,7 +105,7 @@ export function OrderStatusForm({
             type="text"
             value={courier}
             onChange={(e) => setCourier(e.target.value)}
-            placeholder="e.g. Delhivery"
+            placeholder="e.g. ST Courier"
             className="w-full rounded-card border border-border bg-transparent px-3 py-2 text-sm focus:border-ink focus:outline-none"
           />
         </label>

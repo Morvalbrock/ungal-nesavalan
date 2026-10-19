@@ -1,10 +1,8 @@
 export const RECOMMENDED_COURIERS = [
-  "Delhivery",
-  "Blue Dart",
-  "DTDC",
-  "India Post / Speed Post",
-  "Ecom Express",
-  "XpressBees"
+  "ST Courier",
+  "Professional Courier",
+  "India Post",
+  "DTDC"
 ] as const;
 
 export type RecommendedCourier = (typeof RECOMMENDED_COURIERS)[number];
