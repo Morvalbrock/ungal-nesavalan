@@ -16,22 +16,35 @@ export function PurchasePanel({ product }: { product: Product }) {
     () => product.variants.find((v) => v.stock > 0) ?? product.variants[0],
     [product.variants]
   );
-  const [variantId, setVariantId] = useState<string>(firstInStock?.id ?? "");
   const [quantity, setQuantity] = useState(1);
   const [typedQty, setTypedQty] = useState("1");
   const [justAdded, setJustAdded] = useState(false);
   const [buyingNow, setBuyingNow] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
+  const storeVariantId = useSelectedVariantStore((s) =>
+    s.productId === product.id ? s.variantId : null
+  );
   const selectVariant = useSelectedVariantStore((s) => s.select);
   const resetSelectedVariant = useSelectedVariantStore((s) => s.reset);
   const router = useRouter();
 
-  useEffect(() => {
-    if (variantId) selectVariant(product.id, variantId);
-    return () => resetSelectedVariant();
-  }, [product.id, variantId, selectVariant, resetSelectedVariant]);
-
+  // The store is the single source of truth for the active variant.
+  // Fallback to firstInStock on first render before anyone has selected one.
+  // This replaces the previous bi-directional useEffect sync, which created an
+  // infinite update loop whenever the store and local state briefly disagreed.
+  const variantId = storeVariantId ?? firstInStock?.id ?? "";
   const variant = product.variants.find((v) => v.id === variantId) ?? firstInStock;
+
+  // Reset quantity whenever the chosen variant changes.
+  useEffect(() => {
+    setQuantity(1);
+    setTypedQty("1");
+  }, [variantId]);
+
+  // Clear the shared store on unmount so another product page starts clean.
+  useEffect(() => {
+    return () => resetSelectedVariant();
+  }, [resetSelectedVariant]);
   const unitPrice = variant?.priceOverride ?? product.salePrice ?? product.basePrice;
   const outOfStock = !variant || variant.stock === 0;
   const maxQty = Math.max(1, Math.min(MAX_PURCHASE_LIMIT, variant?.stock ?? 1));
@@ -132,11 +145,7 @@ export function PurchasePanel({ product }: { product: Product }) {
               <button
                 key={v.id}
                 type="button"
-                onClick={() => {
-                  setVariantId(v.id);
-                  setQuantity(1);
-                  setTypedQty("1");
-                }}
+                onClick={() => selectVariant(product.id, v.id)}
                 disabled={disabled}
                 aria-label={v.color}
                 className={cn(

@@ -10,7 +10,9 @@ const nextConfig: NextConfig = {
       "./node_modules/@react-pdf/**/*"
     ]
   },
-  allowedDevOrigins: ["192.168.1.4"],
+  // Dev-only: allow requests from the LAN while running `next dev`.
+  // Add any other LAN IPs you use to preview on a phone/tablet.
+  allowedDevOrigins: ["192.168.1.4", "192.168.1.5"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" }
