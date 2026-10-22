@@ -21,7 +21,9 @@ const SECTIONS = [
   {
     heading: "By Weave",
     links: [
-      { label: "Kanjivaram", href: "/products?weave=kanjivaram" },
+      { label: "Kanchivaram", href: "/products?weave=kanchivaram" },
+      { label: "Aarani", href: "/products?weave=aarani" },
+      { label: "Elampillai", href: "/products?weave=elampillai" },
       { label: "Banarasi", href: "/products?weave=banarasi" },
       { label: "Chanderi", href: "/products?weave=chanderi" },
       { label: "Patola", href: "/products?weave=patola" },

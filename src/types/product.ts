@@ -1,6 +1,7 @@
 export type Fabric =
   | "silk"
   | "cotton"
+  | "silk-cotton"
   | "linen"
   | "georgette"
   | "chiffon"
@@ -9,7 +10,9 @@ export type Fabric =
   | "tissue";
 
 export type Weave =
-  | "kanjivaram"
+  | "kanchivaram"
+  | "aarani"
+  | "elampillai"
   | "banarasi"
   | "chanderi"
   | "patola"

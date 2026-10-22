@@ -1,55 +1,25 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import matter from "gray-matter";
+import { postRepo } from "@/server/repositories";
+import type { JournalPost } from "@/types/post";
 
-export interface PostFrontmatter {
-  title: string;
-  slug: string;
-  excerpt: string;
-  heroImage?: string;
-  publishedAt: string;
-  tags?: string[];
-  relatedProductSlugs?: string[];
-  draft?: boolean;
-}
-
-export interface Post extends PostFrontmatter {
-  content: string;
+export interface Post extends JournalPost {
   readingTimeMin: number;
 }
 
-const DIR = path.join(process.cwd(), "content", "journal");
-
-async function readAll(): Promise<Post[]> {
-  let files: string[];
-  try {
-    files = await fs.readdir(DIR);
-  } catch {
-    return [];
-  }
-  const posts: Post[] = [];
-  for (const f of files) {
-    if (!f.endsWith(".mdx") && !f.endsWith(".md")) continue;
-    const raw = await fs.readFile(path.join(DIR, f), "utf8");
-    const parsed = matter(raw);
-    const fm = parsed.data as PostFrontmatter;
-    posts.push({
-      ...fm,
-      content: parsed.content,
-      readingTimeMin: Math.max(1, Math.round(parsed.content.split(/\s+/).length / 220))
-    });
-  }
-  return posts.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+function withReadingTime(p: JournalPost): Post {
+  return {
+    ...p,
+    readingTimeMin: Math.max(1, Math.round((p.content || "").split(/\s+/).filter(Boolean).length / 220))
+  };
 }
 
 export async function listPosts({ includeDrafts = false }: { includeDrafts?: boolean } = {}): Promise<Post[]> {
-  const all = await readAll();
-  return includeDrafts ? all : all.filter((p) => !p.draft);
+  const rows = await postRepo.list({ includeDrafts });
+  return rows.map(withReadingTime);
 }
 
 export async function findPost(slug: string, opts: { includeDrafts?: boolean } = {}): Promise<Post | null> {
-  const posts = await listPosts(opts);
-  return posts.find((p) => p.slug === slug) ?? null;
+  const row = await postRepo.findBySlug(slug, opts);
+  return row ? withReadingTime(row) : null;
 }
 
 export async function listTags(): Promise<string[]> {

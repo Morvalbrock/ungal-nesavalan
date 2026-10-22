@@ -22,7 +22,9 @@ export interface CraftCluster {
 }
 
 export const ALL_CRAFT_CLUSTERS: CraftCluster[] = [
-  { weave: "Kanjivaram", place: "Kanchipuram, TN", href: "/products?weave=kanjivaram" },
+  { weave: "Kanchivaram", place: "Kanchipuram, TN", href: "/products?weave=kanchivaram" },
+  { weave: "Aarani", place: "Aarani, TN", href: "/products?weave=aarani" },
+  { weave: "Elampillai", place: "Elampillai, Salem", href: "/products?weave=elampillai" },
   { weave: "Banarasi", place: "Varanasi, UP", href: "/products?weave=banarasi" },
   { weave: "Chanderi", place: "Chanderi, MP", href: "/products?weave=chanderi" },
   { weave: "Patola", place: "Patan, Gujarat", href: "/products?weave=patola" },

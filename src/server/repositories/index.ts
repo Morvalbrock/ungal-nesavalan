@@ -22,6 +22,7 @@ export { jsonHeroSlideRepo as heroSlideRepo } from "./hero-slides.repository";
 export { jsonPasswordResetRepo as passwordResetRepo } from "./password-reset.repository";
 export { jsonAnnouncementRepo as announcementRepo } from "./announcements.repository";
 export { jsonPageBannerRepo as pageBannerRepo } from "./page-banners.repository";
+export { jsonPostRepo as postRepo } from "./posts.repository";
 export type { ProductRepository } from "./products.repository";
 export type { CategoryRepository } from "./categories.repository";
 export type { UserRepository } from "./users.repository";
@@ -40,4 +41,5 @@ export type { HeroSlideRepository } from "./hero-slides.repository";
 export type { PasswordResetRepository } from "./password-reset.repository";
 export type { AnnouncementRepository } from "./announcements.repository";
 export type { PageBannerRepository } from "./page-banners.repository";
+export type { PostRepository } from "./posts.repository";
 

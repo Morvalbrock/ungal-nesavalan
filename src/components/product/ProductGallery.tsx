@@ -1,16 +1,40 @@
 "use client";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { ProductImage } from "@/types/product";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Product, ProductImage } from "@/types/product";
+import { useSelectedVariantStore } from "@/features/products/selected-variant.store";
 import { cn } from "@/lib/utils";
 
-export function ProductGallery({ images }: { images: ProductImage[] }) {
+export function ProductGallery({
+  images,
+  product
+}: {
+  images: ProductImage[];
+  product?: Product;
+}) {
   const [active, setActive] = useState(0);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
 
-  const activeImg = images[active];
-  const count = images.length;
+  const selectedVariantId = useSelectedVariantStore((s) =>
+    product && s.productId === product.id ? s.variantId : null
+  );
+
+  const mergedImages = useMemo(() => {
+    if (!product || !selectedVariantId) return images;
+    const variant = product.variants.find((v) => v.id === selectedVariantId);
+    const variantImg = variant?.images?.[0];
+    if (!variantImg) return images;
+    const rest = images.filter((img) => img.url !== variantImg.url);
+    return [variantImg, ...rest];
+  }, [images, product, selectedVariantId]);
+
+  useEffect(() => {
+    setActive(0);
+  }, [selectedVariantId]);
+
+  const activeImg = mergedImages[active];
+  const count = mergedImages.length;
 
   const onMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = frameRef.current;
@@ -41,7 +65,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
   return (
     <div className="flex flex-col-reverse gap-4 md:flex-row md:items-start">
       <div className="flex gap-3 overflow-x-auto md:w-20 md:flex-col">
-        {images.map((img, i) => (
+        {mergedImages.map((img, i) => (
           <button
             key={img.id}
             type="button"

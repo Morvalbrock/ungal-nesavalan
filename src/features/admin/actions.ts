@@ -9,6 +9,7 @@ import {
   heroSlideRepo,
   orderRepo,
   paymentRepo,
+  postRepo,
   productRepo,
   questionRepo,
   returnRepo,
@@ -62,7 +63,16 @@ const productSchema = z.object({
         stock: z.coerce.number().int().min(0),
         priceOverride: z
           .union([z.coerce.number().int().min(0), z.literal("").transform(() => undefined)])
-          .optional()
+          .optional(),
+        imageUrl: z
+          .union([
+            z.string().trim().refine((v) => /^https?:\/\//.test(v) || v.startsWith("/"), {
+              message: "Upload or paste a valid image URL"
+            }),
+            z.literal("").transform(() => undefined)
+          ])
+          .optional(),
+        imageAlt: z.string().trim().optional()
       })
     )
     .min(1, "Add at least one variant"),
@@ -104,7 +114,9 @@ export async function upsertProduct(values: ProductFormValues): Promise<ActionRe
     sku: v.sku,
     stock: v.stock,
     priceOverride: v.priceOverride,
-    images: []
+    images: v.imageUrl
+      ? [{ id: newId("img"), url: v.imageUrl, alt: v.imageAlt || v.color || data.name, sort: 0 }]
+      : []
   }));
 
   const payload: Omit<Product, "createdAt" | "updatedAt"> = {
@@ -696,3 +708,73 @@ export async function toggleAnnouncementActive(id: string, active: boolean): Pro
   return { ok: true };
 }
 
+const journalPostSchema = z.object({
+  id: z.string().optional(),
+  slug: z.string().trim().optional(),
+  title: z.string().trim().min(2, "Title is required"),
+  excerpt: z.string().trim().min(1, "Excerpt is required"),
+  heroImage: z
+    .union([
+      z.string().trim().refine((v) => /^https?:\/\//.test(v) || v.startsWith("/"), {
+        message: "Upload or paste a valid image URL"
+      }),
+      z.literal("").transform(() => undefined)
+    ])
+    .optional(),
+  publishedAt: z.string().trim().min(1, "Published date is required"),
+  tags: z.array(z.string().trim().min(1)).default([]),
+  relatedProductSlugs: z.array(z.string().trim().min(1)).default([]),
+  draft: z.boolean().default(false),
+  content: z.string().trim().min(1, "Article body is required")
+});
+
+export type JournalPostFormValues = z.input<typeof journalPostSchema>;
+
+export async function upsertJournalPost(
+  values: JournalPostFormValues
+): Promise<ActionResult<{ slug: string }>> {
+  await requireAdmin();
+  const parsed = journalPostSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "invalid_input",
+      issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
+    };
+  }
+  const d = parsed.data;
+  const slug = d.slug?.trim() ? slugify(d.slug) : slugify(d.title);
+
+  const payload = {
+    slug,
+    title: d.title,
+    excerpt: d.excerpt,
+    heroImage: d.heroImage,
+    publishedAt: d.publishedAt,
+    tags: d.tags,
+    relatedProductSlugs: d.relatedProductSlugs,
+    draft: d.draft,
+    content: d.content
+  };
+
+  if (d.id) {
+    const updated = await postRepo.update(d.id, payload);
+    if (!updated) return { ok: false, error: "not_found" };
+  } else {
+    await postRepo.create(payload);
+  }
+
+  revalidatePath("/admin/journal");
+  revalidatePath("/journal");
+  revalidatePath(`/journal/${slug}`);
+  return { ok: true, data: { slug } };
+}
+
+export async function deleteJournalPost(id: string): Promise<ActionResult> {
+  await requireSuperAdmin();
+  const removed = await postRepo.remove(id);
+  if (!removed) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/journal");
+  revalidatePath("/journal");
+  return { ok: true };
+}

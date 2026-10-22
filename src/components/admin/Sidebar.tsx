@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Images,
   Megaphone,
+  BookOpen,
   ExternalLink,
   LogOut
 } from "lucide-react";
@@ -30,6 +31,7 @@ const NAV = [
   { href: "/admin/coupons", label: "Coupons", icon: Tag },
   { href: "/admin/returns", label: "Returns", icon: RotateCcw },
   { href: "/admin/questions", label: "Q & A", icon: MessageCircle },
+  { href: "/admin/journal", label: "Journal", icon: BookOpen },
   { href: "/admin/abandoned-carts", label: "Abandoned carts", icon: Clock },
   { href: "/admin/customers", label: "Customers", icon: Users }
 ];

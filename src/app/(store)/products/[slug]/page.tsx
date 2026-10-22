@@ -141,7 +141,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </nav>
 
       <div className="grid gap-14 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <ProductGallery images={product.images} />
+        <ProductGallery images={product.images} product={product} />
 
         <div>
           <div className="flex flex-wrap gap-1.5">

@@ -32,7 +32,8 @@ export function HeirloomGallery({ products, availableWeaves = [] }: HeirloomGall
     } else {
       list.push(
         { id: "elampillai", label: "Elampillai Weave" },
-        { id: "kanjivaram", label: "Kanchipuram Silk" },
+        { id: "kanchivaram", label: "Kanchipuram Silk" },
+        { id: "aarani", label: "Aarani Silk" },
         { id: "jamdani", label: "Bishnupur Jamdani" },
         { id: "banarasi", label: "Banarasi Brocade" },
         { id: "chanderi", label: "Chanderi Zari" },

@@ -1,8 +1,20 @@
 import type { Fabric, Occasion, ProductQuery, Weave } from "@/types/product";
 
-export const FABRICS: Fabric[] = ["silk", "cotton", "linen", "georgette", "chiffon", "organza", "crepe", "tissue"];
+export const FABRICS: Fabric[] = [
+  "silk",
+  "cotton",
+  "silk-cotton",
+  "linen",
+  "georgette",
+  "chiffon",
+  "organza",
+  "crepe",
+  "tissue"
+];
 export const WEAVES: Weave[] = [
-  "kanjivaram",
+  "kanchivaram",
+  "aarani",
+  "elampillai",
   "banarasi",
   "chanderi",
   "patola",

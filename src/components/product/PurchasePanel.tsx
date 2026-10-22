@@ -1,8 +1,10 @@
 "use client";
-import { useMemo, useState } from "react";
-import { Check, ShoppingBag } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Check, ShoppingBag, Zap } from "lucide-react";
 import type { Product } from "@/types/product";
 import { useCartStore } from "@/features/cart/cart.store";
+import { useSelectedVariantStore } from "@/features/products/selected-variant.store";
 import { track } from "@/features/analytics/track";
 import { cn, formatINR } from "@/lib/utils";
 import { WishlistButton } from "./WishlistButton";
@@ -18,7 +20,16 @@ export function PurchasePanel({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const [typedQty, setTypedQty] = useState("1");
   const [justAdded, setJustAdded] = useState(false);
+  const [buyingNow, setBuyingNow] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
+  const selectVariant = useSelectedVariantStore((s) => s.select);
+  const resetSelectedVariant = useSelectedVariantStore((s) => s.reset);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (variantId) selectVariant(product.id, variantId);
+    return () => resetSelectedVariant();
+  }, [product.id, variantId, selectVariant, resetSelectedVariant]);
 
   const variant = product.variants.find((v) => v.id === variantId) ?? firstInStock;
   const unitPrice = variant?.priceOverride ?? product.salePrice ?? product.basePrice;
@@ -72,8 +83,8 @@ export function PurchasePanel({ product }: { product: Product }) {
 
   const effectiveQty = Math.max(1, Math.min(maxQty, parseInt(typedQty, 10) || quantity || 1));
 
-  const handleAdd = () => {
-    if (!variant || outOfStock) return;
+  const addToCart = () => {
+    if (!variant || outOfStock) return false;
     setQuantity(effectiveQty);
     setTypedQty(String(effectiveQty));
     addItem({
@@ -92,8 +103,19 @@ export function PurchasePanel({ product }: { product: Product }) {
       variantId: variant.id,
       priceInr: Math.round(unitPrice / 100)
     });
+    return true;
+  };
+
+  const handleAdd = () => {
+    if (!addToCart()) return;
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1600);
+  };
+
+  const handleBuyNow = () => {
+    if (!addToCart()) return;
+    setBuyingNow(true);
+    router.push("/checkout");
   };
 
   return (
@@ -177,27 +199,38 @@ export function PurchasePanel({ product }: { product: Product }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleAdd}
-        disabled={outOfStock}
-        className={cn(
-          "btn-primary w-full transition",
-          justAdded && "!bg-ink"
-        )}
-      >
-        {justAdded ? (
-          <>
-            <Check className="h-4 w-4" /> Added to cart
-          </>
-        ) : outOfStock ? (
-          "Sold out"
-        ) : (
-          <>
-            <ShoppingBag className="h-4 w-4" /> Add to cart · {formatINR(unitPrice * effectiveQty)}
-          </>
-        )}
-      </button>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <button
+          type="button"
+          onClick={handleAdd}
+          disabled={outOfStock || buyingNow}
+          className={cn(
+            "btn-ghost flex-1 transition",
+            justAdded && "!border-ink !bg-ink !text-cream"
+          )}
+        >
+          {justAdded ? (
+            <>
+              <Check className="h-4 w-4" /> Added to cart
+            </>
+          ) : outOfStock ? (
+            "Sold out"
+          ) : (
+            <>
+              <ShoppingBag className="h-4 w-4" /> Add to cart
+            </>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={handleBuyNow}
+          disabled={outOfStock || buyingNow}
+          className="btn-primary flex-1 transition"
+        >
+          <Zap className="h-4 w-4" />
+          {buyingNow ? "Redirecting…" : outOfStock ? "Sold out" : `Buy now · ${formatINR(unitPrice * effectiveQty)}`}
+        </button>
+      </div>
 
       <WishlistButton productId={product.id} variant="full" />
 

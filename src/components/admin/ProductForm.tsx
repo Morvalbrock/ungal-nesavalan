@@ -8,6 +8,9 @@ import { FABRICS, OCCASIONS, WEAVES } from "@/features/products/filters";
 import { deleteProduct, upsertProduct, type ProductFormValues } from "@/features/admin/actions";
 import { cn } from "@/lib/utils";
 
+// Variant price override is captured in RUPEES in the admin UI (unlike basePrice/salePrice
+// which are stored in paise). We convert ×100 when sending to the server. This matches
+// how admins naturally think about per-variant prices and avoids the "entered 100 → shows ₹1" bug.
 type Values = {
   id?: string;
   slug: string;
@@ -33,6 +36,8 @@ type Values = {
     sku: string;
     stock: number | string;
     priceOverride: number | string;
+    imageUrl: string;
+    imageAlt: string;
   }[];
 };
 
@@ -45,7 +50,7 @@ function toInitial(p?: Product): Values {
       basePrice: 0,
       salePrice: "",
       fabric: "silk",
-      weave: "kanjivaram",
+      weave: "kanchivaram",
       occasion: ["festive"],
       region: "",
       lengthMeters: 5.5,
@@ -55,7 +60,9 @@ function toInitial(p?: Product): Values {
       featured: false,
       published: true,
       images: [{ url: "", alt: "" }],
-      variants: [{ color: "", colorHex: "#7a1f2b", sku: "", stock: 1, priceOverride: "" }]
+      variants: [
+        { color: "", colorHex: "#7a1f2b", sku: "", stock: 1, priceOverride: "", imageUrl: "", imageAlt: "" }
+      ]
     };
   }
   return {
@@ -82,7 +89,9 @@ function toInitial(p?: Product): Values {
       colorHex: v.colorHex,
       sku: v.sku,
       stock: v.stock,
-      priceOverride: v.priceOverride ?? ""
+      priceOverride: v.priceOverride != null ? v.priceOverride / 100 : "",
+      imageUrl: v.images?.[0]?.url ?? "",
+      imageAlt: v.images?.[0]?.alt ?? ""
     }))
   };
 }
@@ -125,14 +134,23 @@ export function ProductForm({
         alt: i.alt,
         sort: idx
       })),
-      variants: values.variants.map((v) => ({
-        id: v.id,
-        color: v.color,
-        colorHex: v.colorHex,
-        sku: v.sku,
-        stock: v.stock as unknown as number,
-        priceOverride: v.priceOverride === "" ? undefined : (v.priceOverride as unknown as number)
-      }))
+      variants: values.variants.map((v) => {
+        const overrideRupees = v.priceOverride === "" ? undefined : Number(v.priceOverride);
+        const overridePaise =
+          overrideRupees == null || Number.isNaN(overrideRupees)
+            ? undefined
+            : Math.round(overrideRupees * 100);
+        return {
+          id: v.id,
+          color: v.color,
+          colorHex: v.colorHex,
+          sku: v.sku,
+          stock: v.stock as unknown as number,
+          priceOverride: overridePaise,
+          imageUrl: v.imageUrl?.trim() ? v.imageUrl.trim() : undefined,
+          imageAlt: v.imageAlt?.trim() ? v.imageAlt.trim() : undefined
+        };
+      })
     } as unknown as ProductFormValues;
 
     startTransition(async () => {
@@ -328,79 +346,76 @@ export function ProductForm({
 
       <Section title="Variants">
         <div className="space-y-3">
-          {values.variants.map((v, i) => (
-            <div key={i} className="grid gap-2 rounded-card border border-border p-3 sm:grid-cols-[1fr_120px_1fr_120px_120px_auto]">
-              <input
-                placeholder="Colour"
-                value={v.color}
-                onChange={(e) => {
-                  const arr = [...values.variants];
-                  arr[i] = { ...arr[i], color: e.target.value };
-                  setField("variants", arr);
-                }}
-                className={inputCls}
-              />
-              <input
-                type="color"
-                value={v.colorHex}
-                onChange={(e) => {
-                  const arr = [...values.variants];
-                  arr[i] = { ...arr[i], colorHex: e.target.value };
-                  setField("variants", arr);
-                }}
-                className="h-10 w-full rounded-card border border-border bg-transparent px-1"
-              />
-              <input
-                placeholder="SKU"
-                value={v.sku}
-                onChange={(e) => {
-                  const arr = [...values.variants];
-                  arr[i] = { ...arr[i], sku: e.target.value };
-                  setField("variants", arr);
-                }}
-                className={inputCls}
-              />
-              <input
-                type="number"
-                min={0}
-                placeholder="Stock"
-                value={v.stock}
-                onChange={(e) => {
-                  const arr = [...values.variants];
-                  arr[i] = { ...arr[i], stock: e.target.value };
-                  setField("variants", arr);
-                }}
-                className={inputCls}
-              />
-              <input
-                type="number"
-                min={0}
-                placeholder="Price override"
-                value={v.priceOverride}
-                onChange={(e) => {
-                  const arr = [...values.variants];
-                  arr[i] = { ...arr[i], priceOverride: e.target.value };
-                  setField("variants", arr);
-                }}
-                className={inputCls}
-              />
-              <button
-                type="button"
-                onClick={() => setField("variants", values.variants.filter((_, j) => j !== i))}
-                className="rounded p-2 text-ink-muted hover:bg-ink/5 hover:text-maroon"
-                disabled={values.variants.length === 1}
-                aria-label="Remove variant"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+          {values.variants.map((v, i) => {
+            const patch = (p: Partial<Values["variants"][number]>) => {
+              const arr = [...values.variants];
+              arr[i] = { ...arr[i], ...p };
+              setField("variants", arr);
+            };
+            return (
+              <div key={i} className="space-y-2 rounded-card border border-border p-3">
+                <div className="grid gap-2 sm:grid-cols-[1fr_120px_1fr_120px_120px_auto]">
+                  <input
+                    placeholder="Colour"
+                    value={v.color}
+                    onChange={(e) => patch({ color: e.target.value })}
+                    className={inputCls}
+                  />
+                  <input
+                    type="color"
+                    value={v.colorHex}
+                    onChange={(e) => patch({ colorHex: e.target.value })}
+                    className="h-10 w-full rounded-card border border-border bg-transparent px-1"
+                  />
+                  <input
+                    placeholder="SKU"
+                    value={v.sku}
+                    onChange={(e) => patch({ sku: e.target.value })}
+                    className={inputCls}
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="Stock"
+                    value={v.stock}
+                    onChange={(e) => patch({ stock: e.target.value })}
+                    className={inputCls}
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    placeholder="Price ₹ (optional)"
+                    title="Variant price in rupees. Leave blank to use the product sale/base price."
+                    value={v.priceOverride}
+                    onChange={(e) => patch({ priceOverride: e.target.value })}
+                    className={inputCls}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setField("variants", values.variants.filter((_, j) => j !== i))}
+                    className="rounded p-2 text-ink-muted hover:bg-ink/5 hover:text-maroon"
+                    disabled={values.variants.length === 1}
+                    aria-label="Remove variant"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+                <VariantImageRow
+                  url={v.imageUrl}
+                  alt={v.imageAlt}
+                  onChange={(p) => patch(p)}
+                  onUploadError={(msg) => setBanner(msg)}
+                />
+              </div>
+            );
+          })}
           <button
             type="button"
             onClick={() =>
               setField("variants", [
                 ...values.variants,
-                { color: "", colorHex: "#7a1f2b", sku: "", stock: 1, priceOverride: "" }
+                { color: "", colorHex: "#7a1f2b", sku: "", stock: 1, priceOverride: "", imageUrl: "", imageAlt: "" }
               ])
             }
             className="btn-ghost inline-flex"
@@ -408,6 +423,10 @@ export function ProductForm({
             <Plus className="h-4 w-4" /> Add variant
           </button>
           {issues.variants && <p className="text-xs text-maroon">{issues.variants[0]}</p>}
+          <p className="text-xs text-ink-muted">
+            Variant <strong>Price ₹</strong> is in rupees (e.g. type <code className="rounded bg-ink/5 px-1">800</code> for ₹800).
+            Leave blank to use the product&rsquo;s sale/base price. If a variant currently shows the wrong amount in the Add to Cart button, clear this field and save.
+          </p>
         </div>
       </Section>
 
@@ -575,6 +594,95 @@ function ImageRow({
       >
         <Trash2 className="h-4 w-4" />
       </button>
+    </div>
+  );
+}
+
+function VariantImageRow({
+  url,
+  alt,
+  onChange,
+  onUploadError
+}: {
+  url: string;
+  alt: string;
+  onChange: (patch: { imageUrl?: string; imageAlt?: string }) => void;
+  onUploadError: (msg: string) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/uploads", { method: "POST", body: fd });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        onUploadError(`Variant image upload failed: ${data.error ?? res.statusText}`);
+        return;
+      }
+      onChange({ imageUrl: data.url, imageAlt: alt || file.name.replace(/\.[^.]+$/, "") });
+    } catch (err) {
+      onUploadError(`Variant image upload failed: ${(err as Error).message}`);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="flex items-start gap-2">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-card border border-border bg-cream-warm/50">
+        {url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={url} alt={alt || "variant"} className="h-full w-full object-cover" />
+        ) : (
+          <span className="text-[10px] uppercase tracking-wider text-ink-muted">No img</span>
+        )}
+      </div>
+      <input
+        placeholder="Variant image URL (optional) — upload →"
+        value={url}
+        onChange={(e) => onChange({ imageUrl: e.target.value })}
+        className={cn(inputCls, "flex-1")}
+      />
+      <input
+        placeholder="alt text"
+        value={alt}
+        onChange={(e) => onChange({ imageAlt: e.target.value })}
+        className={cn(inputCls, "w-56")}
+      />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/avif"
+        onChange={onFile}
+        className="hidden"
+      />
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        disabled={uploading}
+        className="rounded-card border border-border p-2 text-ink-muted hover:border-ink hover:text-ink disabled:opacity-50"
+        aria-label="Upload variant image"
+        title="Upload variant image"
+      >
+        <Upload className="h-4 w-4" />
+      </button>
+      {url && (
+        <button
+          type="button"
+          onClick={() => onChange({ imageUrl: "", imageAlt: "" })}
+          className="rounded p-2 text-ink-muted hover:bg-ink/5 hover:text-maroon"
+          aria-label="Clear variant image"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 }
