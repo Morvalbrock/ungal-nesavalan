@@ -5,6 +5,19 @@ import { Trash2, Plus, Upload } from "lucide-react";
 import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
 import { FABRICS, OCCASIONS, WEAVES } from "@/features/products/filters";
+
+// Map any legacy stored values to the current enum so editing an old product doesn't blow up.
+// Why: the Weave enum was renamed (kanjivaram → kanchivaram) but existing DB rows may still
+// carry the old slug; Zod rejects them on save, blocking admin edits.
+const LEGACY_WEAVE_MAP: Record<string, string> = { kanjivaram: "kanchivaram" };
+const LEGACY_FABRIC_MAP: Record<string, string> = {};
+
+function normalizeWeave(w: string): string {
+  return LEGACY_WEAVE_MAP[w] ?? w;
+}
+function normalizeFabric(f: string): string {
+  return LEGACY_FABRIC_MAP[f] ?? f;
+}
 import { deleteProduct, upsertProduct, type ProductFormValues } from "@/features/admin/actions";
 import { cn } from "@/lib/utils";
 
@@ -72,8 +85,8 @@ function toInitial(p?: Product): Values {
     description: p.description,
     basePrice: p.basePrice,
     salePrice: p.salePrice ?? "",
-    fabric: p.fabric,
-    weave: p.weave,
+    fabric: normalizeFabric(p.fabric),
+    weave: normalizeWeave(p.weave),
     occasion: p.occasion,
     region: p.region,
     lengthMeters: p.lengthMeters,
