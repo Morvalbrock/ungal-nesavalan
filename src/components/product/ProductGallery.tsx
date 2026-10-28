@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Plus, Minus } from "lucide-react";
 import type { Product, ProductImage } from "@/types/product";
 import { useSelectedVariantStore } from "@/features/products/selected-variant.store";
-import { cn, formatINR } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ShareButton } from "./ShareButton";
 
+// Show at most 5 variant tiles. Any further variants collapse behind a "+N more" button.
 const MAX_VISIBLE_VARIANTS = 5;
 
 export function ProductGallery({
@@ -237,22 +238,28 @@ export function ProductGallery({
             )}
           </div>
 
-          <div
-            className={cn(
-              "grid gap-2.5 sm:gap-3",
-              totalVariants === 1
-                ? "grid-cols-1 max-w-[160px]"
-                : totalVariants === 2
-                ? "grid-cols-2 max-w-[320px]"
-                : "grid-cols-3 max-w-[500px]"
-            )}
-          >
+          {(() => {
+            // Pick a static Tailwind class string so purge-css sees every column count
+            // we might render. Collapsed view = always a single row of 5 tiles + "+N".
+            const gridClass = (() => {
+              if (showAllVariants) return "grid-cols-5 max-w-[460px]";
+              if (needsCollapse) return "grid-cols-6 max-w-[560px]";
+              switch (totalVariants) {
+                case 1: return "grid-cols-1 max-w-[110px]";
+                case 2: return "grid-cols-2 max-w-[220px]";
+                case 3: return "grid-cols-3 max-w-[320px]";
+                case 4: return "grid-cols-4 max-w-[380px]";
+                case 5: return "grid-cols-5 max-w-[460px]";
+                default: return "grid-cols-5 max-w-[460px]";
+              }
+            })();
+            return (
+          <div className={cn("grid gap-2", gridClass)}>
             {visibleVariants.map((v) => {
               const isSelected = v.id === activeVariantId;
               const isOutOfStock = v.stock === 0;
               const rawVariantImg = v.images?.[0]?.url || product.images[0]?.url;
               const variantImg = rawVariantImg && !brokenUrls.has(rawVariantImg) ? rawVariantImg : null;
-              const vPrice = v.priceOverride ?? product.salePrice ?? product.basePrice;
 
               return (
                 <button
@@ -265,20 +272,20 @@ export function ProductGallery({
                   className={cn(
                     "group relative flex flex-col overflow-hidden rounded-card border text-left transition-all duration-200",
                     isSelected
-                      ? "border-maroon ring-2 ring-maroon/20 shadow-md bg-cream-warm/20"
-                      : "border-border/80 bg-white hover:border-ink/50 hover:shadow-xs",
+                      ? "border-maroon ring-1 ring-maroon/25 shadow-xs bg-cream-warm/20"
+                      : "border-border/80 bg-white hover:border-ink/50",
                     isOutOfStock && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-cream-warm">
+                  <div className="relative aspect-square w-full overflow-hidden bg-cream-warm">
                     {variantImg ? (
                       <Image
                         src={variantImg}
                         alt={v.color}
                         fill
-                        sizes="(min-width: 1024px) 15vw, 30vw"
+                        sizes="90px"
                         onError={() => markBroken(variantImg)}
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover"
                       />
                     ) : (
                       <div
@@ -286,50 +293,33 @@ export function ProductGallery({
                         style={{ backgroundColor: `${v.colorHex}20` }}
                       >
                         <span
-                          className="h-9 w-9 rounded-full border border-ink/20 shadow-xs"
+                          className="h-6 w-6 rounded-full border border-ink/20 shadow-xs"
                           style={{ backgroundColor: v.colorHex }}
                         />
                       </div>
                     )}
 
-                    {/* Selected checkmark badge */}
                     {isSelected && (
-                      <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-maroon text-white shadow-xs">
-                        <Check className="h-3 w-3 stroke-[2.5]" />
+                      <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-maroon text-white shadow-xs">
+                        <Check className="h-2.5 w-2.5 stroke-[2.5]" />
                       </span>
                     )}
 
-                    {/* Out of stock badge */}
                     {isOutOfStock && (
-                      <span className="absolute inset-x-0 bottom-0 bg-ink/80 py-1 text-center text-[10px] font-semibold uppercase tracking-wider text-cream">
+                      <span className="absolute inset-x-0 bottom-0 bg-ink/80 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wider text-cream">
                         Sold Out
                       </span>
                     )}
                   </div>
 
-                  <div className="flex flex-col p-2 sm:p-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className="inline-block h-3.5 w-3.5 shrink-0 rounded-full border border-ink/20 shadow-xs"
-                        style={{ backgroundColor: v.colorHex }}
-                      />
-                      <span className="truncate text-xs font-semibold capitalize text-ink">
-                        {v.color}
-                      </span>
-                    </div>
-                    <div className="mt-1 flex items-center justify-between text-[11px] text-ink-muted">
-                      <span>{formatINR(vPrice)}</span>
-                      {!isOutOfStock && (
-                        <span
-                          className={cn(
-                            "text-[10px] font-medium",
-                            v.stock <= 3 ? "text-amber-700" : "text-emerald-700"
-                          )}
-                        >
-                          {v.stock <= 3 ? `${v.stock} left` : "In stock"}
-                        </span>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-1 px-1.5 py-1">
+                    <span
+                      className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border border-ink/20"
+                      style={{ backgroundColor: v.colorHex }}
+                    />
+                    <span className="truncate text-[10.5px] font-medium capitalize text-ink">
+                      {v.color}
+                    </span>
                   </div>
                 </button>
               );
@@ -340,23 +330,20 @@ export function ProductGallery({
                 type="button"
                 onClick={() => setShowAllVariants(true)}
                 aria-label={`Show ${hiddenCount} more variant${hiddenCount === 1 ? "" : "s"}`}
-                className="group relative flex flex-col overflow-hidden rounded-card border border-dashed border-ink/30 bg-cream-warm/40 text-left transition-all duration-200 hover:border-ink/70 hover:bg-cream-warm hover:shadow-xs"
+                className="group relative flex flex-col overflow-hidden rounded-card border border-dashed border-ink/30 bg-cream-warm/40 text-left transition-all duration-200 hover:border-ink/70 hover:bg-cream-warm"
               >
-                <div className="relative flex aspect-[4/5] w-full items-center justify-center">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/25 text-ink group-hover:border-maroon group-hover:text-maroon">
-                      <Plus className="h-5 w-5 stroke-[2.5]" />
+                <div className="relative flex aspect-square w-full items-center justify-center">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/25 text-ink group-hover:border-maroon group-hover:text-maroon">
+                      <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                     </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-ink">
+                    <span className="text-[9.5px] font-semibold uppercase tracking-wider text-ink">
                       +{hiddenCount}
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-col p-2.5 sm:p-3">
-                  <span className="truncate text-xs font-semibold text-ink">Show more</span>
-                  <span className="mt-1 text-[11px] text-ink-muted">
-                    {hiddenCount} more {hiddenCount === 1 ? "variant" : "variants"}
-                  </span>
+                <div className="px-1.5 py-1">
+                  <span className="truncate text-[10.5px] font-medium text-ink">Show more</span>
                 </div>
               </button>
             )}
@@ -366,22 +353,21 @@ export function ProductGallery({
                 type="button"
                 onClick={() => setShowAllVariants(false)}
                 aria-label="Show fewer variants"
-                className="group relative flex flex-col overflow-hidden rounded-card border border-dashed border-ink/30 bg-cream-warm/40 text-left transition-all duration-200 hover:border-ink/70 hover:bg-cream-warm hover:shadow-xs"
+                className="group relative flex flex-col overflow-hidden rounded-card border border-dashed border-ink/30 bg-cream-warm/40 text-left transition-all duration-200 hover:border-ink/70 hover:bg-cream-warm"
               >
-                <div className="relative flex aspect-[4/5] w-full items-center justify-center">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/25 text-ink group-hover:border-maroon group-hover:text-maroon">
-                      <Minus className="h-5 w-5 stroke-[2.5]" />
-                    </span>
-                  </div>
+                <div className="relative flex aspect-square w-full items-center justify-center">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/25 text-ink group-hover:border-maroon group-hover:text-maroon">
+                    <Minus className="h-3.5 w-3.5 stroke-[2.5]" />
+                  </span>
                 </div>
-                <div className="flex flex-col p-2.5 sm:p-3">
-                  <span className="truncate text-xs font-semibold text-ink">Show less</span>
-                  <span className="mt-1 text-[11px] text-ink-muted">Collapse list</span>
+                <div className="px-1.5 py-1">
+                  <span className="truncate text-[10.5px] font-medium text-ink">Show less</span>
                 </div>
               </button>
             )}
           </div>
+            );
+          })()}
         </div>
         );
       })()}

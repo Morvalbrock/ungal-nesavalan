@@ -42,11 +42,13 @@ export default function ContactPage() {
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Studio & Dispatch Hub</p>
             <p className="mt-2 leading-relaxed">
-              GRT parcel service, Elampillai,
+              Nandhakumar, 3/364,
               <br />
-              Main Road, near Salem,
+              KK Nagar West,
               <br />
-              Edaganasalai, Tamil Nadu 637502
+              Edanganasalai, Salem - 637502,
+              <br />
+              Tamil Nadu
             </p>
           </div>
           <div>

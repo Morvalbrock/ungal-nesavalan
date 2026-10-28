@@ -55,7 +55,7 @@ export default async function AboutPage() {
       <section>
         <h2 className="font-display text-2xl text-ink">Studio & Dispatch Hub</h2>
         <p className="mt-3">
-          Our studio and dispatch hub is located at GRT parcel service, Elampillai, main road, near Salem, Edaganasalai, Tamil Nadu 637502. Inspection, hand folding, and express dispatch happen here. If you're in town, write ahead and drop by — chai is on us.
+          Our studio and dispatch hub is located at Nandhakumar, 3/364, KK Nagar West, Edanganasalai, Salem - 637502, Tamil Nadu. Inspection, hand folding, and express dispatch happen here. If you&rsquo;re in town, write ahead and drop by — chai is on us.
         </p>
       </section>
     </LegalShell>

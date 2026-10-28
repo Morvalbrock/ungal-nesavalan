@@ -123,7 +123,7 @@ export async function Footer() {
           <div>
             <p className="text-[10.5px] uppercase tracking-widest2 text-cream/50">Reach us</p>
             <p className="mt-3 text-[13px] leading-relaxed text-cream/80">
-              GRT parcel service, Elampillai, main road, near Salem, Edaganasalai, Tamil Nadu 637502
+              Nandhakumar, 3/364, KK Nagar West, Edanganasalai, Salem - 637502, Tamil Nadu
             </p>
             <p className="mt-2 text-[13px] text-cream/80">
               <a href="mailto:ungalnesavalan01@gmail.com" className="transition hover:text-gold-soft">
