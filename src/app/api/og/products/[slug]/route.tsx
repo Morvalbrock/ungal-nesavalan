@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { productRepo } from "@/server/repositories";
+import { catalogRepo, productRepo } from "@/server/repositories";
 
 export const runtime = "nodejs";
 
@@ -10,6 +10,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     return new Response("not_found", { status: 404 });
   }
 
+  const catalog = await catalogRepo.findBySlug(product.weave);
+  const catalogLabel = catalog?.name ?? product.weave;
   const primaryImage = product.images[0]?.url;
   const priceRupees = ((product.salePrice ?? product.basePrice) / 100).toLocaleString("en-IN");
 
@@ -58,7 +60,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
                 letterSpacing: 2
               }}
             >
-              {product.weave} · {product.fabric}
+              {catalogLabel} · {product.fabric}
             </div>
             <div
               style={{

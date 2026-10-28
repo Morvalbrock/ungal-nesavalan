@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ProductForm } from "@/components/admin/ProductForm";
-import { categoryRepo } from "@/server/repositories";
+import { catalogRepo, categoryRepo } from "@/server/repositories";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewProductPage() {
-  const categories = await categoryRepo.list();
+  const [categories, catalogs] = await Promise.all([categoryRepo.list(), catalogRepo.list()]);
   return (
     <div className="space-y-6">
       <header>
@@ -14,7 +14,7 @@ export default async function NewProductPage() {
         </Link>
         <h1 className="mt-2 font-display text-3xl">New product</h1>
       </header>
-      <ProductForm categories={categories} />
+      <ProductForm categories={categories} catalogs={catalogs} />
     </div>
   );
 }

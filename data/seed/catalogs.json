@@ -1,0 +1,27 @@
+[
+  { "id": "ctl_kalyani_silk_cotton", "slug": "kalyani-silk-cotton", "name": "Kalyani Silk Cotton", "sort": 10 },
+  { "id": "ctl_maheshwari_cotton", "slug": "maheshwari-cotton", "name": "Maheshwari Cotton", "sort": 20 },
+  { "id": "ctl_nayanthara_cotton", "slug": "nayanthara-cotton", "name": "Nayanthara Cotton", "sort": 30 },
+  { "id": "ctl_aarani_soft_silk", "slug": "aarani-soft-silk", "name": "Aarani Soft Silk", "sort": 40 },
+  { "id": "ctl_aarani_checked", "slug": "aarani-checked-sarees", "name": "Aarani Checked Sarees", "sort": 50 },
+  { "id": "ctl_embossed", "slug": "embossed-sarees", "name": "Embossed Sarees", "sort": 60 },
+  { "id": "ctl_wedding_silk", "slug": "wedding-silk-sarees", "name": "Wedding Silk Sarees", "sort": 70 },
+  { "id": "ctl_soft_silk", "slug": "soft-silk-sarees", "name": "Soft Silk Sarees", "sort": 80 },
+  { "id": "ctl_borderless", "slug": "borderless-sarees", "name": "Borderless Sarees", "sort": 90 },
+  { "id": "ctl_korvai_border", "slug": "korvai-border-sarees", "name": "Korvai Border Sarees", "sort": 100 },
+  { "id": "ctl_bridal", "slug": "bridal-sarees", "name": "Bridal Sarees", "sort": 110 },
+  { "id": "ctl_pure_cotton", "slug": "pure-cotton", "name": "Pure Cotton", "sort": 120 },
+
+  { "id": "ctl_legacy_kanchivaram", "slug": "kanchivaram", "name": "Kanchivaram", "sort": 1000, "legacy": true },
+  { "id": "ctl_legacy_aarani", "slug": "aarani", "name": "Aarani", "sort": 1010, "legacy": true },
+  { "id": "ctl_legacy_elampillai", "slug": "elampillai", "name": "Elampillai", "sort": 1020, "legacy": true },
+  { "id": "ctl_legacy_banarasi", "slug": "banarasi", "name": "Banarasi", "sort": 1030, "legacy": true },
+  { "id": "ctl_legacy_chanderi", "slug": "chanderi", "name": "Chanderi", "sort": 1040, "legacy": true },
+  { "id": "ctl_legacy_patola", "slug": "patola", "name": "Patola", "sort": 1050, "legacy": true },
+  { "id": "ctl_legacy_ikat", "slug": "ikat", "name": "Ikat", "sort": 1060, "legacy": true },
+  { "id": "ctl_legacy_jamdani", "slug": "jamdani", "name": "Jamdani", "sort": 1070, "legacy": true },
+  { "id": "ctl_legacy_bandhani", "slug": "bandhani", "name": "Bandhani", "sort": 1080, "legacy": true },
+  { "id": "ctl_legacy_paithani", "slug": "paithani", "name": "Paithani", "sort": 1090, "legacy": true },
+  { "id": "ctl_legacy_handloom", "slug": "handloom", "name": "Handloom", "sort": 1100, "legacy": true },
+  { "id": "ctl_legacy_printed", "slug": "printed", "name": "Printed", "sort": 1110, "legacy": true }
+]

@@ -31,7 +31,21 @@ export const metadata: Metadata = {
   description:
     "Handcrafted sarees from India's finest weaving clusters — Kanjivaram, Banarasi, Chanderi, Patola and more.",
   metadataBase: new URL(SITE_URL),
-  manifest: "/manifest.json"
+  manifest: "/manifest.json",
+  openGraph: {
+    type: "website",
+    siteName: "Ungal Nesavalan",
+    title: "Ungal Nesavalan — Handwoven Sarees",
+    description:
+      "Kanjivaram, Banarasi, Chanderi and more — handloom sarees sourced directly from master weavers.",
+    url: SITE_URL
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ungal Nesavalan — Handwoven Sarees",
+    description:
+      "Kanjivaram, Banarasi, Chanderi and more — handloom sarees sourced directly from master weavers."
+  }
 };
 
 export const viewport: Viewport = {

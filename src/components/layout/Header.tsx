@@ -8,12 +8,13 @@ import { MegaMenu } from "./MegaMenu";
 import { MiniCart } from "@/components/cart/MiniCart";
 import { AccountMenu } from "./AccountMenu";
 import { WishlistHeaderLink } from "./WishlistHeaderLink";
-import { categoryRepo, productRepo } from "@/server/repositories";
+import { catalogRepo, categoryRepo, productRepo } from "@/server/repositories";
 
 export async function Header() {
-  const [inStockCategories, facets] = await Promise.all([
+  const [inStockCategories, facets, allCatalogs] = await Promise.all([
     categoryRepo.listWithStock(),
-    productRepo.getAvailableFacets()
+    productRepo.getAvailableFacets(),
+    catalogRepo.list()
   ]);
 
   const inStockSlugs = inStockCategories.map((c) => c.slug);
@@ -21,6 +22,11 @@ export async function Header() {
   const availableFabrics = facets.fabrics.map((f) => f.id.toLowerCase());
   const availableOccasions = facets.occasions.map((o) => o.id.toLowerCase());
   const hasBridal = inStockSlugs.includes("bridal-sarees");
+  // "Catalog" is the admin-managed taxonomy that replaced the hardcoded Weave list.
+  // Menu shows active (non-legacy) catalogs ordered by their sort.
+  const catalogMenuItems = allCatalogs
+    .filter((c) => !c.legacy)
+    .map((c) => ({ label: c.name, slug: c.slug }));
 
   return (
     <div className="sticky top-0 z-40">
@@ -28,7 +34,11 @@ export async function Header() {
       <header className="border-b border-border/70 bg-cream">
         <Container className="flex h-[60px] items-center justify-between gap-2 sm:h-[64px] sm:gap-4 md:h-[72px] lg:gap-6">
           <div className="flex shrink-0 items-center lg:hidden">
-            <MobileNav inStockSlugs={inStockSlugs} availableWeaves={availableWeaves} />
+            <MobileNav
+              inStockSlugs={inStockSlugs}
+              availableWeaves={availableWeaves}
+              catalogs={catalogMenuItems}
+            />
           </div>
 
           <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-2.5 md:gap-3">
@@ -53,6 +63,7 @@ export async function Header() {
               availableWeaves={availableWeaves}
               availableFabrics={availableFabrics}
               availableOccasions={availableOccasions}
+              catalogs={catalogMenuItems}
               showBridalPromo={hasBridal}
             />
             {inStockSlugs.includes("bridal-sarees") && (

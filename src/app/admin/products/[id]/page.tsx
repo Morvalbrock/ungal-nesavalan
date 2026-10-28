@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/ProductForm";
-import { categoryRepo, productRepo } from "@/server/repositories";
+import { catalogRepo, categoryRepo, productRepo } from "@/server/repositories";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [product, categories] = await Promise.all([
+  const [product, categories, catalogs] = await Promise.all([
     productRepo.findById(id),
-    categoryRepo.list()
+    categoryRepo.list(),
+    catalogRepo.list()
   ]);
   if (!product) notFound();
 
@@ -30,7 +31,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           </Link>
         </div>
       </header>
-      <ProductForm product={product} categories={categories} />
+      <ProductForm product={product} categories={categories} catalogs={catalogs} />
     </div>
   );
 }

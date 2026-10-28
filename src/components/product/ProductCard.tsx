@@ -86,7 +86,7 @@ export function ProductCard({ product, className, rating }: Props) {
 
         <div className="mt-4 flex flex-1 flex-col">
           <p className="text-[10.5px] font-medium uppercase tracking-widest2 text-ink-muted">
-            {product.weave} · {product.fabric}
+            {product.weave.replace(/-/g, " ")} · {product.fabric.replace(/-/g, " ")}
           </p>
           <h3 className="mt-1.5 font-display text-[17px] leading-snug text-ink transition group-hover:text-maroon">
             {product.name}

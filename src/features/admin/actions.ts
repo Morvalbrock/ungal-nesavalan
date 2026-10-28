@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin, requireSuperAdmin } from "./guard";
 import {
+  catalogRepo,
   categoryRepo,
   couponRepo,
   heroSlideRepo,
@@ -21,8 +22,8 @@ import { getPaymentProvider } from "@/features/payments";
 import { getMailProvider } from "@/features/mail";
 import { deliveredEmail, returnDecisionEmail, shippedEmail } from "@/features/mail/templates";
 import type { OrderStatus } from "@/types/order";
-import type { Fabric, Occasion, Product, ProductImage, Variant, Weave } from "@/types/product";
-import { FABRICS, OCCASIONS, WEAVES } from "@/features/products/filters";
+import type { Fabric, Occasion, Product, ProductImage, Variant } from "@/types/product";
+import { FABRICS, OCCASIONS } from "@/features/products/filters";
 import { newId } from "@/server/db/json-store";
 import { slugify } from "@/lib/utils";
 
@@ -36,7 +37,9 @@ const productSchema = z.object({
     .union([z.coerce.number().int().min(0), z.literal("").transform(() => undefined)])
     .optional(),
   fabric: z.enum(FABRICS as unknown as [Fabric, ...Fabric[]]),
-  weave: z.enum(WEAVES as unknown as [Weave, ...Weave[]]),
+  // Catalog (previously "Weave") — accepts any slug managed via /admin/catalogs,
+  // so adding new catalogs doesn't require a redeploy.
+  weave: z.string().trim().min(1, "Choose a catalog"),
   occasion: z.array(z.enum(OCCASIONS as unknown as [Occasion, ...Occasion[]])).min(1),
   region: z.string().trim().min(1),
   lengthMeters: z.coerce.number().min(0),
@@ -266,6 +269,50 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   revalidatePath("/admin/categories");
   revalidatePath("/");
   revalidatePath("/products");
+  return { ok: true };
+}
+
+const catalogSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(2, "Name is required"),
+  slug: z.string().trim().optional(),
+  sort: z.coerce.number().default(0)
+});
+
+export async function upsertCatalog(values: z.input<typeof catalogSchema>): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = catalogSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "invalid_input",
+      issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
+    };
+  }
+  const d = parsed.data;
+  const slug = d.slug?.trim() ? slugify(d.slug) : slugify(d.name);
+  const payload = { slug, name: d.name, sort: d.sort };
+  if (d.id) {
+    const updated = await catalogRepo.update(d.id, payload);
+    if (!updated) return { ok: false, error: "not_found" };
+  } else {
+    await catalogRepo.create(payload);
+  }
+  revalidatePath("/admin/catalogs");
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function deleteCatalog(id: string): Promise<ActionResult> {
+  await requireSuperAdmin();
+  const removed = await catalogRepo.remove(id);
+  if (!removed) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/catalogs");
+  revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 

@@ -155,7 +155,7 @@ export function FilterSidebar({
           ))}
         </FilterGroup>
 
-        <FilterGroup title="Weave">
+        <FilterGroup title="Catalog">
           {(weaves
             ? weaves.map((w) => ({ key: w.id, label: w.label }))
             : WEAVES.map((w) => ({ key: w, label: w }))

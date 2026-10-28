@@ -8,10 +8,16 @@ import { DeliveryChecker } from "@/components/product/DeliveryChecker";
 import { RatingStars } from "@/components/product/RatingStars";
 import { ReviewsSection } from "@/components/product/ReviewsSection";
 import { QuestionsSection } from "@/components/product/QuestionsSection";
-import { WhatsAppShare } from "@/components/product/WhatsAppShare";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Ornament } from "@/components/home/Ornament";
-import { orderRepo, productRepo, categoryRepo, questionRepo, reviewRepo } from "@/server/repositories";
+import {
+  orderRepo,
+  productRepo,
+  categoryRepo,
+  catalogRepo,
+  questionRepo,
+  reviewRepo
+} from "@/server/repositories";
 import { getSession } from "@/features/auth/session";
 import { formatINR } from "@/lib/utils";
 
@@ -42,14 +48,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const product = await productRepo.findBySlug(slug);
   if (!product) notFound();
 
-  const [category, related, reviewsPage, aggregate, questions, session] = await Promise.all([
+  const [category, catalog, related, reviewsPage, aggregate, questions, session] = await Promise.all([
     categoryRepo.findById(product.categoryId),
+    catalogRepo.findBySlug(product.weave),
     productRepo.list({ category: product.categoryId, perPage: 8 }),
     reviewRepo.listByProduct(product.id, { perPage: 10 }),
     reviewRepo.aggregateFor(product.id),
     questionRepo.listByProduct(product.id),
     getSession()
   ]);
+  const catalogLabel = catalog?.name ?? product.weave;
   const others = related.items.filter((p) => p.id !== product.id).slice(0, 4);
 
   let eligibility: "eligible" | "already_reviewed" | "not_eligible" | "unauthenticated" = "unauthenticated";
@@ -145,7 +153,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         <div>
           <div className="flex flex-wrap gap-1.5">
-            <span className="chip capitalize">{product.weave}</span>
+            <span className="chip">{catalogLabel}</span>
             <span className="chip capitalize">{product.fabric}</span>
             <span className="chip">{product.region}</span>
           </div>
@@ -191,8 +199,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <dd className="mt-1.5 text-[14px] capitalize">{product.fabric}</dd>
             </div>
             <div>
-              <dt className="text-[10.5px] uppercase tracking-widest2 text-ink-muted">Weave</dt>
-              <dd className="mt-1.5 text-[14px] capitalize">{product.weave}</dd>
+              <dt className="text-[10.5px] uppercase tracking-widest2 text-ink-muted">Catalog</dt>
+              <dd className="mt-1.5 text-[14px]">{catalogLabel}</dd>
             </div>
             <div className="col-span-2">
               <dt className="text-[10.5px] uppercase tracking-widest2 text-ink-muted">Care</dt>
@@ -221,9 +229,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
 
-          <div className="mt-6">
-            <WhatsAppShare productName={product.name} productSlug={product.slug} />
-          </div>
         </div>
       </div>
 

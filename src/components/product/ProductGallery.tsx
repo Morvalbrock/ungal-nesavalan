@@ -5,6 +5,7 @@ import { Check, Plus, Minus } from "lucide-react";
 import type { Product, ProductImage } from "@/types/product";
 import { useSelectedVariantStore } from "@/features/products/selected-variant.store";
 import { cn, formatINR } from "@/lib/utils";
+import { ShareButton } from "./ShareButton";
 
 const MAX_VISIBLE_VARIANTS = 5;
 
@@ -109,90 +110,106 @@ export function ProductGallery({
 
   return (
     <div className="flex flex-col">
-      {/* Main Large Product / Variant Image */}
-      <div
-        ref={frameRef}
-        onMouseEnter={onMove}
-        onMouseMove={onMove}
-        onMouseLeave={() => setZoom(null)}
-        className="relative aspect-[3/4] w-full overflow-hidden rounded-card bg-cream-warm shadow-xs"
-      >
-        <Image
-          src={activeImg.url}
-          alt={activeImg.alt || product?.name || "Product image"}
-          fill
-          priority
-          sizes="(min-width: 1024px) 45vw, 100vw"
-          onError={() => markBroken(activeImg.url)}
-          className="object-cover transition-opacity duration-300"
-        />
-        {zoom && (
+      {/* Amazon-style gallery: thumbnails run vertically down the LEFT of the main image on
+          sm+ screens; on mobile they collapse to a horizontal strip below the image. */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:gap-3">
+        {count > 1 && (
           <div
-            className="pointer-events-none absolute inset-0 hidden md:block"
-            style={{
-              backgroundImage: `url(${activeImg.url})`,
-              backgroundSize: "220%",
-              backgroundPosition: `${zoom.x}% ${zoom.y}%`,
-              opacity: 1
-            }}
-          />
+            className={cn(
+              "order-2 mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-thin",
+              "sm:order-1 sm:mt-0 sm:w-16 sm:shrink-0 sm:flex-col sm:gap-2 sm:overflow-x-visible sm:overflow-y-auto sm:max-h-[560px] sm:pb-0"
+            )}
+          >
+            {usableImages.map((img, i) => (
+              <button
+                key={img.id}
+                type="button"
+                onClick={() => setActive(i)}
+                aria-label={`View photo ${i + 1}`}
+                className={cn(
+                  "relative aspect-square w-14 shrink-0 overflow-hidden rounded-card border transition-all sm:w-full",
+                  i === active
+                    ? "border-maroon ring-2 ring-maroon/25 opacity-100"
+                    : "border-border/70 opacity-70 hover:opacity-100 hover:border-ink/40"
+                )}
+              >
+                <Image
+                  src={img.url}
+                  alt={img.alt}
+                  fill
+                  sizes="70px"
+                  onError={() => markBroken(img.url)}
+                  className="object-cover"
+                />
+              </button>
+            ))}
+          </div>
         )}
 
-        {count > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={() => setActive((i) => (i - 1 + count) % count)}
-              aria-label="Previous image"
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-cream/90 px-3 py-1 text-sm text-ink shadow hover:bg-cream md:hidden"
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              onClick={() => setActive((i) => (i + 1) % count)}
-              aria-label="Next image"
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-cream/90 px-3 py-1 text-sm text-ink shadow hover:bg-cream md:hidden"
-            >
-              ›
-            </button>
-            <span className="absolute bottom-3 right-3 rounded-full bg-ink/75 px-2.5 py-0.5 text-[10px] font-medium text-cream shadow-xs">
-              {active + 1} / {count}
-            </span>
-          </>
-        )}
+        <div
+          ref={frameRef}
+          onMouseEnter={onMove}
+          onMouseMove={onMove}
+          onMouseLeave={() => setZoom(null)}
+          className="relative order-1 aspect-[3/4] w-full flex-1 overflow-hidden rounded-card bg-cream-warm shadow-xs sm:order-2"
+        >
+          <Image
+            src={activeImg.url}
+            alt={activeImg.alt || product?.name || "Product image"}
+            fill
+            priority
+            sizes="(min-width: 1024px) 42vw, 100vw"
+            onError={() => markBroken(activeImg.url)}
+            className="object-cover transition-opacity duration-300"
+          />
+          {zoom && (
+            <div
+              className="pointer-events-none absolute inset-0 hidden md:block"
+              style={{
+                backgroundImage: `url(${activeImg.url})`,
+                backgroundSize: "220%",
+                backgroundPosition: `${zoom.x}% ${zoom.y}%`,
+                opacity: 1
+              }}
+            />
+          )}
+
+          {product && (
+            <ShareButton
+              productName={product.name}
+              productSlug={product.slug}
+              className="absolute right-3 top-3 z-10"
+            />
+          )}
+
+          {count > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setActive((i) => (i - 1 + count) % count)}
+                aria-label="Previous image"
+                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-cream/90 px-3 py-1 text-sm text-ink shadow hover:bg-cream md:hidden"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={() => setActive((i) => (i + 1) % count)}
+                aria-label="Next image"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-cream/90 px-3 py-1 text-sm text-ink shadow hover:bg-cream md:hidden"
+              >
+                ›
+              </button>
+              <span className="absolute bottom-3 right-3 rounded-full bg-ink/75 px-2.5 py-0.5 text-[10px] font-medium text-cream shadow-xs">
+                {active + 1} / {count}
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Angle Thumbnails strip (shown when multiple angles/photos exist for active variant) */}
-      {count > 1 && (
-        <div className="mt-3.5 flex gap-2.5 overflow-x-auto pb-1 scrollbar-thin">
-          {usableImages.map((img, i) => (
-            <button
-              key={img.id}
-              type="button"
-              onClick={() => setActive(i)}
-              aria-label={`View photo ${i + 1}`}
-              className={cn(
-                "relative aspect-[3/4] w-14 shrink-0 overflow-hidden rounded-card border transition-all md:w-16",
-                i === active
-                  ? "border-maroon ring-2 ring-maroon/25 opacity-100"
-                  : "border-border/70 opacity-70 hover:opacity-100 hover:border-ink/40"
-              )}
-            >
-              <Image
-                src={img.url}
-                alt={img.alt}
-                fill
-                sizes="70px"
-                onError={() => markBroken(img.url)}
-                className="object-cover"
-              />
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Available Variants on Bottom Side (Matching the 3 boxes under the image) */}
+      {/* "Choose a Variant" grid sits directly under the main image so swapping colour
+          doesn't force the user to scroll. */}
       {product && product.variants && product.variants.length > 0 && (() => {
         const totalVariants = product.variants.length;
         const needsCollapse = totalVariants > MAX_VISIBLE_VARIANTS;
@@ -203,11 +220,11 @@ export function ProductGallery({
         const hiddenCount = totalVariants - MAX_VISIBLE_VARIANTS;
 
         return (
-        <div className="mt-6 border-t border-border/70 pt-5">
+        <div className="mt-4">
           <div className="mb-3.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-widest2 text-ink-muted">
-                Available Variants
+                Choose a Variant
               </span>
               <span className="rounded-full bg-cream-warm px-2 py-0.5 text-[10px] font-medium text-ink-muted">
                 {totalVariants} {totalVariants === 1 ? "Option" : "Options"}

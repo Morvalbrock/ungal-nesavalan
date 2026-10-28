@@ -15,6 +15,7 @@ import {
   Images,
   Megaphone,
   BookOpen,
+  BookMarked,
   ExternalLink,
   LogOut
 } from "lucide-react";
@@ -26,6 +27,7 @@ const NAV = [
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/hero-slides", label: "Hero slides", icon: Images },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/catalogs", label: "Catalogs", icon: BookMarked },
   { href: "/admin/categories", label: "Categories & Banners", icon: Layers },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/coupons", label: "Coupons", icon: Tag },

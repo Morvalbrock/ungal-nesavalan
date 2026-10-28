@@ -9,19 +9,11 @@ export type Fabric =
   | "crepe"
   | "tissue";
 
-export type Weave =
-  | "kanchivaram"
-  | "aarani"
-  | "elampillai"
-  | "banarasi"
-  | "chanderi"
-  | "patola"
-  | "ikat"
-  | "jamdani"
-  | "bandhani"
-  | "paithani"
-  | "handloom"
-  | "printed";
+// Weave was originally a strict union; it is now an admin-managed "Catalog"
+// taxonomy. Values are the slugs stored in the `catalogs` collection — the
+// legacy union members (kanchivaram, banarasi, etc.) remain valid alongside
+// new entries added via /admin/catalogs.
+export type Weave = string;
 
 export type Occasion = "bridal" | "festive" | "party" | "daily" | "office" | "casual";
 

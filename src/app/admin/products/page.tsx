@@ -125,7 +125,7 @@ export default async function AdminProductsPage({
       </header>
 
       <SearchFilter
-        searchPlaceholder="Search by name, weave, fabric…"
+        searchPlaceholder="Search by name, catalog, fabric…"
         filters={[
           {
             key: "category",
@@ -187,7 +187,7 @@ export default async function AdminProductsPage({
                       <div>
                         <p className="font-medium">{p.name}</p>
                         <p className="text-xs text-ink-muted">
-                          {p.weave} · {p.fabric}
+                          {p.weave.replace(/-/g, " ")} · {p.fabric.replace(/-/g, " ")}
                         </p>
                       </div>
                     </div>

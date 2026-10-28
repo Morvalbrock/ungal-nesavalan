@@ -3,8 +3,9 @@ import Image from "next/image";
 import { Container } from "./Container";
 import { NewsletterForm } from "./NewsletterForm";
 import { Ornament } from "@/components/home/Ornament";
+import { catalogRepo } from "@/server/repositories";
 
-const columns = [
+const baseColumns = [
   {
     heading: "Shop",
     links: [
@@ -15,20 +16,10 @@ const columns = [
       { label: "Designer", href: "/category/designer-sarees" },
       { label: "Printed", href: "/category/printed-sarees" }
     ]
-  },
-  {
-    heading: "By Weave",
-    links: [
-      { label: "Kanchivaram", href: "/products?weave=kanchivaram" },
-      { label: "Aarani", href: "/products?weave=aarani" },
-      { label: "Elampillai", href: "/products?weave=elampillai" },
-      { label: "Banarasi", href: "/products?weave=banarasi" },
-      { label: "Chanderi", href: "/products?weave=chanderi" },
-      { label: "Patola", href: "/products?weave=patola" },
-      { label: "Jamdani", href: "/products?weave=jamdani" },
-      { label: "Ikat", href: "/products?weave=ikat" }
-    ]
-  },
+  }
+];
+
+const tailColumns = [
   {
     heading: "Support",
     links: [
@@ -49,7 +40,18 @@ const columns = [
   }
 ];
 
-export function Footer() {
+export async function Footer() {
+  const catalogs = await catalogRepo.list();
+  const catalogColumn = {
+    heading: "By Catalog",
+    links: catalogs
+      .filter((c) => !c.legacy)
+      .slice(0, 8)
+      .map((c) => ({ label: c.name, href: `/products?weave=${c.slug}` }))
+  };
+  const columns = catalogColumn.links.length > 0
+    ? [...baseColumns, catalogColumn, ...tailColumns]
+    : [...baseColumns, ...tailColumns];
   return (
     <footer className="mt-24 border-t border-border/70 bg-ink text-cream">
       <Container className="py-20">

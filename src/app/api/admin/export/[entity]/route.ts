@@ -96,7 +96,7 @@ async function buildProductsCsv(sp: Record<string, string>): Promise<string> {
     "Slug",
     "Category ID",
     "Fabric",
-    "Weave",
+    "Catalog",
     "Base price (INR)",
     "Sale price (INR)",
     "Stock",

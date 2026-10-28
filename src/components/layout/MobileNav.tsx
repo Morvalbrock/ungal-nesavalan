@@ -19,18 +19,6 @@ const SECTIONS = [
     ]
   },
   {
-    heading: "By Weave",
-    links: [
-      { label: "Kanchivaram", href: "/products?weave=kanchivaram" },
-      { label: "Aarani", href: "/products?weave=aarani" },
-      { label: "Elampillai", href: "/products?weave=elampillai" },
-      { label: "Banarasi", href: "/products?weave=banarasi" },
-      { label: "Chanderi", href: "/products?weave=chanderi" },
-      { label: "Patola", href: "/products?weave=patola" },
-      { label: "Jamdani", href: "/products?weave=jamdani" }
-    ]
-  },
-  {
     heading: "Discover",
     links: [
       { label: "Journal", href: "/journal" },
@@ -44,9 +32,10 @@ const SECTIONS = [
 interface MobileNavProps {
   inStockSlugs?: string[];
   availableWeaves?: string[];
+  catalogs?: Array<{ label: string; slug: string }>;
 }
 
-export function MobileNav({ inStockSlugs, availableWeaves }: MobileNavProps = {}) {
+export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNavProps = {}) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -65,22 +54,33 @@ export function MobileNav({ inStockSlugs, availableWeaves }: MobileNavProps = {}
     };
   }, [open]);
 
-  const filteredSections = SECTIONS.map((s) => {
-    let links = s.links;
-    if (s.heading === "Shop" && inStockSlugs) {
-      links = links.filter((l) => {
-        if (l.href === "/products") return true;
-        const slug = l.href.split("/category/")[1];
-        return slug ? inStockSlugs.includes(slug) : true;
-      });
-    } else if (s.heading === "By Weave" && availableWeaves) {
-      links = links.filter((l) => {
-        const weave = l.href.split("weave=")[1]?.toLowerCase();
-        return weave ? availableWeaves.includes(weave) : true;
-      });
-    }
-    return { ...s, links };
-  }).filter((s) => s.links.length > 0);
+  const catalogSection = catalogs && catalogs.length > 0
+    ? {
+        heading: "By Catalog",
+        links: catalogs
+          .map((c) => ({ label: c.label, href: `/products?weave=${c.slug}` }))
+          .filter((l) => {
+            if (!availableWeaves) return true;
+            const slug = l.href.split("weave=")[1]?.toLowerCase();
+            return slug ? availableWeaves.includes(slug) : true;
+          })
+      }
+    : null;
+
+  const filteredSections = [
+    ...SECTIONS.map((s) => {
+      let links = s.links;
+      if (s.heading === "Shop" && inStockSlugs) {
+        links = links.filter((l) => {
+          if (l.href === "/products") return true;
+          const slug = l.href.split("/category/")[1];
+          return slug ? inStockSlugs.includes(slug) : true;
+        });
+      }
+      return { ...s, links };
+    }),
+    ...(catalogSection ? [catalogSection] : [])
+  ].filter((s) => s.links.length > 0);
 
   const drawerContent = (
     <div className="fixed inset-0 z-50 flex">

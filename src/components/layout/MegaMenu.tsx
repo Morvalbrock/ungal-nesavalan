@@ -7,20 +7,6 @@ import { ChevronDown } from "lucide-react";
 
 const COLUMNS = [
   {
-    heading: "Weave",
-    links: [
-      { label: "Kanchivaram", href: "/products?weave=kanchivaram" },
-      { label: "Aarani", href: "/products?weave=aarani" },
-      { label: "Elampillai", href: "/products?weave=elampillai" },
-      { label: "Banarasi", href: "/products?weave=banarasi" },
-      { label: "Chanderi", href: "/products?weave=chanderi" },
-      { label: "Patola", href: "/products?weave=patola" },
-      { label: "Jamdani", href: "/products?weave=jamdani" },
-      { label: "Ikat", href: "/products?weave=ikat" },
-      { label: "Bandhani", href: "/products?weave=bandhani" }
-    ]
-  },
-  {
     heading: "Fabric",
     links: [
       { label: "Pure Silk", href: "/products?fabric=silk" },
@@ -49,6 +35,7 @@ interface MegaMenuProps {
   availableWeaves?: string[];
   availableFabrics?: string[];
   availableOccasions?: string[];
+  catalogs?: Array<{ label: string; slug: string }>;
   showBridalPromo?: boolean;
 }
 
@@ -56,6 +43,7 @@ export function MegaMenu({
   availableWeaves,
   availableFabrics,
   availableOccasions,
+  catalogs,
   showBridalPromo = true
 }: MegaMenuProps = {}) {
   const [open, setOpen] = useState(false);
@@ -81,26 +69,41 @@ export function MegaMenu({
     closeTimer.current = setTimeout(() => setOpen(false), 120);
   };
 
-  const filteredColumns = COLUMNS.map((col) => {
-    let links = col.links;
-    if (col.heading === "Weave" && availableWeaves) {
-      links = links.filter((l) => {
-        const val = l.href.split("weave=")[1]?.toLowerCase();
-        return val ? availableWeaves.includes(val) : true;
-      });
-    } else if (col.heading === "Fabric" && availableFabrics) {
-      links = links.filter((l) => {
-        const val = l.href.split("fabric=")[1]?.toLowerCase();
-        return val ? availableFabrics.includes(val) : true;
-      });
-    } else if (col.heading === "Occasion" && availableOccasions) {
-      links = links.filter((l) => {
-        const val = l.href.split("occasion=")[1]?.toLowerCase();
-        return val ? availableOccasions.includes(val) : true;
-      });
-    }
-    return { ...col, links };
-  }).filter((col) => col.links.length > 0);
+  const catalogColumn = catalogs && catalogs.length > 0
+    ? {
+        heading: "Catalog",
+        links: catalogs.map((c) => ({
+          label: c.label,
+          href: `/products?weave=${c.slug}`
+        }))
+      }
+    : null;
+
+  const filteredColumns = [
+    ...(catalogColumn ? [catalogColumn] : []),
+    ...COLUMNS
+  ]
+    .map((col) => {
+      let links = col.links;
+      if (col.heading === "Catalog" && availableWeaves) {
+        links = links.filter((l) => {
+          const val = l.href.split("weave=")[1]?.toLowerCase();
+          return val ? availableWeaves.includes(val) : true;
+        });
+      } else if (col.heading === "Fabric" && availableFabrics) {
+        links = links.filter((l) => {
+          const val = l.href.split("fabric=")[1]?.toLowerCase();
+          return val ? availableFabrics.includes(val) : true;
+        });
+      } else if (col.heading === "Occasion" && availableOccasions) {
+        links = links.filter((l) => {
+          const val = l.href.split("occasion=")[1]?.toLowerCase();
+          return val ? availableOccasions.includes(val) : true;
+        });
+      }
+      return { ...col, links };
+    })
+    .filter((col) => col.links.length > 0);
 
   return (
     <div

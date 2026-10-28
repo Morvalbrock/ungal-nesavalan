@@ -24,7 +24,6 @@ export function PurchasePanel({ product }: { product: Product }) {
   const storeVariantId = useSelectedVariantStore((s) =>
     s.productId === product.id ? s.variantId : null
   );
-  const selectVariant = useSelectedVariantStore((s) => s.select);
   const resetSelectedVariant = useSelectedVariantStore((s) => s.reset);
   const router = useRouter();
 
@@ -133,38 +132,9 @@ export function PurchasePanel({ product }: { product: Product }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-ink-muted">
-          Colour · {variant?.color ?? "—"}
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {product.variants.map((v) => {
-            const active = v.id === variant?.id;
-            const disabled = v.stock === 0;
-            return (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => selectVariant(product.id, v.id)}
-                disabled={disabled}
-                aria-label={v.color}
-                className={cn(
-                  "relative flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition",
-                  active ? "border-ink" : "border-border hover:border-ink/60",
-                  disabled && "opacity-40"
-                )}
-              >
-                <span
-                  className="inline-block h-4 w-4 rounded-full border border-ink/20"
-                  style={{ background: v.colorHex }}
-                />
-                <span className="capitalize">{v.color}</span>
-                {disabled && <span className="text-ink-muted">· sold out</span>}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-ink-muted">
+        Colour · {variant?.color ?? "—"}
+      </p>
 
       <div className="flex items-center gap-4">
         <div className="inline-flex items-center rounded-card border border-border bg-white shadow-xs">

@@ -3,17 +3,18 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { Trash2, Plus, Upload } from "lucide-react";
 import type { Category } from "@/types/category";
+import type { Catalog } from "@/types/catalog";
 import type { Product } from "@/types/product";
-import { FABRICS, OCCASIONS, WEAVES } from "@/features/products/filters";
+import { FABRICS, OCCASIONS } from "@/features/products/filters";
 
-// Map any legacy stored values to the current enum so editing an old product doesn't blow up.
-// Why: the Weave enum was renamed (kanjivaram → kanchivaram) but existing DB rows may still
-// carry the old slug; Zod rejects them on save, blocking admin edits.
-const LEGACY_WEAVE_MAP: Record<string, string> = { kanjivaram: "kanchivaram" };
+// Map any legacy stored values to the current slug so editing an old product doesn't blow up.
+// Why: a renamed catalog slug (e.g. kanjivaram → kanchivaram) may still be stored on existing
+// rows; translate on load so the dropdown finds a matching option.
+const LEGACY_CATALOG_MAP: Record<string, string> = { kanjivaram: "kanchivaram" };
 const LEGACY_FABRIC_MAP: Record<string, string> = {};
 
-function normalizeWeave(w: string): string {
-  return LEGACY_WEAVE_MAP[w] ?? w;
+function normalizeCatalog(w: string): string {
+  return LEGACY_CATALOG_MAP[w] ?? w;
 }
 function normalizeFabric(f: string): string {
   return LEGACY_FABRIC_MAP[f] ?? f;
@@ -54,7 +55,7 @@ type Values = {
   }[];
 };
 
-function toInitial(p?: Product): Values {
+function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
   if (!p) {
     return {
       slug: "",
@@ -63,7 +64,7 @@ function toInitial(p?: Product): Values {
       basePrice: 0,
       salePrice: "",
       fabric: "silk",
-      weave: "kanchivaram",
+      weave: defaultCatalog,
       occasion: ["festive"],
       region: "",
       lengthMeters: 5.5,
@@ -86,7 +87,7 @@ function toInitial(p?: Product): Values {
     basePrice: p.basePrice,
     salePrice: p.salePrice ?? "",
     fabric: normalizeFabric(p.fabric),
-    weave: normalizeWeave(p.weave),
+    weave: normalizeCatalog(p.weave),
     occasion: p.occasion,
     region: p.region,
     lengthMeters: p.lengthMeters,
@@ -111,13 +112,21 @@ function toInitial(p?: Product): Values {
 
 export function ProductForm({
   product,
-  categories
+  categories,
+  catalogs
 }: {
   product?: Product;
   categories: Category[];
+  catalogs: Catalog[];
 }) {
   const router = useRouter();
-  const [values, setValues] = useState<Values>(() => toInitial(product));
+  const defaultCatalog = catalogs.find((c) => !c.legacy)?.slug ?? catalogs[0]?.slug ?? "kanchivaram";
+  const [values, setValues] = useState<Values>(() => toInitial(product, defaultCatalog));
+  const activeCatalogs = catalogs.filter((c) => !c.legacy);
+  const legacyCatalogs = catalogs.filter((c) => c.legacy);
+  // If the loaded product's catalog isn't in the list (e.g. deleted later), still show it as the
+  // current value so the admin isn't silently moved to a different catalog.
+  const currentCatalogKnown = catalogs.some((c) => c.slug === values.weave);
   const [pending, startTransition] = useTransition();
   const [issues, setIssues] = useState<Record<string, string[]>>({});
   const [banner, setBanner] = useState<string | null>(null);
@@ -251,11 +260,25 @@ export function ProductForm({
               ))}
             </select>
           </Field>
-          <Field label="Weave" issues={issues.weave}>
+          <Field label="Catalog" issues={issues.weave} hint="Manage this list under Admin → Catalogs.">
             <select value={values.weave} onChange={(e) => setField("weave", e.target.value)} className={inputCls}>
-              {WEAVES.map((w) => (
-                <option key={w} value={w}>{w}</option>
-              ))}
+              {!currentCatalogKnown && values.weave && (
+                <option value={values.weave}>{values.weave} (unlisted)</option>
+              )}
+              {activeCatalogs.length > 0 && (
+                <optgroup label="Catalogs">
+                  {activeCatalogs.map((c) => (
+                    <option key={c.id} value={c.slug}>{c.name}</option>
+                  ))}
+                </optgroup>
+              )}
+              {legacyCatalogs.length > 0 && (
+                <optgroup label="Legacy weaves">
+                  {legacyCatalogs.map((c) => (
+                    <option key={c.id} value={c.slug}>{c.name}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </Field>
           <Field label="Category" issues={issues.categoryId}>
