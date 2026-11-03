@@ -66,6 +66,8 @@ export interface Order {
   paymentMode?: "prepaid" | "cod";
   amountPaidPaise?: number;
   amountDuePaise?: number;
+  codDepositPaise?: number;
+  codCollectedAt?: string;
   preferredCourier?: string;
   trackingId?: string;
   courier?: string;

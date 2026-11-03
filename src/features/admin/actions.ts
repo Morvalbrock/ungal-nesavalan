@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin, requireSuperAdmin } from "./guard";
 import {
+  abandonedCartRepo,
   catalogRepo,
   categoryRepo,
   couponRepo,
@@ -557,6 +558,14 @@ export async function bulkSetProductFeatured(
   revalidatePath("/admin/products");
   revalidatePath("/");
   return { ok: true, data: { updated } };
+}
+
+export async function dismissAbandonedCart(cartId: string): Promise<ActionResult> {
+  await requireAdmin();
+  const removed = await abandonedCartRepo.remove(cartId);
+  if (!removed) return { ok: false, error: "not_found" };
+  revalidatePath("/admin/abandoned-carts");
+  return { ok: true };
 }
 
 export async function markCodCollected(orderId: string): Promise<ActionResult> {

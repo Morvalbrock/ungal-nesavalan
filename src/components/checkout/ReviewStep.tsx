@@ -20,6 +20,26 @@ function computeCodDeposit(totalPaise: number): number {
   return Math.min(Math.max(tenPct, COD_MIN_DEPOSIT_PAISE), totalPaise);
 }
 
+function isTamilNaduPincode(pincode: string | undefined): boolean {
+  const p = (pincode ?? "").trim();
+  if (!/^\d{6}$/.test(p)) return false;
+  const n = parseInt(p, 10);
+  if (n < 600001 || n > 643999) return false;
+  const prefix = p.slice(0, 3);
+  // Puducherry UT pockets within the 6xx series
+  if (prefix === "605" || prefix === "607" || prefix === "609") return false;
+  return true;
+}
+
+function isTamilNaduState(state: string | undefined): boolean {
+  const s = (state ?? "").trim().toLowerCase();
+  return s === "tamil nadu" || s === "tamilnadu" || s === "tn";
+}
+
+function isTamilNaduAddress(address: { state?: string; pincode?: string }): boolean {
+  return isTamilNaduPincode(address.pincode) || isTamilNaduState(address.state);
+}
+
 export function ReviewStep({
   address,
   onEdit,
@@ -53,7 +73,9 @@ export function ReviewStep({
   }, [preferredCourier, onPreferredCourierChange]);
 
   // Payment method handling
-  const canUseCod = payable >= COD_MIN_TOTAL_PAISE;
+  const isTnAddress = isTamilNaduAddress({ state: address.state, pincode: address.pincode });
+  const meetsCodMin = payable >= COD_MIN_TOTAL_PAISE;
+  const canUseCod = isTnAddress && meetsCodMin;
   const codDeposit = computeCodDeposit(payable);
   const codDue = Math.max(0, payable - codDeposit);
 
@@ -161,6 +183,10 @@ export function ReviewStep({
                 {canUseCod ? (
                   <p className="text-xs text-ink-muted">
                     Pay <strong>{formatINR(codDeposit)}</strong> deposit now · {formatINR(codDue)} in cash on delivery
+                  </p>
+                ) : !isTnAddress ? (
+                  <p className="text-xs text-ink-muted">
+                    Cash on Delivery is available only for Tamil Nadu addresses (pincode 600001–643999).
                   </p>
                 ) : (
                   <p className="text-xs text-ink-muted">

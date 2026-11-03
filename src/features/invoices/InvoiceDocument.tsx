@@ -44,6 +44,63 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 700
   },
+  payBox: {
+    marginTop: 16,
+    alignSelf: "flex-end",
+    width: 300,
+    borderWidth: 1,
+    borderColor: "#e5e5e5",
+    padding: 10,
+    borderRadius: 2
+  },
+  payTitle: {
+    fontSize: 9,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    color: "#666",
+    marginBottom: 6
+  },
+  payRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 3,
+    fontSize: 10
+  },
+  payNote: { fontSize: 8, color: "#888", marginTop: 2 },
+  paySubTotalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 6,
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: "#e5e5e5",
+    fontSize: 10,
+    fontWeight: 700
+  },
+  payStatusPaid: {
+    marginTop: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: "#065f46",
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 9,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    borderRadius: 2
+  },
+  payStatusPending: {
+    marginTop: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: "#92400e",
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 9,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    borderRadius: 2
+  },
   footer: {
     position: "absolute",
     bottom: 30,
@@ -59,6 +116,12 @@ function inr(paise: number) {
   return `INR ${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 }
 
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 export interface InvoiceProps {
   order: Order;
   brand: {
@@ -67,6 +130,76 @@ export interface InvoiceProps {
     supportEmail: string;
     logoDataUrl?: string;
   };
+}
+
+function PaymentBreakdown({ order }: { order: Order }) {
+  const total = order.totalPaise;
+  const isCod = order.paymentMode === "cod";
+  const collected = isCod && Boolean(order.codCollectedAt);
+  const deposit = isCod ? order.codDepositPaise ?? order.amountPaidPaise ?? 0 : 0;
+  const codPortion = isCod ? Math.max(0, total - deposit) : 0;
+  const paidSoFar = isCod ? (collected ? total : deposit) : total;
+  const balance = Math.max(0, total - paidSoFar);
+
+  return (
+    <View style={styles.payBox}>
+      <Text style={styles.payTitle}>Payment Summary</Text>
+
+      <View style={styles.payRow}>
+        <Text style={styles.totalLabel}>Payment mode</Text>
+        <Text>{isCod ? "Cash on Delivery" : "Prepaid Online"}</Text>
+      </View>
+
+      {isCod ? (
+        <>
+          <View style={styles.payRow}>
+            <Text style={styles.totalLabel}>Deposit paid online</Text>
+            <Text>{inr(deposit)}</Text>
+          </View>
+          {collected ? (
+            <View style={styles.payRow}>
+              <Text style={styles.totalLabel}>
+                COD collected (cash){order.codCollectedAt ? ` · ${formatDate(order.codCollectedAt)}` : ""}
+              </Text>
+              <Text>{inr(codPortion)}</Text>
+            </View>
+          ) : (
+            <View style={styles.payRow}>
+              <Text style={styles.totalLabel}>COD pending (on delivery)</Text>
+              <Text>{inr(codPortion)}</Text>
+            </View>
+          )}
+          <View style={styles.paySubTotalRow}>
+            <Text>{collected ? "Total received" : "Received so far"}</Text>
+            <Text>{inr(paidSoFar)}</Text>
+          </View>
+          <View style={styles.payRow}>
+            <Text style={styles.totalLabel}>Balance</Text>
+            <Text>{inr(balance)}</Text>
+          </View>
+          {balance === 0 ? (
+            <Text style={styles.payStatusPaid}>Paid in full</Text>
+          ) : (
+            <Text style={styles.payStatusPending}>
+              Collect {inr(balance)} in cash on delivery
+            </Text>
+          )}
+        </>
+      ) : (
+        <>
+          <View style={styles.payRow}>
+            <Text style={styles.totalLabel}>Paid online</Text>
+            <Text>{inr(total)}</Text>
+          </View>
+          <View style={styles.paySubTotalRow}>
+            <Text>Total received</Text>
+            <Text>{inr(total)}</Text>
+          </View>
+          <Text style={styles.payStatusPaid}>Paid in full</Text>
+        </>
+      )}
+    </View>
+  );
 }
 
 export function InvoiceDocument({ order, brand }: InvoiceProps) {
@@ -162,6 +295,8 @@ export function InvoiceDocument({ order, brand }: InvoiceProps) {
             <Text>{inr(order.totalPaise)}</Text>
           </View>
         </View>
+
+        <PaymentBreakdown order={order} />
 
         <View style={styles.footer}>
           <Text>Thank you for choosing Ungal Nesavalan — honoring traditional handloom weavers.</Text>

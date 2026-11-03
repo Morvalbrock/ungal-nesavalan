@@ -1,12 +1,38 @@
-import { abandonedCartRepo } from "@/server/repositories";
+import { abandonedCartRepo, addressRepo, userRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
+import { AbandonedCartCard } from "@/components/admin/AbandonedCartCard";
+import type { Address } from "@/types/address";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Abandoned carts" };
 
+function appBaseUrl() {
+  const envUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.APP_URL;
+  if (envUrl) return envUrl.replace(/\/$/, "");
+  return "";
+}
+
 export default async function AdminAbandonedCartsPage() {
   const carts = await abandonedCartRepo.listActive();
   const now = Date.now();
+  const base = appBaseUrl();
+
+  const enriched = await Promise.all(
+    carts.map(async (c) => {
+      const [user, addresses] = await Promise.all([
+        userRepo.findById(c.userId),
+        addressRepo.listByUser(c.userId)
+      ]);
+      const defaultAddress: Address | undefined =
+        addresses.find((a) => a.isDefault) ?? addresses[0];
+      return { cart: c, user, defaultAddress };
+    })
+  );
+
+  const totalValue = carts.reduce((n, c) => n + c.subtotalPaise, 0);
 
   return (
     <div className="space-y-6">
@@ -14,47 +40,62 @@ export default async function AdminAbandonedCartsPage() {
         <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Recovery</p>
         <h1 className="mt-2 font-display text-3xl">Abandoned carts</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Logged-in shoppers who reached checkout with items but didn't complete. The recovery email trigger arrives in Phase 9.3.
+          Logged-in shoppers who added items but didn&apos;t complete checkout. Copy a one-click
+          checkout URL and send it to the customer over WhatsApp or email.
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-card border border-border">
-        <table className="min-w-full divide-y divide-border/70 text-sm">
-          <thead className="bg-cream-warm text-xs uppercase tracking-wider text-ink-muted">
-            <tr>
-              <th className="px-4 py-3 text-left">Email</th>
-              <th className="px-4 py-3 text-left">Items</th>
-              <th className="px-4 py-3 text-right">Subtotal</th>
-              <th className="px-4 py-3 text-left">Age</th>
-              <th className="px-4 py-3 text-left">Notified</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/60">
-            {carts.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-ink-muted">No active abandoned carts.</td>
-              </tr>
-            ) : (
-              carts.map((c) => {
-                const ageHours = Math.round((now - new Date(c.updatedAt).getTime()) / (1000 * 60 * 60));
-                return (
-                  <tr key={c.id}>
-                    <td className="px-4 py-3">{c.email}</td>
-                    <td className="px-4 py-3">
-                      {c.items.length} · {c.items.slice(0, 2).map((i) => i.name).join(", ")}
-                      {c.items.length > 2 && "…"}
-                    </td>
-                    <td className="px-4 py-3 text-right">{formatINR(c.subtotalPaise)}</td>
-                    <td className="px-4 py-3 text-ink-muted">{ageHours < 1 ? "just now" : `${ageHours}h`}</td>
-                    <td className="px-4 py-3 text-ink-muted">
-                      {c.notifiedAt ? new Date(c.notifiedAt).toLocaleString("en-IN") : "—"}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+      {carts.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-card border border-border bg-white px-5 py-4">
+            <p className="text-[11px] uppercase tracking-wider text-ink-muted">Active carts</p>
+            <p className="mt-1 font-display text-3xl">{carts.length}</p>
+          </div>
+          <div className="rounded-card border border-border bg-white px-5 py-4">
+            <p className="text-[11px] uppercase tracking-wider text-ink-muted">Potential revenue</p>
+            <p className="mt-1 font-display text-3xl text-maroon">{formatINR(totalValue)}</p>
+          </div>
+          <div className="rounded-card border border-border bg-white px-5 py-4">
+            <p className="text-[11px] uppercase tracking-wider text-ink-muted">Notified</p>
+            <p className="mt-1 font-display text-3xl">
+              {carts.filter((c) => c.notifiedAt).length}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {enriched.length === 0 ? (
+          <div className="rounded-card border border-border bg-white px-6 py-16 text-center">
+            <p className="text-sm text-ink-muted">No active abandoned carts right now.</p>
+          </div>
+        ) : (
+          enriched.map(({ cart, user, defaultAddress }) => {
+            const ageHours = Math.round(
+              (now - new Date(cart.updatedAt).getTime()) / (1000 * 60 * 60)
+            );
+            const checkoutUrl = `${base}/cart?restore=${cart.id}`;
+            return (
+              <AbandonedCartCard
+                key={cart.id}
+                cartId={cart.id}
+                checkoutUrl={checkoutUrl}
+                customer={{
+                  name: user?.name ?? "",
+                  email: user?.email ?? cart.email,
+                  phone: user?.phone,
+                  createdAt: user?.createdAt
+                }}
+                address={defaultAddress}
+                items={cart.items}
+                subtotalPaise={cart.subtotalPaise}
+                ageHours={ageHours}
+                updatedAt={cart.updatedAt}
+                notifiedAt={cart.notifiedAt}
+              />
+            );
+          })
+        )}
       </div>
     </div>
   );

@@ -114,11 +114,13 @@ export const jsonOrderRepo: OrderRepository = {
     await mutateCollection<Order>(COLLECTION, [], (rows) =>
       rows.map((o) => {
         if (o.id !== id) return o;
+        const now = nowIso();
         updated = {
           ...o,
           amountPaidPaise: o.totalPaise,
           amountDuePaise: 0,
-          updatedAt: nowIso()
+          codCollectedAt: now,
+          updatedAt: now
         };
         return updated;
       })

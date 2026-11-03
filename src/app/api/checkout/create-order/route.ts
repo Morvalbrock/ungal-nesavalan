@@ -39,6 +39,25 @@ function computeCodDeposit(totalPaise: number): number {
   return Math.min(deposit, totalPaise);
 }
 
+function isTamilNaduPincode(pincode: string | undefined): boolean {
+  const p = (pincode ?? "").trim();
+  if (!/^\d{6}$/.test(p)) return false;
+  const n = parseInt(p, 10);
+  if (n < 600001 || n > 643999) return false;
+  const prefix = p.slice(0, 3);
+  if (prefix === "605" || prefix === "607" || prefix === "609") return false;
+  return true;
+}
+
+function isTamilNaduState(state: string | undefined): boolean {
+  const s = (state ?? "").trim().toLowerCase();
+  return s === "tamil nadu" || s === "tamilnadu" || s === "tn";
+}
+
+function isTamilNaduAddress(address: { state?: string; pincode?: string }): boolean {
+  return isTamilNaduPincode(address.pincode) || isTamilNaduState(address.state);
+}
+
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -109,7 +128,11 @@ export async function POST(req: Request) {
   const totalPaise = Math.max(0, built.subtotalPaise - discountPaise + built.shippingPaise);
 
   const paymentMode: "prepaid" | "cod" =
-    requestedMode === "cod" && totalPaise >= COD_MIN_TOTAL_PAISE ? "cod" : "prepaid";
+    requestedMode === "cod" &&
+    totalPaise >= COD_MIN_TOTAL_PAISE &&
+    isTamilNaduAddress({ state: address.state, pincode: address.pincode })
+      ? "cod"
+      : "prepaid";
   const chargeNowPaise = paymentMode === "cod" ? computeCodDeposit(totalPaise) : totalPaise;
   const amountDuePaise = paymentMode === "cod" ? totalPaise - chargeNowPaise : 0;
 
@@ -138,7 +161,8 @@ export async function POST(req: Request) {
     preferredCourier,
     paymentMode,
     amountPaidPaise: 0,
-    amountDuePaise
+    amountDuePaise,
+    codDepositPaise: paymentMode === "cod" ? chargeNowPaise : undefined
   });
 
   if (couponForRedemption && discountPaise > 0) {
