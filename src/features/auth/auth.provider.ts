@@ -18,8 +18,35 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required")
 });
 
+export const sendOtpSchema = z.object({
+  phone: z
+    .string()
+    .trim()
+    .regex(/^(\+91[- ]?)?[6-9]\d{9}$/, "Enter a valid Indian mobile number")
+});
+
+export const verifyOtpSchema = z.object({
+  phone: z
+    .string()
+    .trim()
+    .regex(/^(\+91[- ]?)?[6-9]\d{9}$/, "Enter a valid Indian mobile number"),
+  otp: z.string().trim().length(6, "OTP must be 6 digits").regex(/^\d{6}$/, "OTP must be 6 digits")
+});
+
+export const firebaseLoginSchema = z.object({
+  idToken: z.string().min(1, "ID token is required"),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^(\+91[- ]?)?[6-9]\d{9}$/, "Enter a valid Indian mobile number")
+    .optional()
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type SendOtpInput = z.infer<typeof sendOtpSchema>;
+export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
+export type FirebaseLoginInput = z.infer<typeof firebaseLoginSchema>;
 
 export interface SessionPayload {
   userId: string;
@@ -35,7 +62,7 @@ export interface AuthProvider {
 }
 
 export class AuthError extends Error {
-  readonly code: "invalid_credentials" | "email_taken" | "invalid_token";
+  readonly code: "invalid_credentials" | "email_taken" | "invalid_token" | "otp_failed" | "phone_required";
   constructor(code: AuthError["code"], message: string) {
     super(message);
     this.code = code;

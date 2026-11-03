@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
 import { orderRepo, paymentRepo, userRepo } from "@/server/repositories";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
+import { OrderTimeline } from "@/components/orders/OrderTimeline";
 import { formatINR } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -24,18 +25,32 @@ export default async function AdminOrderDetailPage({
 
   return (
     <div className="space-y-6">
-      <header>
-        <Link href="/admin/orders" className="text-xs uppercase tracking-widest text-ink-muted hover:text-ink">
-          ← Orders
-        </Link>
-        <h1 className="mt-2 font-display text-3xl">{order.orderNumber}</h1>
-        <p className="text-sm text-ink-muted">
-          Placed {new Date(order.createdAt).toLocaleString("en-IN")}
-        </p>
+      <header className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
+        <div>
+          <Link href="/admin/orders" className="text-xs uppercase tracking-widest text-ink-muted hover:text-ink">
+            ← Orders
+          </Link>
+          <h1 className="mt-2 font-display text-3xl">{order.orderNumber}</h1>
+          <p className="text-sm text-ink-muted">
+            Placed {new Date(order.createdAt).toLocaleString("en-IN")}
+          </p>
+        </div>
+        {["paid", "packed", "shipped", "delivered", "return_requested", "refunded"].includes(order.status) && (
+          <a
+            href={`/api/orders/${order.id}/invoice`}
+            className="inline-flex items-center gap-2 self-start rounded-card border border-border bg-cream px-3 py-2 text-xs font-medium text-ink hover:border-ink transition"
+          >
+            <Download className="h-3.5 w-3.5" /> Download Tax Invoice
+          </a>
+        )}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
+          {/* Order Lifecycle Visual Timeline */}
+          <OrderTimeline order={order} />
+
+          {/* Line items card */}
           <div className="rounded-card border border-border bg-cream">
             <div className="border-b border-border/70 p-4">
               <p className="text-[11px] uppercase tracking-widest text-ink-muted">Line items</p>
@@ -53,7 +68,7 @@ export default async function AdminOrderDetailPage({
                       <p className="font-medium">{i.productNameSnapshot}</p>
                       <p className="text-xs text-ink-muted">{i.variantLabelSnapshot} · Qty {i.quantity}</p>
                     </div>
-                    <p>{formatINR(i.unitPricePaise * i.quantity)}</p>
+                    <p className="font-medium">{formatINR(i.unitPricePaise * i.quantity)}</p>
                   </div>
                 </li>
               ))}
@@ -72,18 +87,10 @@ export default async function AdminOrderDetailPage({
               </dl>
             </div>
           </div>
-
-          {["paid", "packed", "shipped", "delivered", "return_requested", "refunded"].includes(order.status) && (
-            <a
-              href={`/api/orders/${order.id}/invoice`}
-              className="inline-flex items-center gap-2 self-start rounded-card border border-border px-3 py-2 text-xs hover:border-ink"
-            >
-              <Download className="h-3.5 w-3.5" /> Download invoice
-            </a>
-          )}
         </div>
 
         <div className="space-y-4 text-sm">
+          {/* Order Status Form with step-by-step validation */}
           <OrderStatusForm
             orderId={order.id}
             current={order.status}
@@ -98,13 +105,15 @@ export default async function AdminOrderDetailPage({
 
           <div className="rounded-card border border-border bg-cream p-4">
             <p className="text-[11px] uppercase tracking-widest text-ink-muted">Customer</p>
-            <p className="mt-2 font-medium">{user?.name ?? "—"}</p>
+            <p className="mt-2 font-medium">{user?.name ?? order.addressSnapshot?.fullName ?? "—"}</p>
             <p className="text-xs text-ink-muted">{user?.email ?? ""}</p>
-            {user?.phone && <p className="text-xs text-ink-muted">{user.phone}</p>}
+            {(user?.phone || order.addressSnapshot?.phone) && (
+              <p className="text-xs text-ink-muted">{user?.phone ?? order.addressSnapshot?.phone}</p>
+            )}
           </div>
 
           <div className="rounded-card border border-border bg-cream p-4">
-            <p className="text-[11px] uppercase tracking-widest text-ink-muted">Shipping</p>
+            <p className="text-[11px] uppercase tracking-widest text-ink-muted">Shipping Destination</p>
             <p className="mt-2 leading-relaxed">
               {order.addressSnapshot.fullName}
               <br />
@@ -119,8 +128,8 @@ export default async function AdminOrderDetailPage({
 
           {payment && (
             <div className="rounded-card border border-border bg-cream p-4">
-              <p className="text-[11px] uppercase tracking-widest text-ink-muted">Payment</p>
-              <p className="mt-2">Provider: {payment.provider}</p>
+              <p className="text-[11px] uppercase tracking-widest text-ink-muted">Payment Record</p>
+              <p className="mt-2">Provider: <span className="font-medium capitalize">{payment.provider}</span></p>
               <p className="text-xs text-ink-muted">Status: {payment.status}</p>
               <p className="text-xs text-ink-muted">Ref: {payment.providerPaymentId ?? payment.providerOrderId}</p>
             </div>

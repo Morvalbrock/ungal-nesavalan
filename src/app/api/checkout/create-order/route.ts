@@ -54,6 +54,24 @@ export async function POST(req: Request) {
 
   const { address, items, couponCode, preferredCourier, paymentMode: requestedMode } = parsed.data;
 
+  // Progressive profile update: backfill user profile with missing fields if available
+  const userPatch: { name?: string; phone?: string; email?: string } = {};
+  if ((!user.phone || user.phone.trim() === "") && address.phone) {
+    userPatch.phone = address.phone.trim();
+  }
+  if ((!user.name || user.name.startsWith("+") || /^\d+$/.test(user.name)) && address.fullName) {
+    userPatch.name = address.fullName.trim();
+  }
+  if (
+    (!user.email || user.email.endsWith("@phone.local") || user.email.endsWith("@firebase.local")) &&
+    address.email
+  ) {
+    userPatch.email = address.email.trim().toLowerCase();
+  }
+  if (Object.keys(userPatch).length > 0) {
+    await userRepo.update(user.id, userPatch).catch(() => null);
+  }
+
   let built;
   try {
     built = await buildOrderFromCart(items, { pincode: address.pincode });

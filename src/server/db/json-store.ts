@@ -34,10 +34,61 @@ declare global {
   var __mysqlSchemaInit: Promise<void> | undefined;
 }
 
+const DISCONNECT_ERROR_CODES = new Set([
+  "ECONNRESET",
+  "PROTOCOL_CONNECTION_LOST",
+  "EPIPE",
+  "ETIMEDOUT",
+  "ESOCKETTIMEDOUT",
+  "ECONNREFUSED",
+  "ENOTFOUND",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR",
+  "ER_CON_COUNT_ERROR",
+  "ER_ACCESS_DENIED_ERROR"
+]);
+
+function isDisconnectError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as { code?: string; fatal?: boolean; errno?: number };
+  if (e.fatal === true) return true;
+  if (e.code && DISCONNECT_ERROR_CODES.has(e.code)) return true;
+  if (e.errno === -4077) return true; // Windows ECONNRESET
+  return false;
+}
+
+function resetPool(): void {
+  try {
+    globalThis.__mysqlPool?.end().catch(() => undefined);
+  } catch {
+    // ignore
+  }
+  globalThis.__mysqlPool = undefined;
+  globalThis.__mysqlSchemaInit = undefined;
+}
+
 function getPool(): mysql.Pool {
   if (!globalThis.__mysqlPool) {
+    const baseOptions = {
+      waitForConnections: true,
+      connectionLimit: 10,
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 10000,
+      idleTimeout: 30000,
+      maxIdle: 2,
+      connectTimeout: 10000
+    };
+
     if (DATABASE_URL) {
-      globalThis.__mysqlPool = mysql.createPool(DATABASE_URL);
+      try {
+        globalThis.__mysqlPool = mysql.createPool({
+          uri: DATABASE_URL,
+          ...baseOptions
+        });
+      } catch {
+        globalThis.__mysqlPool = mysql.createPool(DATABASE_URL);
+      }
     } else {
       globalThis.__mysqlPool = mysql.createPool({
         host: DB_HOST,
@@ -45,8 +96,7 @@ function getPool(): mysql.Pool {
         user: process.env.DB_USER,
         password: process.env.DB_PASS,
         database: process.env.DB_NAME,
-        waitForConnections: true,
-        connectionLimit: 10,
+        ...baseOptions
       });
     }
   }
@@ -96,62 +146,87 @@ async function loadSeed<T>(name: string, fallback: T[]): Promise<T[]> {
 }
 
 // ---------------------------------------------------------------------------
-// MySQL implementation
+// Retry & Fallback Wrapper
 // ---------------------------------------------------------------------------
 
-async function dbRead<T>(name: string, fallback: T[]): Promise<T[]> {
+async function executeWithRetry<T>(
+  name: string,
+  operation: () => Promise<T>,
+  fallbackFn: () => Promise<T>
+): Promise<T> {
   try {
-    await ensureSchema();
-    const conn = await getPool().getConnection();
-    try {
-      const existing = (await conn.execute<RowDataPacket[]>(
-        "SELECT `rows` FROM collections WHERE name = ?",
-        [name]
-      ))[0];
-      if (existing.length > 0) return parseRows<T>(existing[0].rows);
-      const seeded = await loadSeed(name, fallback);
-      await conn.execute(
-        "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
-        [name, JSON.stringify(seeded)]
-      );
-      const after = (await conn.execute<RowDataPacket[]>(
-        "SELECT `rows` FROM collections WHERE name = ?",
-        [name]
-      ))[0];
-      return after[0] ? parseRows<T>(after[0].rows) : seeded;
-    } finally {
-      conn.release();
-    }
+    return await operation();
   } catch (err: unknown) {
-    const code = (err as { code?: string })?.code;
-    if (code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT" || code === "ER_ACCESS_DENIED_ERROR") {
-      console.warn(`[json-store] Database unreachable (${code}). Falling back to local file storage for "${name}".`);
-      return fileRead(name, fallback);
+    if (isDisconnectError(err)) {
+      const code = (err as { code?: string })?.code ?? "DISCONNECT";
+      console.warn(`[json-store] Stale DB connection for "${name}" (${code}). Retrying with fresh socket...`);
+      resetPool();
+      try {
+        return await operation();
+      } catch (retryErr: unknown) {
+        if (isDisconnectError(retryErr)) {
+          const rcode = (retryErr as { code?: string })?.code ?? "DISCONNECT";
+          console.warn(`[json-store] Database unreachable (${rcode}). Falling back to local file storage for "${name}".`);
+          return await fallbackFn();
+        }
+        throw retryErr;
+      }
     }
     throw err;
   }
 }
 
+// ---------------------------------------------------------------------------
+// MySQL implementation
+// ---------------------------------------------------------------------------
+
+async function dbRead<T>(name: string, fallback: T[]): Promise<T[]> {
+  return executeWithRetry(
+    name,
+    async () => {
+      await ensureSchema();
+      const conn = await getPool().getConnection();
+      try {
+        const existing = (await conn.execute<RowDataPacket[]>(
+          "SELECT `rows` FROM collections WHERE name = ?",
+          [name]
+        ))[0];
+        if (existing.length > 0) return parseRows<T>(existing[0].rows);
+        const seeded = await loadSeed(name, fallback);
+        await conn.execute(
+          "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
+          [name, JSON.stringify(seeded)]
+        );
+        const after = (await conn.execute<RowDataPacket[]>(
+          "SELECT `rows` FROM collections WHERE name = ?",
+          [name]
+        ))[0];
+        return after[0] ? parseRows<T>(after[0].rows) : seeded;
+      } finally {
+        conn.release();
+      }
+    },
+    () => fileRead(name, fallback)
+  );
+}
+
 async function dbWrite<T>(name: string, rows: T[]): Promise<void> {
-  try {
-    await ensureSchema();
-    const conn = await getPool().getConnection();
-    try {
-      await conn.execute(
-        "INSERT INTO collections (name, `rows`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `rows` = VALUES(`rows`), updated_at = NOW()",
-        [name, JSON.stringify(rows)]
-      );
-    } finally {
-      conn.release();
-    }
-  } catch (err: unknown) {
-    const code = (err as { code?: string })?.code;
-    if (code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT" || code === "ER_ACCESS_DENIED_ERROR") {
-      console.warn(`[json-store] Database unreachable (${code}). Falling back to file storage for "${name}".`);
-      return fileWrite(name, rows);
-    }
-    throw err;
-  }
+  return executeWithRetry(
+    name,
+    async () => {
+      await ensureSchema();
+      const conn = await getPool().getConnection();
+      try {
+        await conn.execute(
+          "INSERT INTO collections (name, `rows`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `rows` = VALUES(`rows`), updated_at = NOW()",
+          [name, JSON.stringify(rows)]
+        );
+      } finally {
+        conn.release();
+      }
+    },
+    () => fileWrite(name, rows)
+  );
 }
 
 async function dbMutate<T>(
@@ -159,54 +234,51 @@ async function dbMutate<T>(
   fallback: T[],
   fn: (rows: T[]) => T[] | Promise<T[]>
 ): Promise<T[]> {
-  try {
-    await ensureSchema();
-    const conn = await getPool().getConnection();
-    try {
-      await conn.beginTransaction();
+  return executeWithRetry(
+    name,
+    async () => {
+      await ensureSchema();
+      const conn = await getPool().getConnection();
+      try {
+        await conn.beginTransaction();
 
-      // SELECT FOR UPDATE locks the row so concurrent mutators serialize.
-      let locked = (await conn.execute<RowDataPacket[]>(
-        "SELECT `rows` FROM collections WHERE name = ? FOR UPDATE",
-        [name]
-      ))[0];
-      let current: T[];
-      if (locked.length === 0) {
-        const seeded = await loadSeed(name, fallback);
-        await conn.execute(
-          "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
-          [name, JSON.stringify(seeded)]
-        );
-        locked = (await conn.execute<RowDataPacket[]>(
+        // SELECT FOR UPDATE locks the row so concurrent mutators serialize.
+        let locked = (await conn.execute<RowDataPacket[]>(
           "SELECT `rows` FROM collections WHERE name = ? FOR UPDATE",
           [name]
         ))[0];
-        current = locked[0] ? parseRows<T>(locked[0].rows) : seeded;
-      } else {
-        current = parseRows<T>(locked[0].rows);
-      }
+        let current: T[];
+        if (locked.length === 0) {
+          const seeded = await loadSeed(name, fallback);
+          await conn.execute(
+            "INSERT IGNORE INTO collections (name, `rows`) VALUES (?, ?)",
+            [name, JSON.stringify(seeded)]
+          );
+          locked = (await conn.execute<RowDataPacket[]>(
+            "SELECT `rows` FROM collections WHERE name = ? FOR UPDATE",
+            [name]
+          ))[0];
+          current = locked[0] ? parseRows<T>(locked[0].rows) : seeded;
+        } else {
+          current = parseRows<T>(locked[0].rows);
+        }
 
-      const next = await fn(current);
-      await conn.execute(
-        "UPDATE collections SET `rows` = ?, updated_at = NOW() WHERE name = ?",
-        [JSON.stringify(next), name]
-      );
-      await conn.commit();
-      return next;
-    } catch (err) {
-      await conn.rollback().catch(() => undefined);
-      throw err;
-    } finally {
-      conn.release();
-    }
-  } catch (err: unknown) {
-    const code = (err as { code?: string })?.code;
-    if (code === "ECONNREFUSED" || code === "ENOTFOUND" || code === "ETIMEDOUT" || code === "ER_ACCESS_DENIED_ERROR") {
-      console.warn(`[json-store] Database unreachable (${code}). Falling back to file storage for "${name}".`);
-      return fileMutate(name, fallback, fn);
-    }
-    throw err;
-  }
+        const next = await fn(current);
+        await conn.execute(
+          "UPDATE collections SET `rows` = ?, updated_at = NOW() WHERE name = ?",
+          [JSON.stringify(next), name]
+        );
+        await conn.commit();
+        return next;
+      } catch (err) {
+        await conn.rollback().catch(() => undefined);
+        throw err;
+      } finally {
+        conn.release();
+      }
+    },
+    () => fileMutate(name, fallback, fn)
+  );
 }
 
 // ---------------------------------------------------------------------------

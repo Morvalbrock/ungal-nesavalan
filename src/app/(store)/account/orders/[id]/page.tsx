@@ -6,6 +6,7 @@ import { getSession } from "@/features/auth/session";
 import { orderRepo, returnRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
 import { RequestReturnButton } from "@/components/account/RequestReturnButton";
+import { OrderTimeline } from "@/components/orders/OrderTimeline";
 
 const RETURN_WINDOW_DAYS = Number(process.env.RETURN_WINDOW_DAYS ?? "7");
 
@@ -25,19 +26,24 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const showReturnButton = withinWindow && !returnRequest;
 
   return (
-    <section>
-      <Link href="/account/orders" className="text-xs uppercase tracking-widest text-ink-muted hover:text-ink">
-        ← All orders
-      </Link>
-      <div className="mt-2 flex items-baseline justify-between">
-        <h2 className="font-display text-2xl">Order {order.orderNumber}</h2>
-        <span className="rounded-full bg-ink/10 px-3 py-1 text-[10px] uppercase tracking-widest">
-          {order.status}
-        </span>
+    <section className="space-y-6">
+      <div>
+        <Link href="/account/orders" className="text-xs uppercase tracking-widest text-ink-muted hover:text-ink">
+          ← All orders
+        </Link>
+        <div className="mt-2 flex items-baseline justify-between">
+          <h2 className="font-display text-2xl">Order {order.orderNumber}</h2>
+          <span className="rounded-full bg-ink/10 px-3 py-1 text-[10px] uppercase tracking-widest">
+            {order.status.replace("_", " ")}
+          </span>
+        </div>
+        <p className="mt-1 text-sm text-ink-muted">
+          Placed {new Date(order.createdAt).toLocaleString("en-IN")}
+        </p>
       </div>
-      <p className="mt-1 text-sm text-ink-muted">
-        Placed {new Date(order.createdAt).toLocaleString("en-IN")}
-      </p>
+
+      {/* Visual Timeline of Order Progress */}
+      <OrderTimeline order={order} />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
         <div>
@@ -56,7 +62,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                       {i.variantLabelSnapshot} · Qty {i.quantity}
                     </p>
                   </div>
-                  <p>{formatINR(i.unitPricePaise * i.quantity)}</p>
+                  <p className="font-medium">{formatINR(i.unitPricePaise * i.quantity)}</p>
                 </div>
               </li>
             ))}
@@ -106,7 +112,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <dt>Deposit paid</dt>
                     <dd>{formatINR(order.amountPaidPaise ?? 0)}</dd>
                   </div>
-                  <div className="flex justify-between text-maroon">
+                  <div className="flex justify-between text-maroon font-medium">
                     <dt>Due on delivery (cash)</dt>
                     <dd>{formatINR(order.amountDuePaise ?? 0)}</dd>
                   </div>
@@ -118,9 +124,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {["paid", "packed", "shipped", "delivered", "return_requested", "refunded"].includes(order.status) && (
             <a
               href={`/api/orders/${order.id}/invoice`}
-              className="inline-flex items-center gap-2 rounded-card border border-border px-3 py-2 text-xs hover:border-ink"
+              className="inline-flex items-center gap-2 rounded-card border border-border px-3 py-2 text-xs hover:border-ink transition"
             >
-              <Download className="h-3.5 w-3.5" /> Download invoice
+              <Download className="h-3.5 w-3.5" /> Download tax invoice
             </a>
           )}
 

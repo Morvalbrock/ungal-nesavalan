@@ -11,6 +11,30 @@ export type OrderStatus =
   | "cancelled"
   | "refunded";
 
+export const ORDER_STATUS_FLOW: OrderStatus[] = [
+  "pending",
+  "paid",
+  "packed",
+  "shipped",
+  "delivered"
+];
+
+export const VALID_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  // Pending orders cannot be advanced to packed/shipped/delivered; only payment gateway verifies payment to 'paid'
+  pending: ["cancelled"],
+  // Paid orders can be packed or cancelled
+  paid: ["packed", "cancelled"],
+  // Packed orders can be shipped or cancelled
+  packed: ["shipped", "cancelled"],
+  // Shipped orders can be delivered or cancelled
+  shipped: ["delivered", "cancelled"],
+  // Delivered orders can only be refunded
+  delivered: ["refunded"],
+  return_requested: ["refunded", "delivered"],
+  cancelled: [],
+  refunded: []
+};
+
 export interface OrderItem {
   id: string;
   orderId: string;

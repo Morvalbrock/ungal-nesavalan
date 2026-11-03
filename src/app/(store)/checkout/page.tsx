@@ -12,5 +12,16 @@ export default async function CheckoutPage() {
   const user = await userRepo.findById(session.userId);
   if (!user) redirect("/login?next=/checkout");
 
-  return <CheckoutFlow prefill={{ name: user.name, email: user.email, phone: user.phone ?? "" }} />;
+  const isDummyEmail = user.email.endsWith("@phone.local") || user.email.endsWith("@firebase.local");
+  const isPhoneAsName = user.name.startsWith("+") || /^\d+$/.test(user.name);
+
+  return (
+    <CheckoutFlow
+      prefill={{
+        name: isPhoneAsName ? "" : user.name,
+        email: isDummyEmail ? "" : user.email,
+        phone: user.phone ?? ""
+      }}
+    />
+  );
 }

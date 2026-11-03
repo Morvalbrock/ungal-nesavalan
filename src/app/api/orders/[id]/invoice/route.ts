@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
+import fs from "node:fs";
+import path from "node:path";
 import { getSession } from "@/features/auth/session";
 import { orderRepo } from "@/server/repositories";
 import { InvoiceDocument } from "@/features/invoices/InvoiceDocument";
@@ -24,13 +26,26 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: "not_downloadable" }, { status: 409 });
   }
 
+  // Read logo from public/images/invoice_logo.jpeg
+  let logoDataUrl: string | undefined;
+  try {
+    const logoPath = path.join(process.cwd(), "public", "images", "invoice_logo.jpeg");
+    if (fs.existsSync(logoPath)) {
+      const buffer = fs.readFileSync(logoPath);
+      logoDataUrl = `data:image/jpeg;base64,${buffer.toString("base64")}`;
+    }
+  } catch (err) {
+    console.warn("[invoice] Failed to load logo from disk:", (err as Error).message);
+  }
+
   const buffer = await renderToBuffer(
     InvoiceDocument({
       order,
       brand: {
         name: "Ungal Nesavalan",
-        tagline: "Handloom sarees, loomed by hand.",
-        supportEmail: process.env.SUPPORT_EMAIL ?? "ungalnesavalan01@gmail.com"
+        tagline: "Pure Handloom Sarees, Crafted by Heritage Artisans",
+        supportEmail: process.env.SUPPORT_EMAIL ?? "ungalnesavalan01@gmail.com",
+        logoDataUrl
       }
     })
   );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { AuthField, authInputCls } from "@/components/auth/AuthShell";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { submitResetPassword } from "./actions";
 
 export function ResetPasswordForm({ id, token }: { id: string; token: string }) {
@@ -52,25 +53,22 @@ export function ResetPasswordForm({ id, token }: { id: string; token: string }) 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <AuthField label="New password">
-        <input
-          type="password"
+        <PasswordInput
           autoComplete="new-password"
           required
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={authInputCls}
         />
       </AuthField>
       <AuthField label="Confirm new password" error={error ?? undefined}>
-        <input
-          type="password"
+        <PasswordInput
           autoComplete="new-password"
           required
           minLength={8}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          className={authInputCls}
+          error={!!error}
         />
       </AuthField>
       <button type="submit" disabled={pending} className="btn-primary w-full">

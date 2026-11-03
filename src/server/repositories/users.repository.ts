@@ -5,6 +5,7 @@ export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
   findById(id: string): Promise<User | null>;
   findByGoogleId(googleId: string): Promise<User | null>;
+  findByPhone(phone: string): Promise<User | null>;
   create(input: Omit<User, "id" | "createdAt">): Promise<User>;
   update(id: string, patch: Partial<User>): Promise<User | null>;
   list(): Promise<User[]>;
@@ -25,6 +26,11 @@ export const jsonUserRepo: UserRepository = {
   async findByGoogleId(googleId) {
     const rows = await readCollection<User>(COLLECTION);
     return rows.find((u) => u.googleId === googleId) ?? null;
+  },
+  async findByPhone(phone) {
+    const rows = await readCollection<User>(COLLECTION);
+    const normalized = phone.replace(/[\s-]/g, "");
+    return rows.find((u) => u.phone?.replace(/[\s-]/g, "") === normalized) ?? null;
   },
   async create(input) {
     const created: User = {

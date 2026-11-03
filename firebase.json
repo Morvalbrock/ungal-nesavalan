@@ -1,0 +1,17 @@
+{
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "phone": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Ungal Nesavalan",
+        "supportEmail": "marvelbrockk@gmail.com",
+        "authorizedRedirectUris": [
+          "https://ungalnesavalan-9b2a5.firebaseapp.com/__/auth/handler",
+          "https://ungalnesavalan.com",
+          "http://localhost"
+        ]
+      }
+    }
+  }
+}

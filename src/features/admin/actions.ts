@@ -21,7 +21,7 @@ import {
 import { getPaymentProvider } from "@/features/payments";
 import { getMailProvider } from "@/features/mail";
 import { deliveredEmail, returnDecisionEmail, shippedEmail } from "@/features/mail/templates";
-import type { OrderStatus } from "@/types/order";
+import { VALID_ORDER_TRANSITIONS, type OrderStatus } from "@/types/order";
 import type { Fabric, Occasion, Product, ProductImage, Variant } from "@/types/product";
 import { FABRICS, OCCASIONS } from "@/features/products/filters";
 import { newId } from "@/server/db/json-store";
@@ -365,6 +365,29 @@ export async function updateOrderStatus(
 ): Promise<ActionResult> {
   await requireAdmin();
   if (!ORDER_STATUSES.includes(status)) return { ok: false, error: "invalid_status" };
+
+  const currentOrder = await orderRepo.findById(orderId);
+  if (!currentOrder) return { ok: false, error: "not_found" };
+
+  // Enforce step-by-step status progression if status is changing
+  if (status !== currentOrder.status) {
+    if (currentOrder.status === "pending") {
+      if (status !== "cancelled") {
+        return {
+          ok: false,
+          error: "Payment is pending. Order cannot be advanced until payment is completed."
+        };
+      }
+    } else {
+      const allowed = VALID_ORDER_TRANSITIONS[currentOrder.status] ?? [];
+      if (!allowed.includes(status)) {
+        return {
+          ok: false,
+          error: `Invalid status transition from "${currentOrder.status}" to "${status}". Orders must progress step-by-step: Paid → Packed → Shipped → Delivered.`
+        };
+      }
+    }
+  }
 
   let updated = await orderRepo.updateStatus(orderId, status);
   if (!updated) return { ok: false, error: "not_found" };

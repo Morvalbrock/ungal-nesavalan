@@ -8,6 +8,39 @@ import { registerSchema, type RegisterInput } from "@/features/auth/auth.provide
 import { useAuth } from "@/features/auth/AuthContext";
 import { AuthField, authInputCls } from "./AuthShell";
 import { GoogleSignInButton } from "./GoogleSignInButton";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PhoneOtpFlow, type PhoneFlowStep } from "./PhoneOtpFlow";
+
+type AuthMode = "phone" | "email";
+
+function TabButton({
+  active,
+  disabled,
+  children,
+  onClick
+}: {
+  active: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`flex-1 rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wider transition ${
+        active
+          ? "bg-ink text-white"
+          : disabled
+            ? "cursor-not-allowed text-ink-muted/40"
+            : "text-ink-muted hover:bg-cream"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function RegisterForm() {
   const router = useRouter();
@@ -15,6 +48,8 @@ export function RegisterForm() {
   const next = sp.get("next") || "/";
   const { refresh } = useAuth();
   const oauthError = sp.get("error");
+  const [mode, setMode] = useState<AuthMode>("phone");
+  const [phoneStep, setPhoneStep] = useState<PhoneFlowStep>("phone");
   const [serverError, setServerError] = useState<string | null>(
     oauthError ? "Google sign-in failed. Please try again." : null
   );
@@ -41,6 +76,14 @@ export function RegisterForm() {
     router.refresh();
   };
 
+  const handleOtpSuccess = () => {
+    router.push(next);
+    router.refresh();
+  };
+
+  // Lock tab switching if user is in the middle of OTP verification or profile completion
+  const isOtpFlowLocked = mode === "phone" && phoneStep !== "phone";
+
   return (
     <div className="space-y-5">
       <GoogleSignInButton />
@@ -49,33 +92,66 @@ export function RegisterForm() {
         <span>or</span>
         <span className="h-px flex-1 bg-border" />
       </div>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <AuthField label="Full name" error={errors.name?.message}>
-        <input autoComplete="name" {...register("name")} className={authInputCls} />
-      </AuthField>
-      <AuthField label="Email" error={errors.email?.message}>
-        <input type="email" autoComplete="email" {...register("email")} className={authInputCls} />
-      </AuthField>
-      <AuthField label="Mobile (optional)" error={errors.phone?.message}>
-        <input inputMode="tel" placeholder="+91 9876543210" {...register("phone")} className={authInputCls} />
-      </AuthField>
-      <AuthField label="Password" error={errors.password?.message}>
-        <input type="password" autoComplete="new-password" {...register("password")} className={authInputCls} />
-      </AuthField>
-      {serverError && <p className="text-xs text-maroon">{serverError}</p>}
-      <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
-        {isSubmitting ? "Creating account…" : "Create account"}
-      </button>
-      <p className="text-xs text-ink-muted">
-        Already have an account?{" "}
-        <Link
-          href={`/login${sp.get("next") ? `?next=${encodeURIComponent(sp.get("next")!)}` : ""}`}
-          className="link-underline"
-        >
-          Sign in
-        </Link>
-      </p>
-      </form>
+
+      {/* Mode toggle */}
+      <div className="relative">
+        <div className="flex gap-1 rounded-full border border-border p-1">
+          <TabButton
+            active={mode === "phone"}
+            disabled={isOtpFlowLocked}
+            onClick={() => setMode("phone")}
+          >
+            📱 Mobile OTP
+          </TabButton>
+          <TabButton
+            active={mode === "email"}
+            disabled={isOtpFlowLocked}
+            onClick={() => setMode("email")}
+          >
+            ✉️ Email & Password
+          </TabButton>
+        </div>
+        {isOtpFlowLocked && (
+          <p className="mt-1.5 text-center text-[10px] text-ink-muted">
+            Verification in progress. Click &ldquo;Change&rdquo; above to switch methods.
+          </p>
+        )}
+      </div>
+
+      {mode === "phone" ? (
+        <PhoneOtpFlow
+          onSuccess={handleOtpSuccess}
+          onStepChange={setPhoneStep}
+        />
+      ) : (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <AuthField label="Full name" error={errors.name?.message}>
+            <input autoComplete="name" {...register("name")} className={authInputCls} />
+          </AuthField>
+          <AuthField label="Email" error={errors.email?.message}>
+            <input type="email" autoComplete="email" {...register("email")} className={authInputCls} />
+          </AuthField>
+          <AuthField label="Mobile (optional)" error={errors.phone?.message}>
+            <input inputMode="tel" placeholder="+91 9876543210" {...register("phone")} className={authInputCls} />
+          </AuthField>
+          <AuthField label="Password" error={errors.password?.message}>
+            <PasswordInput autoComplete="new-password" {...register("password")} error={!!errors.password} />
+          </AuthField>
+          {serverError && <p className="text-xs text-maroon">{serverError}</p>}
+          <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
+            {isSubmitting ? "Creating account…" : "Create account"}
+          </button>
+          <p className="text-xs text-ink-muted">
+            Already have an account?{" "}
+            <Link
+              href={`/login${sp.get("next") ? `?next=${encodeURIComponent(sp.get("next")!)}` : ""}`}
+              className="link-underline"
+            >
+              Sign in
+            </Link>
+          </p>
+        </form>
+      )}
     </div>
   );
 }

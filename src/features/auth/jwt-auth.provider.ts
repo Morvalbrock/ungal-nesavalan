@@ -9,6 +9,7 @@ import {
   type RegisterInput,
   type SessionPayload
 } from "./auth.provider";
+import { normalizePhone } from "./otp.service";
 
 const ALG = "HS256";
 export const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 30; // 30 days
@@ -79,3 +80,66 @@ export const jwtAuthProvider: AuthProvider = {
     }
   }
 };
+
+/**
+ * Login (or auto-register) a user by verified phone number.
+ */
+export async function loginWithPhone(phone: string): Promise<{ user: PublicUser; token: string; isNewUser: boolean }> {
+  return loginWithFirebaseUser({ uid: `phone_${phone}`, phone });
+}
+
+/**
+ * Login (or auto-register) a user authenticated via Firebase (Email, Phone, Google).
+ */
+export async function loginWithFirebaseUser(data: {
+  uid: string;
+  email?: string;
+  phone?: string;
+  name?: string;
+}): Promise<{ user: PublicUser; token: string; isNewUser: boolean }> {
+  let user: PublicUser | null = null;
+  let isNewUser = false;
+
+  if (data.email) {
+    user = await userRepo.findByEmail(data.email);
+  }
+  if (!user && data.phone) {
+    const normalized = normalizePhone(data.phone);
+    user = await userRepo.findByPhone(normalized);
+  }
+
+  if (!user) {
+    isNewUser = true;
+    const email =
+      data.email ||
+      (data.phone
+        ? `${normalizePhone(data.phone).replace("+", "")}@phone.local`
+        : `${data.uid}@firebase.local`);
+    const name =
+      data.name ||
+      (data.phone
+        ? normalizePhone(data.phone)
+        : data.email
+          ? data.email.split("@")[0]
+          : "Customer");
+
+    const created = await userRepo.create({
+      email,
+      name,
+      phone: data.phone ? normalizePhone(data.phone) : undefined,
+      role: "customer"
+    });
+    user = created;
+  } else {
+    const patch: Partial<PublicUser> = {};
+    if (!user.phone && data.phone) patch.phone = normalizePhone(data.phone);
+    if (!user.name && data.name) patch.name = data.name;
+    if (Object.keys(patch).length > 0) {
+      await userRepo.update(user.id, patch);
+      user = { ...user, ...patch };
+    }
+  }
+
+  const token = await sign({ userId: user.id, email: user.email, name: user.name, role: user.role });
+  return { user: stripPassword(user), token, isNewUser };
+}

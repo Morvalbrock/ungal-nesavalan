@@ -1,13 +1,15 @@
-import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View, Image } from "@react-pdf/renderer";
 import type { Order } from "@/types/order";
 
 const styles = StyleSheet.create({
   page: { padding: 36, fontSize: 10, color: "#1a1a1a", fontFamily: "Helvetica" },
-  header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
-  brand: { fontSize: 18, fontWeight: 700 },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 },
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  brandLogo: { width: 52, height: 52, objectFit: "contain", borderRadius: 4 },
+  brand: { fontSize: 18, fontWeight: 700, color: "#1a1a1a" },
   brandTag: { fontSize: 9, color: "#666", marginTop: 2 },
-  invoiceLabel: { fontSize: 14, fontWeight: 700 },
-  meta: { fontSize: 9, color: "#666", marginTop: 4 },
+  invoiceLabel: { fontSize: 14, fontWeight: 700, color: "#7a1e28" },
+  meta: { fontSize: 9, color: "#666", marginTop: 3 },
   hr: { borderBottomWidth: 1, borderBottomColor: "#e5e5e5", marginVertical: 12 },
   section: { marginBottom: 12 },
   sectionTitle: { fontSize: 9, textTransform: "uppercase", letterSpacing: 1, color: "#666", marginBottom: 4 },
@@ -63,6 +65,7 @@ export interface InvoiceProps {
     name: string;
     tagline: string;
     supportEmail: string;
+    logoDataUrl?: string;
   };
 }
 
@@ -72,9 +75,14 @@ export function InvoiceDocument({ order, brand }: InvoiceProps) {
     <Document title={`Invoice ${order.orderNumber}`}>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <View>
-            <Text style={styles.brand}>{brand.name}</Text>
-            <Text style={styles.brandTag}>{brand.tagline}</Text>
+          <View style={styles.brandRow}>
+            {brand.logoDataUrl ? (
+              <Image src={brand.logoDataUrl} style={styles.brandLogo} />
+            ) : null}
+            <View>
+              <Text style={styles.brand}>{brand.name}</Text>
+              <Text style={styles.brandTag}>{brand.tagline}</Text>
+            </View>
           </View>
           <View style={{ textAlign: "right" }}>
             <Text style={styles.invoiceLabel}>Tax Invoice</Text>
@@ -98,34 +106,41 @@ export function InvoiceDocument({ order, brand }: InvoiceProps) {
             <Text style={styles.sectionTitle}>Status</Text>
             <Text style={{ textTransform: "capitalize" }}>{order.status.replace("_", " ")}</Text>
             {order.paymentId && (
-              <>
-                <Text style={[styles.sectionTitle, { marginTop: 8 }]}>Payment</Text>
-                <Text>{order.paymentId}</Text>
-              </>
+              <Text style={styles.meta}>Payment ref: {order.paymentId}</Text>
+            )}
+            {order.paymentMode && (
+              <Text style={styles.meta}>
+                Payment Mode: {order.paymentMode === "cod" ? "Cash on Delivery" : "Prepaid Online"}
+              </Text>
+            )}
+            {order.trackingId && (
+              <Text style={styles.meta}>
+                Tracking: {order.trackingId} ({order.courier ?? "Courier"})
+              </Text>
             )}
           </View>
         </View>
 
-        <View style={styles.hr} />
-
-        <View style={[styles.row, styles.th]}>
-          <Text style={styles.colName}>Item</Text>
-          <Text style={styles.colQty}>Qty</Text>
-          <Text style={styles.colUnit}>Unit</Text>
-          <Text style={styles.colTotal}>Amount</Text>
-        </View>
-
-        {order.items.map((i) => (
-          <View key={i.id} style={[styles.row, styles.itemRow]}>
-            <View style={styles.colName}>
-              <Text style={styles.itemName}>{i.productNameSnapshot}</Text>
-              <Text style={styles.itemVariant}>Colour: {i.variantLabelSnapshot}</Text>
-            </View>
-            <Text style={styles.colQty}>{i.quantity}</Text>
-            <Text style={styles.colUnit}>{inr(i.unitPricePaise)}</Text>
-            <Text style={styles.colTotal}>{inr(i.unitPricePaise * i.quantity)}</Text>
+        <View style={{ marginTop: 20 }}>
+          <View style={[styles.row, styles.th]}>
+            <Text style={styles.colName}>Item</Text>
+            <Text style={styles.colQty}>Qty</Text>
+            <Text style={styles.colUnit}>Unit</Text>
+            <Text style={styles.colTotal}>Total</Text>
           </View>
-        ))}
+
+          {order.items.map((i) => (
+            <View key={i.id} style={[styles.row, styles.itemRow]}>
+              <View style={styles.colName}>
+                <Text style={styles.itemName}>{i.productNameSnapshot}</Text>
+                <Text style={styles.itemVariant}>{i.variantLabelSnapshot}</Text>
+              </View>
+              <Text style={styles.colQty}>{i.quantity}</Text>
+              <Text style={styles.colUnit}>{inr(i.unitPricePaise)}</Text>
+              <Text style={styles.colTotal}>{inr(i.unitPricePaise * i.quantity)}</Text>
+            </View>
+          ))}
+        </View>
 
         <View style={styles.totals}>
           <View style={styles.totalRow}>
@@ -134,7 +149,7 @@ export function InvoiceDocument({ order, brand }: InvoiceProps) {
           </View>
           {order.discountPaise > 0 && order.couponSnapshot && (
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Coupon ({order.couponSnapshot.code})</Text>
+              <Text style={styles.totalLabel}>Discount ({order.couponSnapshot.code})</Text>
               <Text>-{inr(order.discountPaise)}</Text>
             </View>
           )}
@@ -142,21 +157,16 @@ export function InvoiceDocument({ order, brand }: InvoiceProps) {
             <Text style={styles.totalLabel}>Shipping</Text>
             <Text>{order.shippingPaise === 0 ? "Free" : inr(order.shippingPaise)}</Text>
           </View>
-          {order.taxPaise > 0 && (
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Tax</Text>
-              <Text>{inr(order.taxPaise)}</Text>
-            </View>
-          )}
           <View style={styles.grandRow}>
-            <Text>Total ({order.currency})</Text>
+            <Text>Total</Text>
             <Text>{inr(order.totalPaise)}</Text>
           </View>
         </View>
 
-        <Text style={styles.footer}>
-          Thank you for supporting handloom weavers.  ·  Questions? {brand.supportEmail}
-        </Text>
+        <View style={styles.footer}>
+          <Text>Thank you for choosing Ungal Nesavalan — honoring traditional handloom weavers.</Text>
+          <Text style={{ marginTop: 2 }}>Questions? Contact our atelier support at {brand.supportEmail}</Text>
+        </View>
       </Page>
     </Document>
   );

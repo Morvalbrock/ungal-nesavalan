@@ -96,6 +96,20 @@ export function CheckoutFlow({ prefill }: { prefill?: { name?: string; email?: s
             }
             onSubmit={(data) => {
               setAddress(data);
+
+              // Progressive profile backfill: if user is logged in, sync any missing details in the background
+              if (user) {
+                void fetch("/api/account/profile", {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    name: data.fullName,
+                    phone: data.phone,
+                    email: data.email
+                  })
+                }).catch(() => undefined);
+              }
+
               setStep("review");
               if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
             }}
