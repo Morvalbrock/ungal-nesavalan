@@ -65,7 +65,19 @@ function getFirebaseErrorMessage(err: unknown): string {
       case "auth/app-not-authorized":
         return "This app is not authorized to use Firebase Authentication. Verify Phone Authentication is enabled.";
       case "auth/captcha-check-failed":
+        if (typeof window !== "undefined") {
+          const host = window.location.hostname;
+          const isRawIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(host);
+          if (isRawIp) {
+            return `Phone auth cannot run on a raw IP address (${host}). Open the app at http://localhost:3000 on this machine, or use ngrok to get a real hostname, or add a test phone number in Firebase Console → Authentication → Sign-in method → Phone → "Phone numbers for testing".`;
+          }
+          return `reCAPTCHA failed for "${host}". Add this domain to Firebase Console → Authentication → Settings → Authorized domains, then reload.`;
+        }
         return "reCAPTCHA check failed. Please refresh the page and try again.";
+      case "auth/argument-error":
+        return "reCAPTCHA could not be initialized. Please reload the page and try again.";
+      case "auth/internal-error":
+        return "Firebase could not verify this request. Check that your domain is in Authorized domains and reload the page.";
       default:
         if ("message" in err && typeof (err as { message: unknown }).message === "string") {
           return (err as { message: string }).message;
@@ -112,11 +124,15 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
         }
         recaptchaVerifierRef.current = null;
       }
+      document
+        .querySelectorAll("[data-recaptcha-container]")
+        .forEach((el) => el.remove());
     };
   }, []);
 
-  const initRecaptcha = (auth: ReturnType<typeof getFirebaseAuth>) => {
+  const initRecaptcha = async (auth: ReturnType<typeof getFirebaseAuth>) => {
     if (!auth) return null;
+
     if (recaptchaVerifierRef.current) {
       try {
         recaptchaVerifierRef.current.clear();
@@ -125,15 +141,53 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
       }
       recaptchaVerifierRef.current = null;
     }
-    const container = document.getElementById("recaptcha-container");
-    if (container) container.innerHTML = "";
 
-    const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+    // Remove any previously-created dynamic container(s). Firebase's SDK
+    // binds grecaptcha widget state to the DOM node, so reusing the same node
+    // across attempts throws "reCAPTCHA has already been rendered".
+    document
+      .querySelectorAll("[data-recaptcha-container]")
+      .forEach((el) => el.remove());
+
+    const containerId = `recaptcha-container-${Date.now()}`;
+    const container = document.createElement("div");
+    container.id = containerId;
+    container.setAttribute("data-recaptcha-container", "");
+    container.style.position = "fixed";
+    container.style.bottom = "0";
+    container.style.right = "0";
+    container.style.width = "0";
+    container.style.height = "0";
+    container.style.overflow = "hidden";
+    container.style.visibility = "hidden";
+    document.body.appendChild(container);
+
+    const verifier = new RecaptchaVerifier(auth, containerId, {
       size: "invisible",
       callback: () => {
         // reCAPTCHA solved
+      },
+      "expired-callback": () => {
+        try {
+          verifier.clear();
+        } catch {
+          // ignore
+        }
       }
     });
+
+    try {
+      await verifier.render();
+    } catch (renderErr) {
+      const hostname = typeof window !== "undefined" ? window.location.hostname : "(unknown)";
+      const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? "(missing NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN)";
+      console.error(
+        `[OTP] reCAPTCHA render failed.\n  hostname: ${hostname}\n  authDomain: ${authDomain}\n  Fix: Firebase Console → Authentication → Settings → Authorized domains must include "${hostname}".`,
+        renderErr
+      );
+      throw renderErr;
+    }
+
     recaptchaVerifierRef.current = verifier;
     return verifier;
   };
@@ -197,7 +251,7 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
         const auth = getFirebaseAuth();
         if (!auth) throw new Error("Firebase Auth could not be initialized");
 
-        const verifier = initRecaptcha(auth);
+        const verifier = await initRecaptcha(auth);
         if (!verifier) throw new Error("Failed to initialize security verification");
 
         const confirmation = await signInWithPhoneNumber(auth, fullPhone, verifier);
@@ -315,7 +369,7 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
       if (isFirebaseConfigured()) {
         const auth = getFirebaseAuth();
         if (!auth) throw new Error("Firebase Auth could not be initialized");
-        const verifier = initRecaptcha(auth);
+        const verifier = await initRecaptcha(auth);
         if (!verifier) throw new Error("Failed to initialize security verification");
 
         const confirmation = await signInWithPhoneNumber(auth, fullPhone, verifier);
@@ -398,8 +452,8 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
 
   return (
     <div className="relative">
-      {/* Invisible reCAPTCHA container required by Firebase */}
-      <div id="recaptcha-container" />
+      {/* reCAPTCHA container is created dynamically in document.body on each
+          send attempt. See initRecaptcha. */}
 
       {/* Loading lockout backdrop to prevent any background action */}
       {loading && (
