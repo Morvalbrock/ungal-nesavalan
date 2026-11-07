@@ -108,8 +108,18 @@ function applyQuery(rows: Product[], q: ProductQuery = {}): Product[] {
       out.sort((a, b) => Number(b.featured) - Number(a.featured));
       break;
     case "newest":
-    default:
       out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      break;
+    default:
+      // Admin-controlled display order (lower `sort` first, ties fall back to newest).
+      // Products without a sort value sink to the bottom so newly-added items don't
+      // silently jump ahead of hand-ordered ones.
+      out.sort((a, b) => {
+        const sa = a.sort ?? Number.MAX_SAFE_INTEGER;
+        const sb = b.sort ?? Number.MAX_SAFE_INTEGER;
+        if (sa !== sb) return sa - sb;
+        return b.createdAt.localeCompare(a.createdAt);
+      });
   }
   return out;
 }

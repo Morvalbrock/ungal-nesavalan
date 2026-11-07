@@ -53,6 +53,9 @@ export interface Product {
   variants: Variant[];
   featured: boolean;
   published: boolean;
+  // Admin-controlled display order within the category. Lower = shown earlier on the
+  // customer-facing category grid. Undefined = oldest products first (createdAt fallback).
+  sort?: number;
   createdAt: string;
   updatedAt: string;
 }

@@ -164,6 +164,26 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+// Persist the admin-chosen display order for products within a catalog (weave).
+// Writes sequential `sort` values (10, 20, 30…) so later single-row nudges can slot
+// in-between without rewriting every row.
+export async function reorderCatalogProducts(
+  catalogSlug: string,
+  orderedIds: string[]
+): Promise<ActionResult<{ updated: number }>> {
+  await requireAdmin();
+  if (!catalogSlug) return { ok: false, error: "missing_catalog" };
+  let updated = 0;
+  for (let i = 0; i < orderedIds.length; i++) {
+    const res = await productRepo.update(orderedIds[i], { sort: (i + 1) * 10 });
+    if (res) updated++;
+  }
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/products/reorder");
+  revalidatePath("/products");
+  return { ok: true, data: { updated } };
+}
+
 // Duplicate an existing product into a new draft. Appends "(Copy)" to the name,
 // generates a unique slug, clears featured flag, and zeroes variant stock so the
 // clone can't accidentally be listed with real inventory before the admin reviews it.

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, ArrowUpDown } from "lucide-react";
 import { readCollection } from "@/server/db/json-store";
 import type { Product } from "@/types/product";
 import { categoryRepo } from "@/server/repositories";
@@ -119,6 +119,12 @@ export default async function AdminProductsPage({
         </div>
         <div className="flex items-center gap-2">
           <ExportLink entity="products" />
+          <Link
+            href="/admin/products/reorder"
+            className="inline-flex items-center gap-1.5 rounded-card border border-border bg-cream px-3 py-2 text-xs font-medium text-ink hover:border-ink transition"
+          >
+            <ArrowUpDown className="h-3.5 w-3.5" /> Customer display order
+          </Link>
           <Link href="/admin/products/new" className="btn-primary inline-flex">
             <Plus className="h-4 w-4" /> New product
           </Link>
