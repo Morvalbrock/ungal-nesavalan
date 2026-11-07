@@ -6,7 +6,7 @@ import { BridalSpotlight } from "@/components/home/BridalSpotlight";
 import { DirectFromLooms } from "@/components/home/DirectFromLooms";
 import { PatronReflections } from "@/components/home/PatronReflections";
 import { TrustAccreditations } from "@/components/home/TrustAccreditations";
-import { productRepo } from "@/server/repositories";
+import { catalogRepo, productRepo } from "@/server/repositories";
 
 export const revalidate = 60;
 
@@ -25,10 +25,24 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featured, facets] = await Promise.all([
+  const [featured, facets, catalogs] = await Promise.all([
     productRepo.featured(16),
-    productRepo.getAvailableFacets()
+    productRepo.getAvailableFacets(),
+    catalogRepo.list()
   ]);
+
+  // Cross-reference admin-managed catalogs with the live facet counts so we only
+  // surface catalogs that actually have in-stock products, and so the chips carry
+  // the catalog's proper display name rather than a derived label. catalogRepo.list()
+  // already sorts non-legacy entries first, so legacy catalogs land at the end.
+  const facetCountBySlug = new Map(facets.weaves.map((w) => [w.id.toLowerCase(), w.count]));
+  const catalogChips = catalogs
+    .filter((c) => (facetCountBySlug.get(c.slug.toLowerCase()) ?? 0) > 0)
+    .map((c) => ({
+      id: c.slug.toLowerCase(),
+      label: c.name,
+      count: facetCountBySlug.get(c.slug.toLowerCase()) ?? 0
+    }));
 
   return (
     <div className="flex flex-col w-full bg-[#FBF9F5]">
@@ -39,7 +53,7 @@ export default async function HomePage() {
       <ProvenanceStatsBar />
 
       {/* 3. CURATED WEAVE CLUSTERS & THE HEIRLOOM GALLERY SHOWCASE */}
-      <HeirloomGallery products={featured} availableWeaves={facets.weaves} />
+      <HeirloomGallery products={featured} availableWeaves={catalogChips} />
 
       {/* 4. COUTURE SPOTLIGHT: THE BRIDAL ATELIER & MASTERCRAFT */}
       <BridalSpotlight />

@@ -22,36 +22,21 @@ export function HeirloomGallery({ products, availableWeaves = [] }: HeirloomGall
   const toggleWishlist = useWishlistStore((s) => s.toggle);
   const addItemToCart = useCartStore((s) => s.addItem);
 
-  // Extract clusters based on in-stock products
+  // Filter chips come from the admin-managed Catalog list (passed in as availableWeaves,
+  // keyed by catalog slug). We cap at 8 to keep the row from overflowing on narrow screens;
+  // customers can still "View Atlas of Weaves" to see the rest.
   const clusters = useMemo(() => {
-    const list = [{ id: "all", label: "All Sarees" }];
-    if (availableWeaves.length > 0) {
-      availableWeaves.slice(0, 5).forEach((w) => {
-        list.push({ id: w.id.toLowerCase(), label: w.label });
-      });
-    } else {
-      list.push(
-        { id: "elampillai", label: "Elampillai Weave" },
-        { id: "kanchivaram", label: "Kanchipuram Silk" },
-        { id: "aarani", label: "Aarani Silk" },
-        { id: "jamdani", label: "Bishnupur Jamdani" },
-        { id: "banarasi", label: "Banarasi Brocade" },
-        { id: "chanderi", label: "Chanderi Zari" },
-        { id: "patola", label: "Patola & Ikat" }
-      );
-    }
+    const list: { id: string; label: string }[] = [{ id: "all", label: "All Sarees" }];
+    availableWeaves.slice(0, 8).forEach((w) => {
+      list.push({ id: w.id.toLowerCase(), label: w.label });
+    });
     return list;
   }, [availableWeaves]);
 
-  // Filter products by selected cluster
+  // Filter products by the selected catalog slug (exact match on the product's weave field).
   const filteredProducts = useMemo(() => {
     if (selectedCluster === "all") return products;
-    return products.filter((p) => {
-      const w = p.weave?.toLowerCase() || "";
-      const f = p.fabric?.toLowerCase() || "";
-      const n = p.name.toLowerCase();
-      return w.includes(selectedCluster) || f.includes(selectedCluster) || n.includes(selectedCluster);
-    });
+    return products.filter((p) => (p.weave?.toLowerCase() ?? "") === selectedCluster);
   }, [products, selectedCluster]);
 
   const displayList = filteredProducts.slice(0, 8);
