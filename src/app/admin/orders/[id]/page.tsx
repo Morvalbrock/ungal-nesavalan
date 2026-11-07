@@ -6,6 +6,7 @@ import { orderRepo, paymentRepo, userRepo } from "@/server/repositories";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
 import { formatINR } from "@/lib/utils";
+import { formatIST } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export default async function AdminOrderDetailPage({
           </Link>
           <h1 className="mt-2 font-display text-3xl">{order.orderNumber}</h1>
           <p className="text-sm text-ink-muted">
-            Placed {new Date(order.createdAt).toLocaleString("en-IN")}
+            Placed {formatIST(order.createdAt)}
           </p>
         </div>
         {["paid", "packed", "shipped", "delivered", "return_requested", "refunded"].includes(order.status) && (

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getSession } from "@/features/auth/session";
 import { orderRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
+import { formatISTDate } from "@/lib/datetime";
 
 export const metadata: Metadata = { title: "Orders" };
 
@@ -51,7 +52,7 @@ export default async function OrdersPage() {
                 {o.items.length} item{o.items.length === 1 ? "" : "s"} · {formatINR(o.totalPaise)}
               </p>
               <p className="mt-1 text-xs text-ink-muted">
-                Placed {new Date(o.createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}
+                Placed {formatISTDate(o.createdAt)}
               </p>
             </div>
             <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-widest ${STATUS_COLOURS[o.status] ?? "bg-ink/10 text-ink"}`}>

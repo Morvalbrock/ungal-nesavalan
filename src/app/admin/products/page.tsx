@@ -6,6 +6,7 @@ import type { Product } from "@/types/product";
 import { categoryRepo } from "@/server/repositories";
 import { getSession } from "@/features/auth/session";
 import { formatINR } from "@/lib/utils";
+import { formatISTDate } from "@/lib/datetime";
 import { SearchFilter } from "@/components/admin/SearchFilter";
 import { ProductRowActions } from "@/components/admin/ProductRowActions";
 import { Pagination, resolvePage, resolvePerPage } from "@/components/admin/Pagination";
@@ -227,7 +228,7 @@ export default async function AdminProductsPage({
                     </div>
                   </td>
                   <td className="p-3 text-xs text-ink-muted">
-                    {new Date(p.updatedAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}
+                    {formatISTDate(p.updatedAt)}
                   </td>
                   <td className="p-3 text-right">
                     <ProductRowActions

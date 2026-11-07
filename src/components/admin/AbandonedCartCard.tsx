@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Check, Copy, Mail, MapPin, Phone, Trash2, User } from "lucide-react";
 import { dismissAbandonedCart } from "@/features/admin/actions";
 import { formatINR } from "@/lib/utils";
+import { formatIST, formatISTDate } from "@/lib/datetime";
 import type { CartItem } from "@/features/cart/cart.types";
 import type { Address } from "@/types/address";
 
@@ -87,7 +88,7 @@ export function AbandonedCartCard({
             {notifiedAt && (
               <>
                 <span>·</span>
-                <span className="text-emerald-700">Email sent {new Date(notifiedAt).toLocaleDateString("en-IN")}</span>
+                <span className="text-emerald-700">Email sent {formatISTDate(notifiedAt)}</span>
               </>
             )}
           </div>
@@ -95,7 +96,7 @@ export function AbandonedCartCard({
             {customer.name || customer.email}
           </h3>
           <p className="text-xs text-ink-muted">
-            Last activity: {new Date(updatedAt).toLocaleString("en-IN")}
+            Last activity: {formatIST(updatedAt)}
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">

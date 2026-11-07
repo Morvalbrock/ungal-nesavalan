@@ -11,17 +11,16 @@ import { productRepo } from "@/server/repositories";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Ungal Nesavalan — Handwoven Sarees, Loomed by Hand",
+  title: "Ungal Nesavalan — Direct from Our Elampillai Looms",
   description:
-    "Discover Kanjivaram, Banarasi, Chanderi, Patola, Uppada and more — handloom sarees sourced directly from master weavers across India. Complimentary insured delivery on pure zari heirlooms.",
+    "Silk-cotton sarees woven on our own looms in Elampillai, Tamil Nadu. Own manufacturing, pure handloom, complimentary insured delivery.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Ungal Nesavalan — Handwoven Sarees",
+    title: "Ungal Nesavalan — Direct from Our Elampillai Looms",
     description:
-      "Kanjivaram, Banarasi, Chanderi and more — handloom sarees sourced directly from master weavers.",
+      "Elampillai silk-cotton sarees crafted on our own looms in Tamil Nadu. Pure handloom, own manufacturing, honest pricing.",
     url: "/",
-    type: "website",
-    images: [{ url: "https://picsum.photos/seed/hero-saree/1200/630", width: 1200, height: 630 }]
+    type: "website"
   }
 };
 

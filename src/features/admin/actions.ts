@@ -42,7 +42,6 @@ const productSchema = z.object({
   // so adding new catalogs doesn't require a redeploy.
   weave: z.string().trim().min(1, "Choose a catalog"),
   occasion: z.array(z.enum(OCCASIONS as unknown as [Occasion, ...Occasion[]])).min(1),
-  region: z.string().trim().min(1),
   lengthMeters: z.coerce.number().min(0),
   blousePieceIncluded: z.boolean().default(false),
   careInstructions: z.string().trim().min(1),
@@ -79,7 +78,7 @@ const productSchema = z.object({
         imageAlt: z.string().trim().optional()
       })
     )
-    .min(1, "Add at least one variant"),
+    .default([]),
   featured: z.boolean().default(false),
   published: z.boolean().default(true)
 });
@@ -133,7 +132,6 @@ export async function upsertProduct(values: ProductFormValues): Promise<ActionRe
     fabric: data.fabric,
     weave: data.weave,
     occasion: data.occasion,
-    region: data.region,
     lengthMeters: data.lengthMeters,
     blousePieceIncluded: data.blousePieceIncluded,
     careInstructions: data.careInstructions,
@@ -164,6 +162,66 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
   revalidatePath("/admin/products");
   revalidatePath("/products");
   return { ok: true };
+}
+
+// Duplicate an existing product into a new draft. Appends "(Copy)" to the name,
+// generates a unique slug, clears featured flag, and zeroes variant stock so the
+// clone can't accidentally be listed with real inventory before the admin reviews it.
+export async function duplicateProduct(id: string): Promise<ActionResult<{ id: string; slug: string }>> {
+  await requireAdmin();
+  const source = await productRepo.findById(id);
+  if (!source) return { ok: false, error: "not_found" };
+
+  const newProductId = newId("prd");
+  const baseSlug = `${source.slug}-copy`;
+  const slug = `${baseSlug}-${Date.now().toString(36)}`;
+
+  const images: ProductImage[] = source.images.map((img, i) => ({
+    id: newId("img"),
+    url: img.url,
+    alt: img.alt,
+    sort: img.sort ?? i
+  }));
+
+  const variants: Variant[] = source.variants.map((v) => ({
+    id: newId("var"),
+    productId: newProductId,
+    color: v.color,
+    colorHex: v.colorHex,
+    sku: `${v.sku}-copy-${Date.now().toString(36).slice(-4)}`,
+    stock: 0,
+    priceOverride: v.priceOverride,
+    images: v.images.map((img) => ({
+      id: newId("img"),
+      url: img.url,
+      alt: img.alt,
+      sort: img.sort
+    }))
+  }));
+
+  const payload: Omit<Product, "createdAt" | "updatedAt"> = {
+    id: newProductId,
+    slug,
+    name: `${source.name} (Copy)`,
+    description: source.description,
+    basePrice: source.basePrice,
+    salePrice: source.salePrice,
+    fabric: source.fabric,
+    weave: source.weave,
+    occasion: source.occasion,
+    lengthMeters: source.lengthMeters,
+    blousePieceIncluded: source.blousePieceIncluded,
+    careInstructions: source.careInstructions,
+    categoryId: source.categoryId,
+    images,
+    variants,
+    featured: false,
+    published: false
+  };
+
+  await productRepo.create(payload);
+  revalidatePath("/admin/products");
+  return { ok: true, data: { id: newProductId, slug } };
 }
 
 export async function toggleProductPublished(id: string, published: boolean): Promise<ActionResult> {

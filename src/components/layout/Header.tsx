@@ -54,7 +54,7 @@ export async function Header() {
               Ungal Nesavalan
             </span>
             <span className="hidden text-[10px] uppercase tracking-widest2 text-ink-muted xl:inline">
-              · Handloom Sarees
+              · Elampillai Sarees
             </span>
           </Link>
 

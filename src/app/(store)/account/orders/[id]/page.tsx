@@ -5,6 +5,7 @@ import { Download } from "lucide-react";
 import { getSession } from "@/features/auth/session";
 import { orderRepo, returnRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
+import { formatIST } from "@/lib/datetime";
 import { RequestReturnButton } from "@/components/account/RequestReturnButton";
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
 
@@ -38,7 +39,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </span>
         </div>
         <p className="mt-1 text-sm text-ink-muted">
-          Placed {new Date(order.createdAt).toLocaleString("en-IN")}
+          Placed {formatIST(order.createdAt)}
         </p>
       </div>
 

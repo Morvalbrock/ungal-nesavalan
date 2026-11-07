@@ -45,7 +45,6 @@ export interface Product {
   fabric: Fabric;
   weave: Weave;
   occasion: Occasion[];
-  region: string;
   lengthMeters: number;
   blousePieceIncluded: boolean;
   careInstructions: string;

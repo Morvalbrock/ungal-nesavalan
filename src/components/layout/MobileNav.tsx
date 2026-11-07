@@ -105,7 +105,7 @@ export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNav
             />
             <div>
               <span className="font-display text-base font-semibold text-ink">Ungal Nesavalan</span>
-              <span className="block text-[9px] uppercase tracking-widest text-ink-muted">Handloom Sarees</span>
+              <span className="block text-[9px] uppercase tracking-widest text-ink-muted">Elampillai Sarees</span>
             </div>
           </div>
           <button

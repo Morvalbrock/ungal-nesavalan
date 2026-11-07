@@ -53,7 +53,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             <Ornament className="mt-4 h-4 w-40" tone="gold" />
             <p className="mt-5 max-w-xl text-[15px] leading-[1.7] text-cream/80">
               {banner.subtitle ||
-                "Kanjivaram, Banarasi, Chanderi, Patola, Uppada, Ikat and more — every drape sourced directly from the loom."}
+                "Elampillai silk-cotton sarees woven on our own looms — direct from weaver to wardrobe."}
             </p>
           </Container>
         </section>
@@ -71,8 +71,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <p className="eyebrow">The full atlas</p>
                 <h1 className="mt-2 font-display text-[42px] leading-none md:text-[52px]">All Sarees</h1>
                 <p className="mt-3 max-w-lg text-[14.5px] leading-[1.6] text-ink-soft">
-                  Kanjivaram, Banarasi, Chanderi, Patola, Uppada, Ikat and more —
-                  every drape sourced directly from the loom.
+                  Elampillai silk-cotton sarees woven on our own looms — direct
+                  from weaver to wardrobe.
                 </p>
               </div>
               <Ornament className="hidden h-4 w-40 md:block" tone="gold" />

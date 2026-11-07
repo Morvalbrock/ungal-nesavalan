@@ -71,11 +71,8 @@ export function HeirloomGallery({ products, availableWeaves = [] }: HeirloomGall
     setQuickViewProduct(null);
   };
 
-  const qvExtra = quickViewProduct as unknown as { region?: string; description?: string } | null;
+  const qvExtra = quickViewProduct as unknown as { region?: string } | null;
   const qvRegion = qvExtra?.region || "Elampillai";
-  const qvDesc =
-    qvExtra?.description ||
-    "Authentic handloom drape from our Elampillai master weavers, woven with pure natural silks and generational pride.";
 
   return (
     <>
@@ -271,12 +268,9 @@ export function HeirloomGallery({ products, availableWeaves = [] }: HeirloomGall
                 <span className="text-[10.5px] uppercase tracking-widest text-[#7A5817] font-semibold block mb-1">
                   {quickViewProduct.weave || "Authentic Handloom"} · {qvRegion}
                 </span>
-                <h3 className="font-display text-2xl text-[#1B1C1A] mb-2 leading-tight">
+                <h3 className="font-display text-2xl text-[#1B1C1A] mb-3 leading-tight">
                   {quickViewProduct.name}
                 </h3>
-                <p className="text-xs text-[#4D4541] mb-3 line-clamp-3">
-                  {qvDesc}
-                </p>
 
                 <div className="text-xl font-bold text-[#1B1C1A] mb-4">
                   {formatINR(quickViewProduct.salePrice ?? quickViewProduct.basePrice)}

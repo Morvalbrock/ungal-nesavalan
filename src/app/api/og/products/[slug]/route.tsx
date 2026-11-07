@@ -80,7 +80,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
               ₹{priceRupees}
             </div>
             <div style={{ fontSize: 18, color: "#666", marginTop: 8 }}>
-              Handloom · Loomed by hand
+              Direct from our Elampillai looms
             </div>
           </div>
         </div>

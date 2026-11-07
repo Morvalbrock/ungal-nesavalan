@@ -7,6 +7,7 @@ import { abandonedCartRepo, orderRepo, userRepo } from "@/server/repositories";
 import { readCollection } from "@/server/db/json-store";
 import type { Product } from "@/types/product";
 import { formatINR } from "@/lib/utils";
+import { formatIST } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
 
@@ -155,7 +156,7 @@ export default async function AdminDashboard({
                       {o.orderNumber}
                     </Link>
                     <p className="text-xs text-ink-muted">
-                      {new Date(o.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} ·{" "}
+                      {formatIST(o.createdAt)} ·{" "}
                       {o.items.length} item{o.items.length === 1 ? "" : "s"}
                     </p>
                   </div>

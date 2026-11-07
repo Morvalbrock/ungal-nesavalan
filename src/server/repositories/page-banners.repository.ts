@@ -15,7 +15,7 @@ const DEFAULT_BANNERS: PageBanner[] = [
     "id": "products",
     "page": "/products",
     "title": "All Sarees",
-    "subtitle": "Kanjivaram, Banarasi, Chanderi, Patola, Uppada, Ikat and more — every drape sourced directly from the loom.",
+    "subtitle": "Elampillai silk-cotton sarees woven on our own looms — direct from weaver to wardrobe.",
     "imageUrl": "https://picsum.photos/seed/hero-saree/1200/600"
   },
   {

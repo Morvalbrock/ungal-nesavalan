@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
-import { MoreHorizontal, Edit, Trash2, Eye, EyeOff, Star } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Eye, EyeOff, Star, Copy } from "lucide-react";
 import {
   deleteProduct,
+  duplicateProduct,
   toggleProductFeatured,
   toggleProductPublished
 } from "@/features/admin/actions";
@@ -28,6 +30,7 @@ export function ProductRowActions({
   featured,
   canDelete
 }: ProductRowActionsProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -83,6 +86,23 @@ export function ProductRowActions({
     });
   }
 
+  function doDuplicate() {
+    setError(null);
+    startTransition(async () => {
+      const res = await duplicateProduct(productId);
+      setOpen(false);
+      if (!res.ok) {
+        setError(res.error ?? "failed");
+        return;
+      }
+      if (res.data?.id) {
+        router.push(`/admin/products/${res.data.id}`);
+      } else {
+        router.refresh();
+      }
+    });
+  }
+
   return (
     <div className="relative inline-block text-left">
       <button
@@ -112,6 +132,15 @@ export function ProductRowActions({
             >
               <Edit className="h-3.5 w-3.5" /> Edit
             </Link>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={doDuplicate}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-ink hover:bg-ink/5 disabled:opacity-50"
+              role="menuitem"
+            >
+              <Copy className="h-3.5 w-3.5" /> Duplicate
+            </button>
             <button
               type="button"
               disabled={pending}

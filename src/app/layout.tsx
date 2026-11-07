@@ -25,26 +25,26 @@ const body = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Ungal Nesavalan · Handloom Sarees",
+    default: "Ungal Nesavalan · Elampillai Sarees",
     template: "%s · Ungal Nesavalan"
   },
   description:
-    "Handcrafted sarees from India's finest weaving clusters — Kanjivaram, Banarasi, Chanderi, Patola and more.",
+    "Silk-cotton sarees woven on our own looms in Elampillai, Tamil Nadu — direct from our looms to your drape.",
   metadataBase: new URL(SITE_URL),
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
     siteName: "Ungal Nesavalan",
-    title: "Ungal Nesavalan — Handwoven Sarees",
+    title: "Ungal Nesavalan — Direct from Our Elampillai Looms",
     description:
-      "Kanjivaram, Banarasi, Chanderi and more — handloom sarees sourced directly from master weavers.",
+      "Elampillai silk-cotton sarees crafted on our own looms in Tamil Nadu. Pure handloom, own manufacturing, honest pricing.",
     url: SITE_URL
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ungal Nesavalan — Handwoven Sarees",
+    title: "Ungal Nesavalan — Direct from Our Elampillai Looms",
     description:
-      "Kanjivaram, Banarasi, Chanderi and more — handloom sarees sourced directly from master weavers."
+      "Elampillai silk-cotton sarees crafted on our own looms in Tamil Nadu. Pure handloom, own manufacturing, honest pricing."
   }
 };
 

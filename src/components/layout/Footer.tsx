@@ -68,12 +68,12 @@ export async function Footer() {
               <p className="font-display text-[30px] font-medium leading-none">Ungal Nesavalan</p>
             </div>
             <p className="mt-2 text-[11px] uppercase tracking-widest2 text-cream/60">
-              Loomed by hand · Since a very long time ago
+              Direct from Our Elampillai Looms
             </p>
             <Ornament className="mt-5 h-4 w-40" tone="gold" />
             <p className="mt-6 max-w-sm text-[14.5px] leading-[1.7] text-cream/75">
-              Handcrafted sarees from India&apos;s finest weaving clusters — direct from
-              the loom to your drape. Ninety-two paise of every rupee reaches the artisan.
+              Silk-cotton sarees woven on our own looms in Elampillai, Tamil Nadu —
+              direct from our weavers to your drape. Own manufacturing, honest pricing.
             </p>
 
             <div className="mt-6">

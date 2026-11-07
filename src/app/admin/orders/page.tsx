@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { Star } from "lucide-react";
 import { orderRepo, userRepo } from "@/server/repositories";
+import { readCollection } from "@/server/db/json-store";
+import type { Review } from "@/types/review";
 import { formatINR } from "@/lib/utils";
+import { formatIST } from "@/lib/datetime";
 import { SearchFilter } from "@/components/admin/SearchFilter";
 import { Pagination, resolvePage, resolvePerPage } from "@/components/admin/Pagination";
 import { SortableHeader, parseSort } from "@/components/admin/SortableHeader";
@@ -20,7 +24,6 @@ const STATUS_CHIP: Record<string, string> = {
 
 interface SearchParams {
   status?: string;
-  paymentMode?: string;
   q?: string;
   sort?: string;
   page?: string;
@@ -38,22 +41,58 @@ export default async function AdminOrdersPage({
   const sp = await searchParams;
   const userMap = new Map(users.map((u) => [u.id, u]));
 
+  // Customer feedback (product reviews) only make sense after delivery, so load them only
+  // for the Delivered tab and index by orderId for an O(1) lookup during row render.
+  const showFeedback = (sp.status?.trim() || "prepaid") === "delivered";
+  const reviewsByOrder = new Map<string, { avg: number; count: number }>();
+  if (showFeedback) {
+    const reviews = await readCollection<Review>("reviews");
+    const buckets = new Map<string, Review[]>();
+    for (const r of reviews) {
+      const bucket = buckets.get(r.orderId) ?? [];
+      bucket.push(r);
+      buckets.set(r.orderId, bucket);
+    }
+    for (const [orderId, rows] of buckets) {
+      const sum = rows.reduce((acc, r) => acc + r.rating, 0);
+      reviewsByOrder.set(orderId, { avg: sum / rows.length, count: rows.length });
+    }
+  }
+
   const needle = sp.q?.trim().toLowerCase() ?? "";
-  const paymentMode = sp.paymentMode; // "all" | "cod" | "prepaid"
+
+  // Unified single-row filter. One of these values is active at any time:
+  //   "prepaid" (default) → Full Paid: paymentMode != cod, captured, still in-flight (not delivered/cancelled/refunded)
+  //   "cod"               → Cash on Delivery: paymentMode == cod, deposit captured, still in-flight
+  //   "pending"           → every order whose payment hasn't been captured yet (status == "pending")
+  //   "delivered"         → delivered orders; this is where customer feedback / ratings surface
+  //   "all"               → every order regardless of payment/status
+  //   any other status    → filter by that status (packed, shipped, cancelled, refunded)
+  // Default-on-load = prepaid so the finance/dispatch workflow starts with ready-to-ship orders.
+  const filter = sp.status?.trim() || "prepaid";
+
+  // "Active" (in-flight) orders for Full Paid / COD = payment captured AND not yet closed out.
+  // Delivered, cancelled, and refunded orders don't need operator attention on those tabs.
+  const INFLIGHT_STATUSES = new Set(["paid", "packed", "shipped", "return_requested"]);
+  const isPrepaidActive = (o: (typeof orders)[number]) =>
+    o.paymentMode !== "cod" && INFLIGHT_STATUSES.has(o.status);
+  const isCodActive = (o: (typeof orders)[number]) =>
+    o.paymentMode === "cod" && INFLIGHT_STATUSES.has(o.status);
 
   const filtered = orders.filter((o) => {
-    if (sp.status && sp.status !== "all" && o.status !== sp.status) return false;
-    if (paymentMode && paymentMode !== "all") {
-      if (paymentMode === "cod" && o.paymentMode !== "cod") return false;
-      if (paymentMode === "prepaid" && o.paymentMode === "cod") return false;
-    }
-    if (needle) {
-      const u = userMap.get(o.userId);
-      const hay = `${o.orderNumber} ${u?.name ?? ""} ${u?.email ?? ""} ${o.addressSnapshot?.phone ?? ""}`.toLowerCase();
-      if (!hay.includes(needle)) return false;
-    }
-    return true;
+    if (filter === "all") return matchesSearch(o);
+    if (filter === "prepaid") return isPrepaidActive(o) && matchesSearch(o);
+    if (filter === "cod") return isCodActive(o) && matchesSearch(o);
+    if (o.status !== filter) return false;
+    return matchesSearch(o);
   });
+
+  function matchesSearch(o: (typeof orders)[number]) {
+    if (!needle) return true;
+    const u = userMap.get(o.userId);
+    const hay = `${o.orderNumber} ${u?.name ?? ""} ${u?.email ?? ""} ${o.addressSnapshot?.phone ?? ""}`.toLowerCase();
+    return hay.includes(needle);
+  }
 
   // Sort
   const sort = parseSort(sp.sort, "created", "desc");
@@ -76,15 +115,33 @@ export default async function AdminOrdersPage({
   const page = resolvePage(sp.page, totalPages);
   const pageSlice = sorted.slice((page - 1) * perPage, page * perPage);
 
-  const statuses = ["all", "pending", "paid", "packed", "shipped", "delivered", "cancelled", "refunded"];
+  // Single filter row: Full Paid (default) → COD → Pending → rest of status flow.
+  const filterTabs: { key: string; label: string; count: number; tone: "prepaid" | "cod" | "status" | "all" }[] = [
+    {
+      key: "prepaid",
+      label: "Full Paid",
+      count: orders.filter(isPrepaidActive).length,
+      tone: "prepaid"
+    },
+    {
+      key: "cod",
+      label: "COD",
+      count: orders.filter(isCodActive).length,
+      tone: "cod"
+    },
+    { key: "pending", label: "Pending", count: orders.filter((o) => o.status === "pending").length, tone: "status" },
+    { key: "packed", label: "Packed", count: orders.filter((o) => o.status === "packed").length, tone: "status" },
+    { key: "shipped", label: "Shipped", count: orders.filter((o) => o.status === "shipped").length, tone: "status" },
+    { key: "delivered", label: "Delivered", count: orders.filter((o) => o.status === "delivered").length, tone: "status" },
+    { key: "cancelled", label: "Cancelled", count: orders.filter((o) => o.status === "cancelled").length, tone: "status" },
+    { key: "refunded", label: "Refunded", count: orders.filter((o) => o.status === "refunded").length, tone: "status" },
+    { key: "all", label: "All", count: orders.length, tone: "all" }
+  ];
 
-  const buildUrl = (changes: { status?: string; paymentMode?: string }) => {
+  const buildUrl = (filterKey: string) => {
     const params = new URLSearchParams();
-    const nextStatus = changes.status !== undefined ? changes.status : sp.status;
-    const nextMode = changes.paymentMode !== undefined ? changes.paymentMode : sp.paymentMode;
-
-    if (nextStatus && nextStatus !== "all") params.set("status", nextStatus);
-    if (nextMode && nextMode !== "all") params.set("paymentMode", nextMode);
+    // "prepaid" is the default view, so we omit the param entirely to keep the URL clean.
+    if (filterKey !== "prepaid") params.set("status", filterKey);
     if (needle) params.set("q", sp.q!);
     if (sp.sort) params.set("sort", sp.sort);
     const qs = params.toString();
@@ -93,15 +150,11 @@ export default async function AdminOrdersPage({
 
   const serializedSp: Record<string, string | undefined> = {
     status: sp.status,
-    paymentMode: sp.paymentMode,
     q: sp.q,
     sort: sp.sort,
     page: sp.page,
     perPage: sp.perPage
   };
-
-  const codOrdersCount = orders.filter((o) => o.paymentMode === "cod").length;
-  const prepaidOrdersCount = orders.filter((o) => o.paymentMode !== "cod").length;
 
   return (
     <div className="space-y-6">
@@ -120,70 +173,35 @@ export default async function AdminOrdersPage({
 
       <SearchFilter searchPlaceholder="Search by order number, customer name, email or phone…" />
 
-      {/* Payment mode filter tabs */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] uppercase tracking-wider text-ink-muted">Payment Mode:</span>
-          <div className="flex flex-wrap gap-2 text-xs">
-            <Link
-              href={buildUrl({ paymentMode: "all" })}
-              className={`rounded-full border px-3 py-1 font-medium transition ${
-                !sp.paymentMode || sp.paymentMode === "all"
-                  ? "border-ink bg-ink text-cream"
-                  : "border-border text-ink-soft hover:border-ink hover:text-ink"
-              }`}
-            >
-              All Payments · {orders.length}
-            </Link>
-            <Link
-              href={buildUrl({ paymentMode: "cod" })}
-              className={`rounded-full border px-3 py-1 font-medium transition ${
-                sp.paymentMode === "cod"
-                  ? "border-amber-700 bg-amber-700 text-white"
-                  : "border-amber-700/30 text-amber-800 hover:border-amber-700 hover:bg-amber-50"
-              }`}
-            >
-              💵 Cash on Delivery (COD) · {codOrdersCount}
-            </Link>
-            <Link
-              href={buildUrl({ paymentMode: "prepaid" })}
-              className={`rounded-full border px-3 py-1 font-medium transition ${
-                sp.paymentMode === "prepaid"
-                  ? "border-emerald-700 bg-emerald-700 text-white"
-                  : "border-emerald-700/30 text-emerald-800 hover:border-emerald-700 hover:bg-emerald-50"
-              }`}
-            >
-              💳 Prepaid (Online) · {prepaidOrdersCount}
-            </Link>
-          </div>
-        </div>
+      {/* Unified single-row filter: Full Paid (default) → COD → Pending → rest */}
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        {filterTabs.map((tab) => {
+          const active = filter === tab.key;
+          const activeCls =
+            tab.tone === "prepaid"
+              ? "border-emerald-700 bg-emerald-700 text-white"
+              : tab.tone === "cod"
+                ? "border-amber-700 bg-amber-700 text-white"
+                : "border-ink bg-ink text-cream";
+          const idleCls =
+            tab.tone === "prepaid"
+              ? "border-emerald-700/30 text-emerald-800 hover:border-emerald-700 hover:bg-emerald-50"
+              : tab.tone === "cod"
+                ? "border-amber-700/30 text-amber-800 hover:border-amber-700 hover:bg-amber-50"
+                : "border-border text-ink-soft hover:border-ink hover:text-ink";
+          const icon = tab.tone === "prepaid" ? "💳 " : tab.tone === "cod" ? "💵 " : "";
 
-        {/* Status filter pills */}
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] uppercase tracking-wider text-ink-muted">Status:</span>
-          <div className="flex flex-wrap gap-2 text-xs">
-            {statuses.map((s) => {
-              const active = (sp.status ?? "all") === s;
-              const count = s === "all"
-                ? orders.length
-                : orders.filter((o) => o.status === s).length;
-
-              return (
-                <Link
-                  key={s}
-                  href={buildUrl({ status: s })}
-                  className={`rounded-full border px-3 py-1 capitalize transition ${
-                    active
-                      ? "border-ink bg-ink text-cream"
-                      : "border-border text-ink-soft hover:border-ink hover:text-ink"
-                  }`}
-                >
-                  {s} · {count}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+          return (
+            <Link
+              key={tab.key}
+              href={buildUrl(tab.key)}
+              className={`rounded-full border px-3 py-1 font-medium transition ${active ? activeCls : idleCls}`}
+            >
+              {icon}
+              {tab.label} · {tab.count}
+            </Link>
+          );
+        })}
       </div>
 
       <div className="overflow-hidden rounded-card border border-border bg-cream">
@@ -197,6 +215,7 @@ export default async function AdminOrdersPage({
               <SortableHeader field="total" label="Total" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
               <SortableHeader field="status" label="Status" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
               <SortableHeader field="created" label="Created" current={sort} pathname={PATHNAME} searchParams={serializedSp} />
+              {showFeedback && <th className="p-3">Feedback</th>}
               <th className="p-3"></th>
             </tr>
           </thead>
@@ -246,8 +265,22 @@ export default async function AdminOrdersPage({
                     </span>
                   </td>
                   <td className="p-3 text-xs text-ink-muted">
-                    {new Date(o.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                    {formatIST(o.createdAt)}
                   </td>
+                  {showFeedback && (
+                    <td className="p-3 text-xs">
+                      {(() => {
+                        const r = reviewsByOrder.get(o.id);
+                        if (!r) return <span className="text-ink-muted">No review yet</span>;
+                        return (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 px-2 py-0.5 font-medium text-gold">
+                            <Star className="h-3 w-3 fill-current" />
+                            {r.avg.toFixed(1)} · {r.count}
+                          </span>
+                        );
+                      })()}
+                    </td>
+                  )}
                   <td className="p-3 text-right">
                     <Link
                       href={`/admin/orders/${o.id}`}
@@ -261,7 +294,7 @@ export default async function AdminOrdersPage({
             })}
             {pageSlice.length === 0 && (
               <tr>
-                <td colSpan={8} className="p-8 text-center text-sm text-ink-muted">
+                <td colSpan={showFeedback ? 9 : 8} className="p-8 text-center text-sm text-ink-muted">
                   No orders match your selected filters.
                 </td>
               </tr>

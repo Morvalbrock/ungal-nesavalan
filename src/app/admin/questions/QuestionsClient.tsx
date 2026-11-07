@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import type { ProductQuestion } from "@/types/question";
+import { formatIST } from "@/lib/datetime";
 
 interface Row {
   question: ProductQuestion;
@@ -129,7 +130,7 @@ export function QuestionsClient({ rows }: { rows: Row[] }) {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wider text-ink-muted">
-                    {q.authorName} · {new Date(q.createdAt).toLocaleString("en-IN")}
+                    {q.authorName} · {formatIST(q.createdAt)}
                   </p>
                   {productSlug ? (
                     <Link href={`/products/${productSlug}`} className="mt-1 block font-display text-base link-underline">
@@ -158,7 +159,7 @@ export function QuestionsClient({ rows }: { rows: Row[] }) {
               {q.answer ? (
                 <div className="mt-3 rounded-card bg-cream-warm p-3 text-sm text-ink-soft">
                   <p className="text-[10px] uppercase tracking-wider text-ink-muted">
-                    {q.answer.authorName} · {new Date(q.answer.answeredAt).toLocaleString("en-IN")}
+                    {q.answer.authorName} · {formatIST(q.answer.answeredAt)}
                   </p>
                   <p className="mt-2 whitespace-pre-line">{q.answer.body}</p>
                 </div>

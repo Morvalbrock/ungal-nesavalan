@@ -22,9 +22,9 @@ function normalizeFabric(f: string): string {
 import { deleteProduct, upsertProduct, type ProductFormValues } from "@/features/admin/actions";
 import { cn } from "@/lib/utils";
 
-// Variant price override is captured in RUPEES in the admin UI (unlike basePrice/salePrice
-// which are stored in paise). We convert ×100 when sending to the server. This matches
-// how admins naturally think about per-variant prices and avoids the "entered 100 → shows ₹1" bug.
+// All prices (base, sale, variant override) are captured in RUPEES in the admin UI
+// and converted ×100 to paise on submit. The DB stores paise; the form is the only
+// unit boundary. This matches how admins naturally think about prices.
 type Values = {
   id?: string;
   slug: string;
@@ -35,7 +35,6 @@ type Values = {
   fabric: string;
   weave: string;
   occasion: string[];
-  region: string;
   lengthMeters: number | string;
   blousePieceIncluded: boolean;
   careInstructions: string;
@@ -61,22 +60,19 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
       slug: "",
       name: "",
       description: "",
-      basePrice: 0,
+      basePrice: "",
       salePrice: "",
       fabric: "silk",
       weave: defaultCatalog,
       occasion: ["festive"],
-      region: "",
-      lengthMeters: 5.5,
+      lengthMeters: 6.25,
       blousePieceIncluded: true,
-      careInstructions: "Dry clean only.",
+      careInstructions: "Normal Wash",
       categoryId: "",
       featured: false,
       published: true,
       images: [{ url: "", alt: "" }],
-      variants: [
-        { color: "", colorHex: "#7a1f2b", sku: "", stock: 1, priceOverride: "", imageUrl: "", imageAlt: "" }
-      ]
+      variants: []
     };
   }
   return {
@@ -84,12 +80,11 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
     slug: p.slug,
     name: p.name,
     description: p.description,
-    basePrice: p.basePrice,
-    salePrice: p.salePrice ?? "",
+    basePrice: p.basePrice / 100,
+    salePrice: p.salePrice != null ? p.salePrice / 100 : "",
     fabric: normalizeFabric(p.fabric),
     weave: normalizeCatalog(p.weave),
     occasion: p.occasion,
-    region: p.region,
     lengthMeters: p.lengthMeters,
     blousePieceIncluded: p.blousePieceIncluded,
     careInstructions: p.careInstructions,
@@ -108,6 +103,12 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
       imageAlt: v.images?.[0]?.alt ?? ""
     }))
   };
+}
+
+function rupeesToPaise(v: number | string): number {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 0;
+  return Math.round(n * 100);
 }
 
 export function ProductForm({
@@ -147,8 +148,8 @@ export function ProductForm({
     setIssues({});
     const payload: ProductFormValues = {
       ...values,
-      basePrice: values.basePrice as unknown as number,
-      salePrice: values.salePrice === "" ? undefined : (values.salePrice as unknown as number),
+      basePrice: rupeesToPaise(values.basePrice),
+      salePrice: values.salePrice === "" ? undefined : rupeesToPaise(values.salePrice),
       lengthMeters: values.lengthMeters as unknown as number,
       images: values.images.map((i, idx) => ({
         id: i.id,
@@ -228,21 +229,23 @@ export function ProductForm({
         </Field>
       </Section>
 
-      <Section title="Pricing (in paise)">
+      <Section title="Pricing (in ₹)">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Base price (paise)" issues={issues.basePrice} hint="₹1,000 = 100000">
+          <Field label="Base price (₹)" issues={issues.basePrice} hint="e.g. 750 for ₹750">
             <input
               type="number"
               min={0}
+              step="1"
               value={values.basePrice}
               onChange={(e) => setField("basePrice", e.target.value)}
               className={inputCls}
             />
           </Field>
-          <Field label="Sale price (paise, optional)" issues={issues.salePrice}>
+          <Field label="Sale price (₹, optional)" issues={issues.salePrice}>
             <input
               type="number"
               min={0}
+              step="1"
               value={values.salePrice}
               onChange={(e) => setField("salePrice", e.target.value)}
               className={inputCls}
@@ -316,13 +319,10 @@ export function ProductForm({
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Region of origin" issues={issues.region}>
-            <input value={values.region} onChange={(e) => setField("region", e.target.value)} className={inputCls} />
-          </Field>
           <Field label="Length (metres)" issues={issues.lengthMeters}>
             <input
               type="number"
-              step="0.1"
+              step="0.05"
               value={values.lengthMeters}
               onChange={(e) => setField("lengthMeters", e.target.value)}
               className={inputCls}
@@ -380,8 +380,13 @@ export function ProductForm({
         </p>
       </Section>
 
-      <Section title="Variants">
+      <Section title="Variants (optional)">
         <div className="space-y-3">
+          {values.variants.length === 0 && (
+            <p className="text-xs text-ink-muted">
+              No variants added. The product will sell as a single SKU using the base/sale price above.
+            </p>
+          )}
           {values.variants.map((v, i) => {
             const patch = (p: Partial<Values["variants"][number]>) => {
               const arr = [...values.variants];
@@ -431,7 +436,6 @@ export function ProductForm({
                     type="button"
                     onClick={() => setField("variants", values.variants.filter((_, j) => j !== i))}
                     className="rounded p-2 text-ink-muted hover:bg-ink/5 hover:text-maroon"
-                    disabled={values.variants.length === 1}
                     aria-label="Remove variant"
                   >
                     <Trash2 className="h-4 w-4" />

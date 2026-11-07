@@ -155,7 +155,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="flex flex-wrap gap-1.5">
             <span className="chip">{catalogLabel}</span>
             <span className="chip capitalize">{product.fabric}</span>
-            <span className="chip">{product.region}</span>
           </div>
 
           <h1 className="mt-5 font-display text-[36px] leading-[1.1] md:text-[44px]">{product.name}</h1>

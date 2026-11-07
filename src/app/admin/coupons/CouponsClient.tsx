@@ -6,6 +6,7 @@ import type { Coupon } from "@/types/coupon";
 import { CouponForm } from "@/components/admin/CouponForm";
 import { deleteCoupon, toggleCouponActive } from "@/features/admin/actions";
 import { formatINR } from "@/lib/utils";
+import { formatISTDate } from "@/lib/datetime";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 
 type ActiveFilter = "all" | "active" | "inactive";
@@ -132,7 +133,7 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
                   </td>
                   <td className="px-4 py-3">{c.minSubtotalPaise ? formatINR(c.minSubtotalPaise) : "—"}</td>
                   <td className="px-4 py-3">
-                    {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString("en-IN") : "Never"}
+                    {c.expiresAt ? formatISTDate(c.expiresAt) : "Never"}
                   </td>
                   <td className="px-4 py-3">
                     <button

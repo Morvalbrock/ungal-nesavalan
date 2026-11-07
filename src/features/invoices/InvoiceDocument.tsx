@@ -1,15 +1,18 @@
 import { Document, Page, StyleSheet, Text, View, Image } from "@react-pdf/renderer";
 import type { Order } from "@/types/order";
+import { formatIST, formatISTDate } from "@/lib/datetime";
 
 const styles = StyleSheet.create({
-  page: { padding: 36, fontSize: 10, color: "#1a1a1a", fontFamily: "Helvetica" },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 },
-  brandRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  brandLogo: { width: 52, height: 52, objectFit: "contain", borderRadius: 4 },
-  brand: { fontSize: 18, fontWeight: 700, color: "#1a1a1a" },
-  brandTag: { fontSize: 9, color: "#666", marginTop: 2 },
-  invoiceLabel: { fontSize: 14, fontWeight: 700, color: "#7a1e28" },
-  meta: { fontSize: 9, color: "#666", marginTop: 3 },
+  page: { padding: 36, fontSize: 10, color: "#1a1a1a", fontFamily: "Helvetica", paddingBottom: 110 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  headerLeft: { flex: 1, alignItems: "flex-start" },
+  headerCenter: { flex: 1, alignItems: "center" },
+  headerRight: { flex: 1, alignItems: "flex-end" },
+  brandLogo: { width: 150, height: 50, objectFit: "contain" },
+  brandName: { fontSize: 16, fontWeight: 700, color: "#1a1a1a" },
+  brandTag: { fontSize: 9, color: "#666", marginTop: 3 },
+  invoiceLabel: { fontSize: 14, fontWeight: 700, color: "#7a1e28", textAlign: "center" },
+  meta: { fontSize: 9, color: "#666", marginTop: 3, textAlign: "right" },
   hr: { borderBottomWidth: 1, borderBottomColor: "#e5e5e5", marginVertical: 12 },
   section: { marginBottom: 12 },
   sectionTitle: { fontSize: 9, textTransform: "uppercase", letterSpacing: 1, color: "#666", marginBottom: 4 },
@@ -66,7 +69,6 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     fontSize: 10
   },
-  payNote: { fontSize: 8, color: "#888", marginTop: 2 },
   paySubTotalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -106,20 +108,42 @@ const styles = StyleSheet.create({
     bottom: 30,
     left: 36,
     right: 36,
-    fontSize: 8,
-    color: "#888",
-    textAlign: "center"
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#e5e5e5",
+    paddingTop: 10
+  },
+  footerLogo: { width: 48, height: 48, objectFit: "contain", borderRadius: 4 },
+  footerText: { flex: 1, fontSize: 8, color: "#888" },
+  codCollectBox: {
+    alignSelf: "flex-start",
+    borderWidth: 2,
+    borderColor: "#92400e",
+    backgroundColor: "#fef3c7",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 3,
+    marginBottom: 14
+  },
+  codCollectLabel: {
+    fontSize: 9,
+    fontWeight: 700,
+    letterSpacing: 1.2,
+    color: "#92400e",
+    textTransform: "uppercase"
+  },
+  codCollectAmount: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: "#92400e",
+    marginTop: 3
   }
 });
 
 function inr(paise: number) {
   return `INR ${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 export interface InvoiceProps {
@@ -159,7 +183,7 @@ function PaymentBreakdown({ order }: { order: Order }) {
           {collected ? (
             <View style={styles.payRow}>
               <Text style={styles.totalLabel}>
-                COD collected (cash){order.codCollectedAt ? ` · ${formatDate(order.codCollectedAt)}` : ""}
+                COD collected (cash){order.codCollectedAt ? ` · ${formatISTDate(order.codCollectedAt)}` : ""}
               </Text>
               <Text>{inr(codPortion)}</Text>
             </View>
@@ -204,25 +228,41 @@ function PaymentBreakdown({ order }: { order: Order }) {
 
 export function InvoiceDocument({ order, brand }: InvoiceProps) {
   const a = order.addressSnapshot;
+
+  // Derive the balance the courier must collect in cash. Only non-zero for a COD order
+  // where the cash portion hasn't been collected yet.
+  const isCod = order.paymentMode === "cod";
+  const codCollected = isCod && Boolean(order.codCollectedAt);
+  const codDeposit = isCod ? order.codDepositPaise ?? order.amountPaidPaise ?? 0 : 0;
+  const codBalancePaise = isCod && !codCollected ? Math.max(0, order.totalPaise - codDeposit) : 0;
+
   return (
     <Document title={`Invoice ${order.orderNumber}`}>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <View style={styles.brandRow}>
+          <View style={styles.headerLeft}>
             {brand.logoDataUrl ? (
               <Image src={brand.logoDataUrl} style={styles.brandLogo} />
-            ) : null}
-            <View>
-              <Text style={styles.brand}>{brand.name}</Text>
-              <Text style={styles.brandTag}>{brand.tagline}</Text>
-            </View>
+            ) : (
+              <Text style={styles.brandName}>{brand.name}</Text>
+            )}
+            <Text style={styles.brandTag}>{brand.tagline}</Text>
           </View>
-          <View style={{ textAlign: "right" }}>
+          <View style={styles.headerCenter}>
             <Text style={styles.invoiceLabel}>Tax Invoice</Text>
+          </View>
+          <View style={styles.headerRight}>
             <Text style={styles.meta}>Order {order.orderNumber}</Text>
-            <Text style={styles.meta}>{new Date(order.createdAt).toLocaleDateString("en-IN")}</Text>
+            <Text style={styles.meta}>{formatIST(order.createdAt)}</Text>
           </View>
         </View>
+
+        {codBalancePaise > 0 && (
+          <View style={styles.codCollectBox}>
+            <Text style={styles.codCollectLabel}>COD Collect Amount</Text>
+            <Text style={styles.codCollectAmount}>{inr(codBalancePaise)}</Text>
+          </View>
+        )}
 
         <View style={styles.hr} />
 
@@ -298,9 +338,14 @@ export function InvoiceDocument({ order, brand }: InvoiceProps) {
 
         <PaymentBreakdown order={order} />
 
-        <View style={styles.footer}>
-          <Text>Thank you for choosing Ungal Nesavalan — honoring traditional handloom weavers.</Text>
-          <Text style={{ marginTop: 2 }}>Questions? Contact our atelier support at {brand.supportEmail}</Text>
+        <View style={styles.footer} fixed>
+          {brand.logoDataUrl ? (
+            <Image src={brand.logoDataUrl} style={styles.footerLogo} />
+          ) : null}
+          <View style={styles.footerText}>
+            <Text>Thank you for choosing {brand.name} — {brand.tagline}.</Text>
+            <Text style={{ marginTop: 2 }}>Questions? Contact our atelier support at {brand.supportEmail}</Text>
+          </View>
         </View>
       </Page>
     </Document>

@@ -1,5 +1,6 @@
 import type { Order, OrderStatus } from "@/types/order";
 import { Check, Clock, Package, Truck, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
+import { formatIST } from "@/lib/datetime";
 
 interface TimelineStep {
   key: string;
@@ -14,15 +15,8 @@ export function OrderTimeline({ order }: { order: Order }) {
   const isCancelled = order.status === "cancelled";
   const isRefunded = order.status === "refunded";
 
-  const orderDate = new Date(order.createdAt).toLocaleString("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
-
-  const updatedDate = new Date(order.updatedAt).toLocaleString("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
+  const orderDate = formatIST(order.createdAt);
+  const updatedDate = formatIST(order.updatedAt);
 
   // Flow order for standard progression
   const stageWeights: Record<OrderStatus, number> = {

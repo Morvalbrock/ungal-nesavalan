@@ -1,5 +1,6 @@
 import { orderRepo, userRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
+import { formatISTDate } from "@/lib/datetime";
 import { getSession } from "@/features/auth/session";
 import { SearchFilter } from "@/components/admin/SearchFilter";
 import { CustomerRoleToggle } from "@/components/admin/CustomerRoleToggle";
@@ -162,7 +163,7 @@ export default async function AdminCustomersPage({
                   <td className="p-3">{s?.count ?? 0}</td>
                   <td className="p-3">{s ? formatINR(s.total) : "—"}</td>
                   <td className="p-3 text-xs text-ink-muted">
-                    {new Date(u.createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}
+                    {formatISTDate(u.createdAt)}
                   </td>
                   <td className="p-3 text-right">
                     <CustomerRoleToggle

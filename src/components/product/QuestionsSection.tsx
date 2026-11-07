@@ -1,5 +1,6 @@
 import type { ProductQuestion } from "@/types/question";
 import { QuestionForm } from "./QuestionForm";
+import { formatIST } from "@/lib/datetime";
 
 interface Props {
   productSlug: string;
@@ -8,7 +9,7 @@ interface Props {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
+  return formatIST(iso, { year: "numeric", month: "short", day: "numeric" });
 }
 
 export function QuestionsSection({ productSlug, questions, signedIn }: Props) {

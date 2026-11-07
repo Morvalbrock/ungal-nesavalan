@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Ungal Nesavalan · Handloom Sarees",
+    name: "Ungal Nesavalan · Elampillai Sarees",
     short_name: "Ungal Nesavalan",
-    description: "Handloom sarees from India's finest weaving clusters.",
+    description: "Silk-cotton sarees direct from our Elampillai looms.",
     start_url: "/",
     display: "standalone",
     background_color: "#f5eddc",

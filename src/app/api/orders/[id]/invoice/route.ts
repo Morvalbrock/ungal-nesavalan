@@ -43,7 +43,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       order,
       brand: {
         name: "Ungal Nesavalan",
-        tagline: "Pure Handloom Sarees, Crafted by Heritage Artisans",
+        tagline: "Direct from Our Elampillai Looms",
         supportEmail: process.env.SUPPORT_EMAIL ?? "ungalnesavalan01@gmail.com",
         logoDataUrl
       }
