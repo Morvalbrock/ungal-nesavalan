@@ -51,10 +51,11 @@ const DISCONNECT_ERROR_CODES = new Set([
 
 function isDisconnectError(err: unknown): boolean {
   if (!err || typeof err !== "object") return false;
-  const e = err as { code?: string; fatal?: boolean; errno?: number };
+  const e = err as { code?: string; fatal?: boolean; errno?: number; message?: string };
   if (e.fatal === true) return true;
   if (e.code && DISCONNECT_ERROR_CODES.has(e.code)) return true;
   if (e.errno === -4077) return true; // Windows ECONNRESET
+  if (typeof e.message === "string" && e.message.toLowerCase().includes("pool is closed")) return true;
   return false;
 }
 
@@ -158,18 +159,15 @@ async function executeWithRetry<T>(
     return await operation();
   } catch (err: unknown) {
     if (isDisconnectError(err)) {
-      const code = (err as { code?: string })?.code ?? "DISCONNECT";
+      const code = (err as { code?: string; message?: string })?.code ?? (err as Error)?.message ?? "DISCONNECT";
       console.warn(`[json-store] Stale DB connection for "${name}" (${code}). Retrying with fresh socket...`);
       resetPool();
       try {
         return await operation();
       } catch (retryErr: unknown) {
-        if (isDisconnectError(retryErr)) {
-          const rcode = (retryErr as { code?: string })?.code ?? "DISCONNECT";
-          console.warn(`[json-store] Database unreachable (${rcode}). Falling back to local file storage for "${name}".`);
-          return await fallbackFn();
-        }
-        throw retryErr;
+        const rcode = (retryErr as { code?: string; message?: string })?.code ?? (retryErr as Error)?.message ?? "DISCONNECT";
+        console.warn(`[json-store] Database unreachable (${rcode}). Falling back to local file storage for "${name}".`);
+        return await fallbackFn();
       }
     }
     throw err;

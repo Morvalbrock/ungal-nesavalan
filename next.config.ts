@@ -12,7 +12,15 @@ const nextConfig: NextConfig = {
   },
   // Dev-only: allow requests from the LAN while running `next dev`.
   // Add any other LAN IPs you use to preview on a phone/tablet.
-  allowedDevOrigins: ["192.168.1.4", "192.168.1.5"],
+  allowedDevOrigins: [
+    "192.168.1.6",
+    "192.168.1.4",
+    "192.168.1.5",
+    "192.168.1.*",
+    "192.168.0.*",
+    "localhost",
+    "127.0.0.1"
+  ],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" }

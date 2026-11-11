@@ -4,7 +4,7 @@ import { Container } from "@/components/layout/Container";
 
 export function BrandStoryBlock() {
   return (
-    <section className="w-full bg-cream py-20 md:py-28">
+    <section className="w-full bg-cream pt-6 pb-12 sm:pt-8 sm:pb-16 md:pt-10 md:pb-20">
       <Container>
         <div className="mx-auto flex max-w-[760px] flex-col items-center text-center">
           <div className="flex items-center gap-2.5" aria-hidden>

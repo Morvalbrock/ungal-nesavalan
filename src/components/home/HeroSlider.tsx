@@ -31,56 +31,58 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
 
   return (
     <section
-      className="relative overflow-hidden bg-ink text-cream"
+      className="relative px-3 pt-2.5 sm:px-0 sm:pt-0"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       aria-roledescription="carousel"
       aria-label="Featured collections"
     >
-      <div className="relative">
-        {slides.map((slide, i) => (
-          <Slide key={slide.id} slide={slide} active={i === index} isFirst={i === 0} />
-        ))}
-      </div>
+      <div className="relative overflow-hidden rounded-2xl bg-ink text-cream shadow-md sm:rounded-none sm:shadow-none">
+        <div className="relative">
+          {slides.map((slide, i) => (
+            <Slide key={slide.id} slide={slide} active={i === index} isFirst={i === 0} />
+          ))}
+        </div>
 
-      {count > 1 && (
-        <>
-          <button
-            type="button"
-            onClick={prev}
-            aria-label="Previous slide"
-            className="group absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-cream/25 bg-ink/30 p-2.5 text-cream backdrop-blur-sm transition hover:border-cream/60 hover:bg-ink/60 md:inline-flex"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={next}
-            aria-label="Next slide"
-            className="group absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-cream/25 bg-ink/30 p-2.5 text-cream backdrop-blur-sm transition hover:border-cream/60 hover:bg-ink/60 md:inline-flex"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
+        {count > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={prev}
+              aria-label="Previous slide"
+              className="group absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-cream/25 bg-ink/30 p-2 text-cream backdrop-blur-sm transition hover:border-cream/60 hover:bg-ink/60 md:inline-flex"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Next slide"
+              className="group absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-cream/25 bg-ink/30 p-2 text-cream backdrop-blur-sm transition hover:border-cream/60 hover:bg-ink/60 md:inline-flex"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
 
-          <div className="pointer-events-none absolute bottom-5 left-1/2 z-20 -translate-x-1/2">
-            <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-ink/40 px-3 py-2 backdrop-blur-sm">
-              {slides.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => goTo(i)}
-                  aria-label={`Go to slide ${i + 1}`}
-                  aria-current={i === index}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all",
-                    i === index ? "w-8 bg-gold" : "w-4 bg-cream/40 hover:bg-cream/70"
-                  )}
-                />
-              ))}
+            <div className="pointer-events-none absolute bottom-2.5 left-1/2 z-20 -translate-x-1/2 sm:bottom-4">
+              <div className="pointer-events-auto flex items-center gap-1.5 rounded-full bg-ink/40 px-2.5 py-1.5 backdrop-blur-sm sm:gap-2 sm:px-3 sm:py-2">
+                {slides.map((s, i) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => goTo(i)}
+                    aria-label={`Go to slide ${i + 1}`}
+                    aria-current={i === index}
+                    className={cn(
+                      "h-1 rounded-full transition-all sm:h-1.5",
+                      i === index ? "w-6 bg-gold sm:w-8" : "w-3 bg-cream/40 hover:bg-cream/70 sm:w-4"
+                    )}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </section>
   );
 }
@@ -118,37 +120,43 @@ function Slide({
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink/60" />
       </div>
 
-      <Container className="relative grid min-h-[520px] items-center gap-10 py-16 sm:min-h-[600px] sm:py-20 md:min-h-[640px] md:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
+      <Container className="relative grid min-h-[220px] items-center gap-4 py-8 sm:min-h-[380px] sm:gap-6 sm:py-10 md:min-h-[420px] md:gap-8 md:py-12 lg:min-h-[460px] lg:grid-cols-[1.15fr_0.85fr] lg:gap-10 lg:py-14">
         <div className={cn("relative", active && "animate-fadeUp")}>
           {slide.eyebrow && (
-            <div className="flex items-center gap-4">
-              <span className="h-px w-10 bg-gold" />
-              <p className="eyebrow-cream">{slide.eyebrow}</p>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="h-px w-6 bg-gold sm:w-8" />
+              <p className="eyebrow-cream text-[9.5px] sm:text-[10.5px]">{slide.eyebrow}</p>
             </div>
           )}
 
-          <h1 className="mt-6 font-display text-[38px] font-medium leading-[1.05] tracking-tight sm:text-[52px] sm:leading-[1.02] md:text-[76px]">
+          <h1 className="mt-2 font-display text-[22px] font-medium leading-[1.12] tracking-tight sm:mt-4 sm:text-[38px] sm:leading-[1.05] md:text-[46px] lg:text-[52px]">
             {slide.headline}
             {slide.headlineItalic && (
-              <span className="block italic text-gold-soft">{slide.headlineItalic}</span>
+              <span className="ml-1.5 inline italic text-gold-soft sm:ml-0 sm:block">{slide.headlineItalic}</span>
             )}
           </h1>
 
           {slide.subheadline && (
-            <p className="mt-5 max-w-lg text-[14px] leading-[1.65] text-cream/80 sm:mt-7 sm:text-[15px] sm:leading-[1.7]">
+            <p className="mt-2 line-clamp-2 max-w-lg text-[12px] leading-[1.55] text-cream/80 sm:mt-3 sm:line-clamp-3 sm:text-[14px] sm:leading-[1.6] lg:text-[15px]">
               {slide.subheadline}
             </p>
           )}
 
           {(slide.ctaPrimaryLabel || slide.ctaSecondaryLabel) && (
-            <div className="mt-7 flex flex-wrap gap-3 sm:mt-9">
+            <div className="mt-3 flex flex-wrap gap-2 sm:mt-5 sm:gap-3">
               {slide.ctaPrimaryLabel && slide.ctaPrimaryHref && (
-                <Link href={slide.ctaPrimaryHref} className="btn-primary">
+                <Link
+                  href={slide.ctaPrimaryHref}
+                  className="btn-primary !px-3.5 !py-1.5 !text-[11px] sm:!px-5 sm:!py-2.5 sm:!text-[12.5px]"
+                >
                   {slide.ctaPrimaryLabel}
                 </Link>
               )}
               {slide.ctaSecondaryLabel && slide.ctaSecondaryHref && (
-                <Link href={slide.ctaSecondaryHref} className="btn-outline-cream">
+                <Link
+                  href={slide.ctaSecondaryLabel}
+                  className="btn-outline-cream !px-3.5 !py-1.5 !text-[11px] sm:!px-4 sm:!py-2 sm:!text-[12.5px]"
+                >
                   {slide.ctaSecondaryLabel}
                 </Link>
               )}
@@ -158,25 +166,25 @@ function Slide({
 
         {slide.featureImageUrl && (
           <div className="relative hidden lg:block">
-            <div className="relative ml-auto aspect-[3/4] w-[86%] overflow-hidden rounded-card shadow-elev ring-1 ring-cream/10">
+            <div className="relative ml-auto aspect-[3/4] w-[75%] max-w-[320px] overflow-hidden rounded-card shadow-elev ring-1 ring-cream/10">
               <Image
                 src={slide.featureImageUrl}
                 alt={slide.featureImageAlt || slide.featureTitle}
                 fill
-                sizes="(min-width: 1024px) 40vw, 100vw"
+                sizes="(min-width: 1024px) 30vw, 100vw"
                 className="object-cover"
                 priority={isFirst}
                 unoptimized
               />
             </div>
             {slide.featureTitle && (
-              <div className="absolute -bottom-6 -left-6 hidden w-56 rounded-card bg-cream p-5 text-ink shadow-elev md:block">
+              <div className="absolute -bottom-4 -left-4 hidden w-48 rounded-card bg-cream p-3.5 text-ink shadow-elev md:block">
                 {slide.featureEyebrow && <p className="eyebrow">{slide.featureEyebrow}</p>}
-                <p className="mt-2 font-display text-xl">{slide.featureTitle}</p>
+                <p className="mt-1 font-display text-base leading-tight">{slide.featureTitle}</p>
                 {slide.featureSubtitle && (
-                  <p className="mt-1 text-[12px] text-ink-muted">{slide.featureSubtitle}</p>
+                  <p className="mt-0.5 text-[11px] text-ink-muted">{slide.featureSubtitle}</p>
                 )}
-                <Ornament className="mt-3 h-4 w-full" tone="ink" />
+                <Ornament className="mt-2 h-3 w-full" tone="ink" />
               </div>
             )}
           </div>

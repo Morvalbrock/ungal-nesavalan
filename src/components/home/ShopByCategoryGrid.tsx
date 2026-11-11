@@ -32,9 +32,9 @@ export function ShopByCategoryGrid({ catalogs, fallbackImageBySlug }: ShopByCate
   if (catalogs.length === 0) return null;
 
   return (
-    <section className="w-full bg-cream py-16 md:py-24">
+    <section className="w-full bg-cream pt-4 pb-10 sm:pt-6 sm:pb-14 md:pt-8 md:pb-16">
       <Container>
-        <div className="mb-12 flex flex-col gap-4 md:mb-16 md:flex-row md:items-end md:justify-between md:gap-8">
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-8">
           <div className="max-w-xl">
             <span className="eyebrow">Signature Catalogues</span>
             <h2 className="mt-3 font-display text-3xl leading-tight text-ink md:text-[42px]">
