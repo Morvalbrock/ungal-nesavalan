@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/Hero";
-import { ProvenanceStatsBar } from "@/components/home/ProvenanceStatsBar";
-import { HeirloomGallery } from "@/components/home/HeirloomGallery";
-import { BridalSpotlight } from "@/components/home/BridalSpotlight";
-import { DirectFromLooms } from "@/components/home/DirectFromLooms";
-import { PatronReflections } from "@/components/home/PatronReflections";
-import { TrustAccreditations } from "@/components/home/TrustAccreditations";
+import { ShopByCategoryGrid } from "@/components/home/ShopByCategoryGrid";
+import { NewArrivalsRail } from "@/components/home/NewArrivalsRail";
+import { BrandStoryBlock } from "@/components/home/BrandStoryBlock";
 import { catalogRepo, productRepo } from "@/server/repositories";
 
 export const revalidate = 60;
@@ -31,41 +28,35 @@ export default async function HomePage() {
     catalogRepo.list()
   ]);
 
-  // Cross-reference admin-managed catalogs with the live facet counts so we only
-  // surface catalogs that actually have in-stock products, and so the chips carry
-  // the catalog's proper display name rather than a derived label. catalogRepo.list()
+  // Cross-reference admin-managed catalogs with the live facet counts so tiles only
+  // appear for catalogs that actually have in-stock products. catalogRepo.list()
   // already sorts non-legacy entries first, so legacy catalogs land at the end.
   const facetCountBySlug = new Map(facets.weaves.map((w) => [w.id.toLowerCase(), w.count]));
-  const catalogChips = catalogs
+  const tileCatalogs = catalogs
     .filter((c) => (facetCountBySlug.get(c.slug.toLowerCase()) ?? 0) > 0)
     .map((c) => ({
-      id: c.slug.toLowerCase(),
-      label: c.name,
+      slug: c.slug,
+      name: c.name,
+      imageUrl: c.imageUrl,
       count: facetCountBySlug.get(c.slug.toLowerCase()) ?? 0
     }));
 
+  // Per-weave fallback image sourced from the first featured product tagged with
+  // that weave — used only when the catalog itself has no imageUrl set.
+  const fallbackImageBySlug: Record<string, string> = {};
+  for (const p of featured) {
+    const key = p.weave?.toLowerCase();
+    if (!key || fallbackImageBySlug[key]) continue;
+    const img = p.images[0]?.url;
+    if (img) fallbackImageBySlug[key] = img;
+  }
+
   return (
-    <div className="flex flex-col w-full bg-[#FBF9F5]">
-      {/* 1. DYNAMIC BANNER / HERO SECTION (Admin Controlled) */}
+    <div className="flex w-full flex-col bg-cream">
       <Hero />
-
-      {/* 2. PROVENANCE GUILD STATS BAR */}
-      <ProvenanceStatsBar />
-
-      {/* 3. CURATED WEAVE CLUSTERS & THE HEIRLOOM GALLERY SHOWCASE */}
-      <HeirloomGallery products={featured} availableWeaves={catalogChips} />
-
-      {/* 4. COUTURE SPOTLIGHT: THE BRIDAL ATELIER & MASTERCRAFT */}
-      <BridalSpotlight />
-
-      {/* 5. HERITAGE STORYTELLING: DIRECT FROM OUR LOOMS */}
-      <DirectFromLooms />
-
-      {/* 6. PATRON REFLECTIONS (5-STAR EDITORIAL REVIEWS) */}
-      <PatronReflections />
-
-      {/* 7. TRUST & HERITAGE ACCREDITATIONS BAR */}
-      <TrustAccreditations />
+      <ShopByCategoryGrid catalogs={tileCatalogs} fallbackImageBySlug={fallbackImageBySlug} />
+      <NewArrivalsRail products={featured.slice(0, 12)} />
+      <BrandStoryBlock />
     </div>
   );
 }

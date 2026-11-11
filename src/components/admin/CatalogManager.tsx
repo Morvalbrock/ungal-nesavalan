@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { Plus, Pencil, Trash2, X, Search, AlertCircle, Check } from "lucide-react";
+import Image from "next/image";
+import { Plus, Pencil, Trash2, X, Search, AlertCircle, Check, ImageOff } from "lucide-react";
 import type { Catalog } from "@/types/catalog";
 import { deleteCatalog, upsertCatalog } from "@/features/admin/actions";
 import { cn } from "@/lib/utils";
@@ -12,9 +13,10 @@ type Draft = {
   name: string;
   slug: string;
   sort: number | string;
+  imageUrl: string;
 };
 
-const emptyDraft: Draft = { name: "", slug: "", sort: 0 };
+const emptyDraft: Draft = { name: "", slug: "", sort: 0, imageUrl: "" };
 
 export function CatalogManager({ catalogs }: { catalogs: Catalog[] }) {
   const router = useRouter();
@@ -44,7 +46,8 @@ export function CatalogManager({ catalogs }: { catalogs: Catalog[] }) {
         id: draft.id,
         name: draft.name,
         slug: draft.slug || undefined,
-        sort: draft.sort as unknown as number
+        sort: draft.sort as unknown as number,
+        imageUrl: draft.imageUrl || ""
       });
       if (res.ok) {
         setDraft(null);
@@ -120,6 +123,7 @@ export function CatalogManager({ catalogs }: { catalogs: Catalog[] }) {
         <table className="w-full text-sm">
           <thead className="border-b border-border/80 bg-ink/[.03] text-left text-[10px] uppercase tracking-widest text-ink-muted">
             <tr>
+              <th className="p-3">Tile</th>
               <th className="p-3">Catalog</th>
               <th className="p-3">Slug</th>
               <th className="p-3 text-center">Sort</th>
@@ -130,6 +134,23 @@ export function CatalogManager({ catalogs }: { catalogs: Catalog[] }) {
           <tbody className="divide-y divide-border/60">
             {filtered.map((c) => (
               <tr key={c.id} className="transition hover:bg-cream-warm/30">
+                <td className="p-3">
+                  <div className="relative h-10 w-10 overflow-hidden rounded-card border border-border bg-cream-warm/60">
+                    {c.imageUrl ? (
+                      <Image
+                        src={c.imageUrl}
+                        alt=""
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-ink-muted/60">
+                        <ImageOff className="h-4 w-4" />
+                      </div>
+                    )}
+                  </div>
+                </td>
                 <td className="p-3">
                   <span className="font-medium text-ink">{c.name}</span>
                 </td>
@@ -152,7 +173,8 @@ export function CatalogManager({ catalogs }: { catalogs: Catalog[] }) {
                         id: c.id,
                         name: c.name,
                         slug: c.slug,
-                        sort: c.sort
+                        sort: c.sort,
+                        imageUrl: c.imageUrl ?? ""
                       })
                     }
                     className="mr-2 inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-ink-soft hover:bg-ink/5 hover:text-ink"
@@ -171,7 +193,7 @@ export function CatalogManager({ catalogs }: { catalogs: Catalog[] }) {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-ink-muted">
+                <td colSpan={6} className="p-8 text-center text-ink-muted">
                   {catalogs.length === 0 ? "No catalogs yet." : "No matching catalogs."}
                 </td>
               </tr>
@@ -237,6 +259,32 @@ export function CatalogManager({ catalogs }: { catalogs: Catalog[] }) {
                 className={inputCls}
               />
             </label>
+          </div>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_160px]">
+            <label className="block text-sm">
+              <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-ink-muted">
+                Tile Image URL
+              </span>
+              <input
+                value={draft.imageUrl}
+                onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
+                placeholder="https://… (Cloudinary, etc.) — shown on the home page Shop by Catalog grid"
+                className={inputCls}
+              />
+            </label>
+            <div className="flex items-end">
+              <div className="relative h-24 w-full overflow-hidden rounded-card border border-border bg-cream-warm/60">
+                {draft.imageUrl ? (
+                  <Image src={draft.imageUrl} alt="" fill sizes="160px" className="object-cover" />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-ink-muted/60">
+                    <ImageOff className="h-5 w-5" />
+                    <span className="text-[10px] uppercase tracking-widest">Preview</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="mt-5 flex justify-end gap-3 border-t border-border/80 pt-4">

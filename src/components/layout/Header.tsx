@@ -8,6 +8,7 @@ import { MegaMenu } from "./MegaMenu";
 import { MiniCart } from "@/components/cart/MiniCart";
 import { AccountMenu } from "./AccountMenu";
 import { WishlistHeaderLink } from "./WishlistHeaderLink";
+import { WhatsAppCta } from "./WhatsAppCta";
 import { catalogRepo, categoryRepo, productRepo } from "@/server/repositories";
 
 export async function Header() {
@@ -90,6 +91,7 @@ export async function Header() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-0.5 text-ink sm:gap-1">
+            <WhatsAppCta />
             <Link href="/search" aria-label="Search" className="rounded-full p-1.5 transition hover:bg-ink/5 sm:p-2">
               <Search className="h-[18px] w-[18px]" />
             </Link>

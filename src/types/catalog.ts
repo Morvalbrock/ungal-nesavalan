@@ -4,4 +4,5 @@ export interface Catalog {
   name: string;
   sort: number;
   legacy?: boolean;
+  imageUrl?: string;
 }

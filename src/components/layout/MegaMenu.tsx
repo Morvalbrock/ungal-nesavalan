@@ -131,7 +131,7 @@ export function MegaMenu({
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
-          <div className={`mx-auto grid w-full max-w-[1200px] gap-10 px-6 py-10 ${showBridalPromo ? "lg:grid-cols-[repeat(3,1fr)_320px]" : "lg:grid-cols-3"}`}>
+          <div className={`mx-auto grid w-full max-w-[1440px] gap-10 px-6 py-10 ${showBridalPromo ? "lg:grid-cols-[repeat(3,1fr)_320px]" : "lg:grid-cols-3"}`}>
             {filteredColumns.map((col) => (
               <div key={col.heading}>
                 <p className="eyebrow">Shop by {col.heading}</p>

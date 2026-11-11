@@ -355,7 +355,13 @@ const catalogSchema = z.object({
   id: z.string().optional(),
   name: z.string().trim().min(2, "Name is required"),
   slug: z.string().trim().optional(),
-  sort: z.coerce.number().default(0)
+  sort: z.coerce.number().default(0),
+  imageUrl: z
+    .string()
+    .trim()
+    .url("Image URL must be a valid URL")
+    .optional()
+    .or(z.literal("").transform(() => undefined))
 });
 
 export async function upsertCatalog(values: z.input<typeof catalogSchema>): Promise<ActionResult> {
@@ -370,7 +376,7 @@ export async function upsertCatalog(values: z.input<typeof catalogSchema>): Prom
   }
   const d = parsed.data;
   const slug = d.slug?.trim() ? slugify(d.slug) : slugify(d.name);
-  const payload = { slug, name: d.name, sort: d.sort };
+  const payload = { slug, name: d.name, sort: d.sort, imageUrl: d.imageUrl };
   if (d.id) {
     const updated = await catalogRepo.update(d.id, payload);
     if (!updated) return { ok: false, error: "not_found" };
