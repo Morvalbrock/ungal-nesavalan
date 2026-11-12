@@ -25,7 +25,7 @@ import { deliveredEmail, returnDecisionEmail, shippedEmail } from "@/features/ma
 import { VALID_ORDER_TRANSITIONS, type OrderStatus } from "@/types/order";
 import type { Fabric, Occasion, Product, ProductImage, Variant } from "@/types/product";
 import { FABRICS, OCCASIONS } from "@/features/products/filters";
-import { newId } from "@/server/db/json-store";
+import { newId, readCollection } from "@/server/db/json-store";
 import { slugify } from "@/lib/utils";
 
 const productSchema = z.object({
@@ -100,9 +100,25 @@ export async function upsertProduct(values: ProductFormValues): Promise<ActionRe
     };
   }
   const data = parsed.data;
-  const slug = data.slug?.trim() ? slugify(data.slug) : slugify(data.name);
-
   const productId = data.id ?? newId("prd");
+  let slug = data.slug?.trim() ? slugify(data.slug) : slugify(data.name);
+
+  // Ensure slug uniqueness across products (excluding self if editing)
+  const allProducts = await readCollection<Product>("products");
+  const baseSlug = slug;
+  let counter = 1;
+  while (allProducts.some((p) => p.id !== productId && p.slug === slug)) {
+    if (counter === 1 && data.variants?.[0]?.color) {
+      const colorPart = slugify(data.variants[0].color);
+      if (colorPart && !slug.endsWith(colorPart)) {
+        slug = `${baseSlug}-${colorPart}`;
+        counter++;
+        continue;
+      }
+    }
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
   const images: ProductImage[] = data.images.map((img, i) => ({
     id: img.id ?? newId("img"),
     url: img.url,

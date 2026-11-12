@@ -117,8 +117,8 @@ export function ProductGallery({
         {count > 1 && (
           <div
             className={cn(
-              "order-2 mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-thin",
-              "sm:order-1 sm:mt-0 sm:w-16 sm:shrink-0 sm:flex-col sm:gap-2 sm:overflow-x-visible sm:overflow-y-auto sm:max-h-[560px] sm:pb-0"
+              "order-2 mt-2.5 flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin justify-center sm:justify-start",
+              "sm:order-1 sm:mt-0 sm:w-16 sm:shrink-0 sm:flex-col sm:gap-2 sm:overflow-x-visible sm:overflow-y-auto sm:max-h-[480px] sm:pb-0"
             )}
           >
             {usableImages.map((img, i) => (
@@ -128,7 +128,7 @@ export function ProductGallery({
                 onClick={() => setActive(i)}
                 aria-label={`View photo ${i + 1}`}
                 className={cn(
-                  "relative aspect-square w-14 shrink-0 overflow-hidden rounded-card border transition-all sm:w-full",
+                  "relative aspect-square w-11 sm:w-14 shrink-0 overflow-hidden rounded-card border transition-all sm:w-full",
                   i === active
                     ? "border-maroon ring-2 ring-maroon/25 opacity-100"
                     : "border-border/70 opacity-70 hover:opacity-100 hover:border-ink/40"
@@ -152,14 +152,14 @@ export function ProductGallery({
           onMouseEnter={onMove}
           onMouseMove={onMove}
           onMouseLeave={() => setZoom(null)}
-          className="relative order-1 aspect-[3/4] w-full flex-1 overflow-hidden rounded-card bg-cream-warm shadow-xs sm:order-2"
+          className="relative order-1 aspect-[4/5] max-h-[340px] sm:max-h-[440px] md:max-h-[480px] w-full flex-1 overflow-hidden rounded-card bg-cream-warm shadow-xs sm:order-2"
         >
           <Image
             src={activeImg.url}
             alt={activeImg.alt || product?.name || "Product image"}
             fill
             priority
-            sizes="(min-width: 1024px) 42vw, 100vw"
+            sizes="(min-width: 1024px) 480px, 100vw"
             onError={() => markBroken(activeImg.url)}
             className="object-cover transition-opacity duration-300"
           />

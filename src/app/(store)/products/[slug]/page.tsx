@@ -129,10 +129,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   };
 
   return (
-    <Container className="py-10">
+    <Container className="py-6 sm:py-10">
       <JsonLd data={[productJsonLd, breadcrumbJsonLd]} />
 
-      <nav aria-label="Breadcrumb" className="mb-8 text-[11.5px] uppercase tracking-widest2 text-ink-muted">
+      <nav aria-label="Breadcrumb" className="mb-5 sm:mb-8 text-[11px] sm:text-[11.5px] uppercase tracking-widest2 text-ink-muted">
         <Link href="/" className="hover:text-ink">Home</Link>
         <span className="mx-2 text-ink-muted/60">/</span>
         <Link href="/products" className="hover:text-ink">Sarees</Link>
@@ -148,16 +148,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <span className="text-ink">{product.name}</span>
       </nav>
 
-      <div className="grid gap-14 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <ProductGallery images={product.images} product={product} />
+      <div className="grid gap-6 sm:gap-10 lg:grid-cols-[minmax(0,440px)_minmax(0,1fr)] xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)] items-start">
+        <div className="w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[460px] mx-auto lg:mx-0">
+          <ProductGallery images={product.images} product={product} />
+        </div>
 
-        <div>
+        <div className="lg:pl-2">
           <div className="flex flex-wrap gap-1.5">
             <span className="chip">{catalogLabel}</span>
             <span className="chip capitalize">{product.fabric}</span>
           </div>
 
-          <h1 className="mt-5 font-display text-[36px] leading-[1.1] md:text-[44px]">{product.name}</h1>
+          <h1 className="mt-4 sm:mt-5 font-display text-[28px] sm:text-[36px] leading-[1.15] md:text-[44px]">{product.name}</h1>
 
           {aggregate.count > 0 && (
             <div className="mt-3">
@@ -245,21 +247,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       />
 
       {others.length > 0 && (
-        <section className="mt-24 border-t border-border/70 pt-14">
+        <section className="mt-14 sm:mt-20 border-t border-border/70 pt-8 sm:pt-12">
           <div className="flex items-end justify-between">
             <div>
               <p className="eyebrow">Continue browsing</p>
-              <h2 className="mt-2 font-display text-[28px]">You may also like</h2>
+              <h2 className="mt-1 font-display text-[22px] sm:text-[28px]">You may also like</h2>
             </div>
             {category && (
-              <Link href={`/category/${category.slug}`} className="link-underline text-[13px] uppercase tracking-widest2">
+              <Link href={`/category/${category.slug}`} className="link-underline text-[12px] sm:text-[13px] uppercase tracking-widest2">
                 More in {category.name} →
               </Link>
             )}
           </div>
-          <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
+          <div className="mt-6 sm:mt-8 grid grid-cols-2 gap-x-3.5 sm:gap-x-5 gap-y-6 sm:grid-cols-4 max-w-4xl">
             {others.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p} compact />
             ))}
           </div>
         </section>

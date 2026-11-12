@@ -78,7 +78,7 @@ function getPool(): mysql.Pool {
       keepAliveInitialDelay: 10000,
       idleTimeout: 30000,
       maxIdle: 2,
-      connectTimeout: 10000
+      connectTimeout: 30000
     };
 
     if (DATABASE_URL) {

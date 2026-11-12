@@ -136,7 +136,15 @@ export const jsonProductRepo: ProductRepository = {
   },
   async findBySlug(slug) {
     const rows = await readCollection<Product>(COLLECTION);
-    return rows.find((p) => p.slug === slug && p.published) ?? null;
+    const matches = rows.filter((p) => p.slug === slug && p.published);
+    if (matches.length > 0) {
+      return matches.find(hasStock) ?? matches[0];
+    }
+    const prefixMatches = rows.filter((p) => p.slug.startsWith(`${slug}-`) && p.published);
+    if (prefixMatches.length > 0) {
+      return prefixMatches.find(hasStock) ?? prefixMatches[0];
+    }
+    return null;
   },
   async findById(id) {
     const rows = await readCollection<Product>(COLLECTION);
