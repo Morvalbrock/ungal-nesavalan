@@ -210,8 +210,13 @@ export function ProductGallery({
       </div>
 
       {/* "Choose a Variant" grid sits directly under the main image so swapping colour
-          doesn't force the user to scroll. */}
-      {product && product.variants && product.variants.length > 0 && (() => {
+          doesn't force the user to scroll. A single "Default" variant means the product
+          has no colour options (set via admin Basics → Stock) — skip the grid entirely. */}
+      {product &&
+        product.variants &&
+        product.variants.length > 0 &&
+        !(product.variants.length === 1 && product.variants[0].color === "Default") &&
+        (() => {
         const totalVariants = product.variants.length;
         const needsCollapse = totalVariants > MAX_VISIBLE_VARIANTS;
         const visibleVariants =

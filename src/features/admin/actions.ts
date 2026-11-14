@@ -37,6 +37,13 @@ const productSchema = z.object({
   salePrice: z
     .union([z.coerce.number().int().min(0), z.literal("").transform(() => undefined)])
     .optional(),
+  // Product-level stock used when the admin doesn't define colour variants.
+  // Server-side, an empty variants[] + a positive stock produces one implicit
+  // "Default" variant so the rest of the system (checkout, adjustStock, orders)
+  // keeps operating on the variant layer unchanged.
+  stock: z
+    .union([z.coerce.number().int().min(0), z.literal("").transform(() => undefined)])
+    .optional(),
   fabric: z.enum(FABRICS as unknown as [Fabric, ...Fabric[]]),
   // Catalog (previously "Weave") — accepts any slug managed via /admin/catalogs,
   // so adding new catalogs doesn't require a redeploy.
@@ -125,7 +132,29 @@ export async function upsertProduct(values: ProductFormValues): Promise<ActionRe
     alt: img.alt || data.name,
     sort: img.sort ?? i
   }));
-  const variants: Variant[] = data.variants.map((v) => ({
+  // When the admin set a top-level stock and added no colour variants, keep the
+  // persisted shape variant-based by synthesising a single "Default" variant.
+  // Preserve its id on edit (via existing variants[0]) so stock adjustments stay
+  // attached to the same row across saves.
+  let variantsInput = data.variants;
+  if (variantsInput.length === 0 && (data.stock ?? 0) > 0) {
+    const existing = data.id
+      ? (await productRepo.findById(data.id))?.variants.find((v) => v.color === "Default")
+      : undefined;
+    variantsInput = [
+      {
+        id: existing?.id,
+        color: "Default",
+        colorHex: "#000000",
+        sku: existing?.sku ?? `${slug}-default`.toUpperCase(),
+        stock: data.stock ?? 0,
+        priceOverride: undefined,
+        imageUrl: undefined,
+        imageAlt: undefined
+      }
+    ];
+  }
+  const variants: Variant[] = variantsInput.map((v) => ({
     id: v.id ?? newId("var"),
     productId,
     color: v.color,
@@ -168,6 +197,10 @@ export async function upsertProduct(values: ProductFormValues): Promise<ActionRe
   revalidatePath("/admin/products");
   revalidatePath("/products");
   revalidatePath(`/products/${slug}`);
+  // Home page's "Shop by Catalog" tile pulls its fallback image from a
+  // featured product; without this, the tile stays stale for up to 60s
+  // after an edit changes featured/weave/images.
+  revalidatePath("/");
   return { ok: true, data: { slug } };
 }
 

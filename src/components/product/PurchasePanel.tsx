@@ -104,7 +104,9 @@ export function PurchasePanel({ product }: { product: Product }) {
       variantId: variant.id,
       slug: product.slug,
       name: product.name,
-      variantLabel: variant.color,
+      // "Default" is the sentinel for products with no colour options — don't
+      // surface it to customers in cart / checkout / order summaries.
+      variantLabel: variant.color === "Default" ? "" : variant.color,
       image: product.images[0]?.url ?? "",
       unitPricePaise: unitPrice,
       quantity: effectiveQty,
@@ -130,11 +132,18 @@ export function PurchasePanel({ product }: { product: Product }) {
     router.push("/checkout");
   };
 
+  // A single "Default" variant signals a product with no colour options
+  // (set via the admin Basics → Stock field). Hide the colour label entirely.
+  const isDefaultOnly =
+    product.variants.length === 1 && product.variants[0].color === "Default";
+
   return (
     <div className="space-y-6">
-      <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-ink-muted">
-        Colour · {variant?.color ?? "—"}
-      </p>
+      {!isDefaultOnly && (
+        <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-ink-muted">
+          Colour · {variant?.color ?? "—"}
+        </p>
+      )}
 
       <div className="flex items-center gap-4">
         <div className="inline-flex items-center rounded-card border border-border bg-white shadow-xs">

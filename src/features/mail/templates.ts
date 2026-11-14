@@ -25,7 +25,7 @@ function itemsTable(order: Order): string {
   const rows = order.items
     .map(
       (i) => `<tr>
-<td style="padding:8px 0;">${i.productNameSnapshot}<br><span style="color:#888;font-size:12px;">${i.variantLabelSnapshot}</span></td>
+<td style="padding:8px 0;">${i.productNameSnapshot}${i.variantLabelSnapshot ? `<br><span style="color:#888;font-size:12px;">${i.variantLabelSnapshot}</span>` : ""}</td>
 <td style="padding:8px 0;text-align:right;">Qty ${i.quantity}</td>
 <td style="padding:8px 0;text-align:right;">${inr(i.unitPricePaise * i.quantity)}</td>
 </tr>`
@@ -164,7 +164,7 @@ export function abandonedCartEmail({
   const rows = items
     .map(
       (i) =>
-        `<tr><td style="padding:8px 0;">${escapeHtml(i.name)}<br><span style="color:#888;font-size:12px;">${escapeHtml(i.variantLabel)} · Qty ${i.quantity}</span></td><td style="padding:8px 0;text-align:right;">${inr(i.unitPricePaise * i.quantity)}</td></tr>`
+        `<tr><td style="padding:8px 0;">${escapeHtml(i.name)}<br><span style="color:#888;font-size:12px;">${i.variantLabel ? `${escapeHtml(i.variantLabel)} · ` : ""}Qty ${i.quantity}</span></td><td style="padding:8px 0;text-align:right;">${inr(i.unitPricePaise * i.quantity)}</td></tr>`
     )
     .join("");
   const html = shell(`

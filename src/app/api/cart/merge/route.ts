@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       variantId: variant.id,
       slug: product.slug,
       name: product.name,
-      variantLabel: variant.color,
+      variantLabel: variant.color === "Default" ? "" : variant.color,
       image: product.images[0]?.url ?? "",
       unitPricePaise: unit,
       quantity: Math.min(line.quantity, Math.min(30, variant.stock)),

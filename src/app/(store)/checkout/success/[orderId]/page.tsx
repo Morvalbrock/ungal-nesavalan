@@ -57,7 +57,7 @@ export default async function CheckoutSuccessPage({
                 <div>
                   <p className="font-medium">{i.productNameSnapshot}</p>
                   <p className="text-xs text-ink-muted">
-                    {i.variantLabelSnapshot} · Qty {i.quantity}
+                    {i.variantLabelSnapshot ? `${i.variantLabelSnapshot} · ` : ""}Qty {i.quantity}
                   </p>
                 </div>
                 <p>{formatINR(i.unitPricePaise * i.quantity)}</p>

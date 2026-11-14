@@ -83,7 +83,9 @@ export function CartLine({ item, compact = false }: { item: CartItem; compact?: 
             <Link href={`/products/${item.slug}`} className="font-display text-base leading-tight hover:underline">
               {item.name}
             </Link>
-            <p className="mt-1 text-xs text-ink-muted">Colour · {item.variantLabel}</p>
+            {item.variantLabel && (
+              <p className="mt-1 text-xs text-ink-muted">Colour · {item.variantLabel}</p>
+            )}
           </div>
           <button
             type="button"

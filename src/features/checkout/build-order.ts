@@ -57,17 +57,22 @@ export async function buildOrderFromCart(
     if (!product) throw new OrderBuildError("product_missing", `Product ${line.productId} not found`);
     const variant = product.variants.find((v) => v.id === line.variantId);
     if (!variant) throw new OrderBuildError("variant_missing", `Variant ${line.variantId} not found`);
-    if (variant.stock <= 0) throw new OrderBuildError("out_of_stock", `${product.name} — ${variant.color} is sold out`);
+    // A "Default" colour means the product has no variants on the storefront —
+    // drop it from customer-visible error strings so they don't see the sentinel.
+    const variantSuffix = variant.color === "Default" ? "" : ` — ${variant.color}`;
+    const variantParens = variant.color === "Default" ? "" : ` (${variant.color})`;
+    if (variant.stock <= 0)
+      throw new OrderBuildError("out_of_stock", `${product.name}${variantSuffix} is sold out`);
     if (variant.stock < line.quantity) {
       throw new OrderBuildError(
         "insufficient_stock",
-        `Only ${variant.stock} ${product.name} (${variant.color}) available`
+        `Only ${variant.stock} ${product.name}${variantParens} available`
       );
     }
     if (line.quantity > 30) {
       throw new OrderBuildError(
         "insufficient_stock",
-        `Maximum allowed purchase quantity is 30 for ${product.name} (${variant.color})`
+        `Maximum allowed purchase quantity is 30 for ${product.name}${variantParens}`
       );
     }
     const unit = priceOf(product, variant);
@@ -77,7 +82,9 @@ export async function buildOrderFromCart(
       productId: product.id,
       variantId: variant.id,
       productNameSnapshot: product.name,
-      variantLabelSnapshot: variant.color,
+      // Snapshot an empty label for Default-only products so order summaries,
+      // invoices, and mail templates don't leak the sentinel to customers.
+      variantLabelSnapshot: variant.color === "Default" ? "" : variant.color,
       imageSnapshot: product.images[0]?.url ?? "",
       unitPricePaise: unit,
       quantity: line.quantity

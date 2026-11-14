@@ -25,6 +25,12 @@ import { cn } from "@/lib/utils";
 // All prices (base, sale, variant override) are captured in RUPEES in the admin UI
 // and converted ×100 to paise on submit. The DB stores paise; the form is the only
 // unit boundary. This matches how admins naturally think about prices.
+// Sentinel colour used for the implicit single-SKU variant created when an admin
+// enters product-level stock without defining colour variants. The storefront
+// recognises this label and hides variant chrome; the admin form surfaces its
+// stock as a top-level `stock` field and hides the row itself.
+const DEFAULT_VARIANT_COLOR = "Default";
+
 type Values = {
   id?: string;
   slug: string;
@@ -32,6 +38,7 @@ type Values = {
   description: string;
   basePrice: number | string;
   salePrice: number | string;
+  stock: number | string;
   fabric: string;
   weave: string;
   occasion: string[];
@@ -62,6 +69,7 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
       description: "",
       basePrice: "",
       salePrice: "",
+      stock: "",
       fabric: "silk",
       weave: defaultCatalog,
       occasion: ["festive"],
@@ -75,6 +83,12 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
       variants: []
     };
   }
+  // A product saved from Basics-only (no colour variants) carries a single
+  // "Default" variant. Lift its stock to the top-level field and keep the
+  // variants list empty so the admin sees the same form shape they filled in.
+  const defaultVariant =
+    p.variants.length === 1 && p.variants[0].color === DEFAULT_VARIANT_COLOR ? p.variants[0] : null;
+  const surfacedVariants = defaultVariant ? [] : p.variants;
   return {
     id: p.id,
     slug: p.slug,
@@ -82,6 +96,7 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
     description: p.description,
     basePrice: p.basePrice / 100,
     salePrice: p.salePrice != null ? p.salePrice / 100 : "",
+    stock: defaultVariant ? defaultVariant.stock : "",
     fabric: normalizeFabric(p.fabric),
     weave: normalizeCatalog(p.weave),
     occasion: p.occasion,
@@ -92,7 +107,7 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
     featured: p.featured,
     published: p.published,
     images: p.images.map((i) => ({ id: i.id, url: i.url, alt: i.alt })),
-    variants: p.variants.map((v) => ({
+    variants: surfacedVariants.map((v) => ({
       id: v.id,
       color: v.color,
       colorHex: v.colorHex,
@@ -150,6 +165,7 @@ export function ProductForm({
       ...values,
       basePrice: rupeesToPaise(values.basePrice),
       salePrice: values.salePrice === "" ? undefined : rupeesToPaise(values.salePrice),
+      stock: values.stock === "" ? undefined : (values.stock as unknown as number),
       lengthMeters: values.lengthMeters as unknown as number,
       images: values.images.map((i, idx) => ({
         id: i.id,
@@ -225,6 +241,26 @@ export function ProductForm({
             onChange={(e) => setField("description", e.target.value)}
             rows={4}
             className={inputCls}
+          />
+        </Field>
+        <Field
+          label="Stock"
+          issues={issues.stock}
+          hint={
+            values.variants.length > 0
+              ? "Ignored — stock is managed per variant below."
+              : "Units in hand. Use this for single-SKU sarees that have no colour variants."
+          }
+        >
+          <input
+            type="number"
+            min={0}
+            step="1"
+            disabled={values.variants.length > 0}
+            value={values.variants.length > 0 ? "" : values.stock}
+            onChange={(e) => setField("stock", e.target.value)}
+            placeholder={values.variants.length > 0 ? "— managed in Variants —" : "e.g. 10"}
+            className={cn(inputCls, values.variants.length > 0 && "opacity-50")}
           />
         </Field>
       </Section>
