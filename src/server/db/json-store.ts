@@ -71,13 +71,17 @@ function resetPool(): void {
 
 function getPool(): mysql.Pool {
   if (!globalThis.__mysqlPool) {
+    // Shared-host MySQL (Hostinger, etc.) caps *cumulative* new connections per
+    // hour, not concurrent ones. The previous `idleTimeout: 30_000` + `maxIdle: 2`
+    // was recycling sockets fast enough to blow past 500/hour under light load.
+    // Keep all pool slots warm indefinitely — TCP keep-alive handles liveness.
     const baseOptions = {
       waitForConnections: true,
-      connectionLimit: 10,
+      connectionLimit: 5,
       enableKeepAlive: true,
       keepAliveInitialDelay: 10000,
-      idleTimeout: 30000,
-      maxIdle: 2,
+      idleTimeout: 0,
+      maxIdle: 5,
       connectTimeout: 30000
     };
 
