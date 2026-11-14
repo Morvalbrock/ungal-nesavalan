@@ -22,10 +22,12 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featured, facets, catalogs] = await Promise.all([
+  const [featured, facets, catalogs, allInStock] = await Promise.all([
     productRepo.featured(16),
     productRepo.getAvailableFacets(),
-    catalogRepo.list()
+    catalogRepo.list(),
+    // Wider net for the Shop-by-Catalog tile fallback — see the loop below.
+    productRepo.list({ perPage: 60 })
   ]);
 
   // Cross-reference admin-managed catalogs with the live facet counts so tiles only
@@ -41,10 +43,13 @@ export default async function HomePage() {
       count: facetCountBySlug.get(c.slug.toLowerCase()) ?? 0
     }));
 
-  // Per-weave fallback image sourced from the first featured product tagged with
-  // that weave — used only when the catalog itself has no imageUrl set.
+  // Per-weave fallback image: first published, in-stock product tagged with that
+  // weave. Deliberately NOT gated on `featured` — the tile just needs a
+  // representative image for the catalog, which is unrelated to whether any
+  // specific product is on the homepage carousel. Used only when the catalog
+  // itself has no imageUrl set.
   const fallbackImageBySlug: Record<string, string> = {};
-  for (const p of featured) {
+  for (const p of allInStock.items) {
     const key = p.weave?.toLowerCase();
     if (!key || fallbackImageBySlug[key]) continue;
     const img = p.images[0]?.url;
