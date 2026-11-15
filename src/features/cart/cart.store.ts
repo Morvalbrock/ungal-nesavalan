@@ -74,14 +74,15 @@ export function useCartHydrated(): boolean {
 }
 
 export function useCartTotals() {
-  // Selector returns a fresh object; useShallow keeps subscribers stable and prevents infinite rerenders.
+  // Shipping is state-based and configured in /admin/shipping-charges — it cannot
+  // be computed here because the cart doesn't know the delivery state. Callers
+  // that need shipping (ReviewStep) compute it via computeShipping() and pass
+  // the result into <CartSummary shippingPaise={...} />.
   return useCartStore(
     useShallow((s) => {
       const subtotal = s.items.reduce((n, i) => n + i.unitPricePaise * i.quantity, 0);
       const count = s.items.reduce((n, i) => n + i.quantity, 0);
-      const shipping = subtotal === 0 || subtotal >= 500000 ? 0 : 9900;
-      const total = subtotal + shipping;
-      return { subtotal, shipping, total, count };
+      return { subtotal, count };
     })
   );
 }

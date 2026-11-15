@@ -15,10 +15,12 @@ import {
   productRepo,
   questionRepo,
   returnRepo,
+  shippingChargesRepo,
   userRepo,
   announcementRepo,
   pageBannerRepo
 } from "@/server/repositories";
+import { INDIAN_STATES } from "@/features/checkout/checkout.schema";
 import { getPaymentProvider } from "@/features/payments";
 import { getMailProvider } from "@/features/mail";
 import { deliveredEmail, returnDecisionEmail, shippedEmail } from "@/features/mail/templates";
@@ -1004,5 +1006,60 @@ export async function deleteJournalPost(id: string): Promise<ActionResult> {
   if (!removed) return { ok: false, error: "not_found" };
   revalidatePath("/admin/journal");
   revalidatePath("/journal");
+  return { ok: true };
+}
+
+// --- Shipping charges --------------------------------------------------------
+
+const shippingRowSchema = z.object({
+  state: z.enum(INDIAN_STATES, { message: "Unknown state" }),
+  chargePaise: z.coerce.number().int().min(0, "Charge cannot be negative"),
+  freeAbovePaise: z
+    .union([z.coerce.number().int().min(0), z.literal("").transform(() => null), z.null()])
+    .nullable()
+    .default(null),
+  active: z.boolean().default(true)
+});
+
+const shippingChargesSchema = z.object({
+  defaults: z.object({
+    defaultChargePaise: z.coerce.number().int().min(0, "Default charge cannot be negative"),
+    defaultFreeAbovePaise: z
+      .union([z.coerce.number().int().min(0), z.literal("").transform(() => null), z.null()])
+      .nullable()
+      .default(null)
+  }),
+  rows: z.array(shippingRowSchema)
+});
+
+export type ShippingChargesFormValues = z.input<typeof shippingChargesSchema>;
+
+export async function bulkUpsertShippingCharges(
+  values: ShippingChargesFormValues
+): Promise<ActionResult> {
+  await requireAdmin();
+  const parsed = shippingChargesSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "invalid_input",
+      issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
+    };
+  }
+  const d = parsed.data;
+  await shippingChargesRepo.setDefaults({
+    defaultChargePaise: d.defaults.defaultChargePaise,
+    defaultFreeAbovePaise: d.defaults.defaultFreeAbovePaise
+  });
+  await shippingChargesRepo.bulkUpsert(
+    d.rows.map((r) => ({
+      state: r.state,
+      chargePaise: r.chargePaise,
+      freeAbovePaise: r.freeAbovePaise,
+      active: r.active
+    }))
+  );
+  revalidatePath("/admin/shipping-charges");
+  revalidatePath("/checkout");
   return { ok: true };
 }

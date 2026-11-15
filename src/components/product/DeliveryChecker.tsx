@@ -1,23 +1,15 @@
 "use client";
 import { useState, useTransition } from "react";
 import { MapPin } from "lucide-react";
-import { formatINR } from "@/lib/utils";
-
-interface Props {
-  subtotalPaise: number;
-}
 
 interface QuoteResponse {
   zoneLabel: string;
-  ratePaise: number;
-  qualifiesForFreeShipping: boolean;
-  freeShippingRemainingPaise: number;
   etaLabel: string;
   serviceable: boolean;
   locationLabel: string | null;
 }
 
-export function DeliveryChecker({ subtotalPaise }: Props) {
+export function DeliveryChecker() {
   const [pincode, setPincode] = useState("");
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,10 +25,10 @@ export function DeliveryChecker({ subtotalPaise }: Props) {
     }
     startTransition(async () => {
       const res = await fetch(
-        `/api/shipping/quote?pincode=${encodeURIComponent(pincode.trim())}&subtotalPaise=${subtotalPaise}`
+        `/api/shipping/quote?pincode=${encodeURIComponent(pincode.trim())}`
       );
       if (!res.ok) {
-        setError("We couldn't fetch a rate. Try again.");
+        setError("We couldn't check delivery. Try again.");
         return;
       }
       setQuote((await res.json()) as QuoteResponse);
@@ -82,19 +74,9 @@ export function DeliveryChecker({ subtotalPaise }: Props) {
               <p>
                 <span className="text-ink-muted">Delivery:</span> {quote.etaLabel}
               </p>
-              <p>
-                <span className="text-ink-muted">Shipping:</span>{" "}
-                {quote.ratePaise === 0 ? (
-                  <span className="font-medium text-emerald-700">Free</span>
-                ) : (
-                  formatINR(quote.ratePaise)
-                )}
+              <p className="text-xs text-ink-muted">
+                Shipping charge is calculated at checkout based on your delivery state.
               </p>
-              {!quote.qualifiesForFreeShipping && quote.freeShippingRemainingPaise > 0 && (
-                <p className="text-xs text-ink-muted">
-                  Add {formatINR(quote.freeShippingRemainingPaise)} more for free shipping to this zone.
-                </p>
-              )}
             </>
           )}
         </div>

@@ -34,7 +34,11 @@ const createPasswordSchema = (hasPassword: boolean) =>
       }
     });
 
-type PasswordFormValues = z.infer<ReturnType<typeof createPasswordSchema>>;
+type PasswordFormValues = {
+  currentPassword?: string;
+  newPassword: string;
+  confirmPassword: string;
+};
 
 export function ChangePasswordForm() {
   const { user, refresh } = useAuth();

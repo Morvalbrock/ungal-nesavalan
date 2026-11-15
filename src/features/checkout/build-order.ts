@@ -1,8 +1,9 @@
 import type { OrderItem } from "@/types/order";
 import type { Product, Variant } from "@/types/product";
-import { productRepo } from "@/server/repositories";
+import { productRepo, shippingChargesRepo } from "@/server/repositories";
 import { newId } from "@/server/db/json-store";
-import { shippingQuote } from "@/features/shipping/calculate";
+import { shippingEta } from "@/features/shipping/calculate";
+import { computeShipping } from "@/features/shipping/compute-shipping";
 import type { ShippingZone } from "@/features/shipping/zones";
 import type { CodCartLine } from "./cod";
 
@@ -42,7 +43,7 @@ function priceOf(product: Product, variant: Variant): number {
 
 export async function buildOrderFromCart(
   lines: CartLinePayload[],
-  opts: { pincode?: string | null } = {}
+  opts: { pincode?: string | null; state?: string | null } = {}
 ): Promise<BuiltOrderTotals> {
   if (!lines.length) throw new OrderBuildError("empty_cart", "Cart is empty");
 
@@ -100,13 +101,25 @@ export async function buildOrderFromCart(
     });
   }
 
-  const quote = shippingQuote({ subtotalPaise: subtotal, pincode: opts.pincode });
+  // Rate: state-based (admin-configured), server-authoritative.
+  const [charges, defaults] = await Promise.all([
+    shippingChargesRepo.list(),
+    shippingChargesRepo.getDefaults()
+  ]);
+  const shipping = computeShipping({
+    state: opts.state ?? null,
+    subtotalPaise: subtotal,
+    charges,
+    defaults
+  });
+  // Zone is kept on the order purely as a logistics hint (ETA grouping).
+  const eta = shippingEta({ pincode: opts.pincode });
   return {
     items,
     codLines,
     subtotalPaise: subtotal,
-    shippingPaise: quote.ratePaise,
-    shippingZone: quote.zone,
-    totalPaise: subtotal + quote.ratePaise
+    shippingPaise: shipping.shippingPaise,
+    shippingZone: eta.zone,
+    totalPaise: subtotal + shipping.shippingPaise
   };
 }

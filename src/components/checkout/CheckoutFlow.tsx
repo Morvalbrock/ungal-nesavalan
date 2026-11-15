@@ -6,12 +6,21 @@ import { useCartHydrated, useCartStore, useCartTotals } from "@/features/cart/ca
 import { useAuth } from "@/features/auth/AuthContext";
 import { track } from "@/features/analytics/track";
 import type { AddressForm } from "@/features/checkout/checkout.schema";
+import type { ShippingCharge, ShippingDefaults } from "@/types/shipping-charge";
 import { AddressStep } from "./AddressStep";
 import { ReviewStep } from "./ReviewStep";
 
 type Step = "address" | "review";
 
-export function CheckoutFlow({ prefill }: { prefill?: { name?: string; email?: string; phone?: string } }) {
+export function CheckoutFlow({
+  prefill,
+  shippingCharges,
+  shippingDefaults
+}: {
+  prefill?: { name?: string; email?: string; phone?: string };
+  shippingCharges: ShippingCharge[];
+  shippingDefaults: ShippingDefaults;
+}) {
   const hydrated = useCartHydrated();
   const items = useCartStore((s) => s.items);
   const { subtotal, count } = useCartTotals();
@@ -123,6 +132,8 @@ export function CheckoutFlow({ prefill }: { prefill?: { name?: string; email?: s
             onPreferredCourierChange={setPreferredCourier}
             paymentMode={paymentMode}
             onPaymentModeChange={setPaymentMode}
+            shippingCharges={shippingCharges}
+            shippingDefaults={shippingDefaults}
           />
         )}
       </div>

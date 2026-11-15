@@ -1,30 +1,28 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { estimatedDeliveryLabel, shippingQuote } from "@/features/shipping/calculate";
+import { estimatedDeliveryLabel, shippingEta } from "@/features/shipping/calculate";
 import { lookupPincode } from "@/features/shipping/serviceability";
 
 const querySchema = z.object({
-  pincode: z.string().trim().regex(/^\d{6}$/),
-  subtotalPaise: z.coerce.number().int().min(0)
+  pincode: z.string().trim().regex(/^\d{6}$/)
 });
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const parsed = querySchema.safeParse({
-    pincode: url.searchParams.get("pincode") ?? "",
-    subtotalPaise: url.searchParams.get("subtotalPaise") ?? "0"
+    pincode: url.searchParams.get("pincode") ?? ""
   });
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid_pincode" }, { status: 400 });
   }
-  const quote = shippingQuote({
-    pincode: parsed.data.pincode,
-    subtotalPaise: parsed.data.subtotalPaise
-  });
+  const eta = shippingEta({ pincode: parsed.data.pincode });
   const pincodeInfo = await lookupPincode(parsed.data.pincode);
   return NextResponse.json({
-    ...quote,
-    etaLabel: estimatedDeliveryLabel(quote),
+    zone: eta.zone,
+    zoneLabel: eta.zoneLabel,
+    etaMinDays: eta.etaMinDays,
+    etaMaxDays: eta.etaMaxDays,
+    etaLabel: estimatedDeliveryLabel(eta),
     serviceable: pincodeInfo.serviceable,
     locationLabel: pincodeInfo.locationLabel ?? null
   });

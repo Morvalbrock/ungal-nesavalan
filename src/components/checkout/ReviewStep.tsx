@@ -5,7 +5,9 @@ import { CartSummary } from "@/components/cart/CartSummary";
 import { useCartStore, useCartTotals } from "@/features/cart/cart.store";
 import { useAppliedCouponStore } from "@/features/coupons/applied-coupon.store";
 import type { AddressForm } from "@/features/checkout/checkout.schema";
-import { shippingQuote, estimatedDeliveryLabel } from "@/features/shipping/calculate";
+import type { ShippingCharge, ShippingDefaults } from "@/types/shipping-charge";
+import { shippingEta, estimatedDeliveryLabel } from "@/features/shipping/calculate";
+import { computeShipping } from "@/features/shipping/compute-shipping";
 import { RECOMMENDED_COURIERS, isRecommendedCourier } from "@/features/shipping/couriers";
 import { cn, formatINR } from "@/lib/utils";
 import { CouponBox } from "./CouponBox";
@@ -44,7 +46,9 @@ export function ReviewStep({
   preferredCourier,
   onPreferredCourierChange,
   paymentMode,
-  onPaymentModeChange
+  onPaymentModeChange,
+  shippingCharges,
+  shippingDefaults
 }: {
   address: AddressForm;
   onEdit: () => void;
@@ -52,17 +56,26 @@ export function ReviewStep({
   onPreferredCourierChange: (value: string) => void;
   paymentMode: "prepaid" | "cod";
   onPaymentModeChange: (value: "prepaid" | "cod") => void;
+  shippingCharges: ShippingCharge[];
+  shippingDefaults: ShippingDefaults;
 }) {
   const items = useCartStore((s) => s.items);
   const totals = useCartTotals();
   const applied = useAppliedCouponStore((s) => s.coupon);
   const discount = applied?.subtotalPaise === totals.subtotal ? applied.discountPaise : 0;
 
-  const quote = useMemo(
-    () => shippingQuote({ subtotalPaise: totals.subtotal, pincode: address.pincode }),
-    [totals.subtotal, address.pincode]
+  const shipping = useMemo(
+    () =>
+      computeShipping({
+        state: address.state,
+        subtotalPaise: totals.subtotal,
+        charges: shippingCharges,
+        defaults: shippingDefaults
+      }),
+    [address.state, totals.subtotal, shippingCharges, shippingDefaults]
   );
-  const payable = Math.max(0, totals.subtotal - discount + quote.ratePaise);
+  const eta = useMemo(() => shippingEta({ pincode: address.pincode }), [address.pincode]);
+  const payable = Math.max(0, totals.subtotal - discount + shipping.shippingPaise);
 
   useEffect(() => {
     if (!preferredCourier || !isRecommendedCourier(preferredCourier)) {
@@ -154,11 +167,21 @@ export function ReviewStep({
           <div className="mt-3 rounded-card bg-cream-warm/60 p-3 text-xs text-ink-soft">
             <p>
               <span className="text-ink-muted">Shipping:</span>{" "}
-              {quote.ratePaise === 0 ? <span className="font-medium text-emerald-700">Free</span> : formatINR(quote.ratePaise)}
+              {shipping.shippingPaise === 0 ? (
+                <span className="font-medium text-emerald-700">Free</span>
+              ) : (
+                formatINR(shipping.shippingPaise)
+              )}
               {" · "}
-              <span className="text-ink-muted">Arrives</span> {estimatedDeliveryLabel(quote)}
+              <span className="text-ink-muted">Arrives</span> {estimatedDeliveryLabel(eta)}
             </p>
           </div>
+          {shipping.usedFallback && (
+            <div className="mt-2 rounded-card border border-amber-500/40 bg-amber-50 p-3 text-xs text-amber-900">
+              Shipping to <strong>{address.state}</strong> uses our default rate. Please contact
+              support for an exact quote before placing this order.
+            </div>
+          )}
         </section>
 
         <section>
@@ -272,7 +295,7 @@ export function ReviewStep({
       </div>
 
       <div>
-        <CartSummary showCheckoutButton={false} />
+        <CartSummary showCheckoutButton={false} shippingPaise={shipping.shippingPaise} />
       </div>
     </div>
   );

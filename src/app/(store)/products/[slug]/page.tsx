@@ -213,7 +213,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <PurchasePanel product={product} />
           </div>
 
-          <DeliveryChecker subtotalPaise={displayPrice} />
+          <DeliveryChecker />
 
           <div className="mt-8 grid grid-cols-3 gap-4 rounded-card border border-border/70 bg-cream-warm/40 p-4 text-center">
             <div>
