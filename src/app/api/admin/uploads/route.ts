@@ -12,7 +12,7 @@ import { getSession } from "@/features/auth/session";
 
 export const runtime = "nodejs";
 
-const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED = new Map<string, string>([
   ["image/jpeg", ".jpg"],
   ["image/png", ".png"],

@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
-import { Plus, Pencil, Trash2, X, Search, AlertCircle, Check, ImageOff } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Search, AlertCircle, Check, ImageOff, Upload } from "lucide-react";
 import type { Catalog } from "@/types/catalog";
 import { deleteCatalog, upsertCatalog } from "@/features/admin/actions";
+import { cn } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 type Draft = {
@@ -25,6 +26,32 @@ export function CatalogManager({ catalogs }: { catalogs: Catalog[] }) {
   const [banner, setBanner] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !draft) return;
+    setBanner(null);
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "categories");
+      const res = await fetch("/api/admin/uploads", { method: "POST", body: fd });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        setBanner(`Image upload failed: ${data.error ?? res.statusText}`);
+        return;
+      }
+      setDraft({ ...draft, imageUrl: data.url });
+    } catch (err) {
+      setBanner(`Image upload failed: ${(err as Error).message}`);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
 
   const filtered = useMemo(() => {
     const n = search.trim().toLowerCase();
@@ -262,17 +289,50 @@ export function CatalogManager({ catalogs }: { catalogs: Catalog[] }) {
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_160px]">
-            <label className="block text-sm">
+            <div className="block text-sm">
               <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-ink-muted">
-                Tile Image URL
+                Tile Image
               </span>
-              <input
-                value={draft.imageUrl}
-                onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
-                placeholder="https://… (Cloudinary, etc.) — shown on the home page Shop by Catalog grid"
-                className={inputCls}
-              />
-            </label>
+              <div className="flex items-center gap-2">
+                <input
+                  value={draft.imageUrl}
+                  onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
+                  placeholder="Click upload → or paste a hosted URL"
+                  className={cn(inputCls, "flex-1")}
+                />
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  onChange={onPickImage}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-card border border-border px-3 py-2 text-xs font-medium text-ink-soft hover:border-ink hover:text-ink disabled:opacity-50"
+                  title="Upload image file (JPEG, PNG, WebP, AVIF — max 10 MB)"
+                >
+                  <Upload className="h-4 w-4" />
+                  {uploading ? "Uploading…" : "Upload"}
+                </button>
+                {draft.imageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setDraft({ ...draft, imageUrl: "" })}
+                    className="shrink-0 rounded p-2 text-ink-muted hover:bg-ink/5 hover:text-maroon"
+                    aria-label="Clear image"
+                    title="Clear image"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <p className="mt-1 text-[11px] text-ink-muted">
+                Shown on the home page Shop by Catalog grid. JPEG, PNG, WebP or AVIF — max 10 MB.
+              </p>
+            </div>
             <div className="flex items-end">
               <div className="relative h-24 w-full overflow-hidden rounded-card border border-border bg-cream-warm/60">
                 {draft.imageUrl ? (
