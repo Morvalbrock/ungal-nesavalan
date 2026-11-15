@@ -42,6 +42,7 @@ export interface ProductRepository {
   findById(id: string): Promise<Product | null>;
   featured(limit?: number): Promise<ProductSummary[]>;
   getAvailableFacets(): Promise<AvailableFacets>;
+  getCatalogFallbackImages(): Promise<Record<string, string>>;
   create(input: Omit<Product, "id" | "createdAt" | "updatedAt">): Promise<Product>;
   update(id: string, patch: Partial<Product>): Promise<Product | null>;
   remove(id: string): Promise<boolean>;
@@ -202,6 +203,30 @@ export const jsonProductRepo: ProductRepository = {
     }));
 
     return { categories, weaves, fabrics, occasions };
+  },
+  async getCatalogFallbackImages() {
+    const rows = await readCollection<Product>(COLLECTION);
+    const inStock = rows.filter((p) => p.published && hasStock(p));
+    const fallbackImageBySlug: Record<string, string> = {};
+
+    // 1st priority: featured in-stock products
+    for (const p of inStock) {
+      if (!p.featured) continue;
+      const key = p.weave?.toLowerCase();
+      if (!key || fallbackImageBySlug[key]) continue;
+      const img = p.images?.[0]?.url || p.variants?.find((v) => v.images?.[0]?.url)?.images?.[0]?.url;
+      if (img) fallbackImageBySlug[key] = img;
+    }
+
+    // 2nd priority: any in-stock product belonging to that weave
+    for (const p of inStock) {
+      const key = p.weave?.toLowerCase();
+      if (!key || fallbackImageBySlug[key]) continue;
+      const img = p.images?.[0]?.url || p.variants?.find((v) => v.images?.[0]?.url)?.images?.[0]?.url;
+      if (img) fallbackImageBySlug[key] = img;
+    }
+
+    return fallbackImageBySlug;
   },
   async create(input) {
     const created: Product = { ...input, id: newId("prd"), createdAt: nowIso(), updatedAt: nowIso() };

@@ -22,10 +22,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featured, facets, catalogs] = await Promise.all([
+  const [featured, facets, catalogs, fallbackImageBySlug] = await Promise.all([
     productRepo.featured(16),
     productRepo.getAvailableFacets(),
-    catalogRepo.list()
+    catalogRepo.list(),
+    productRepo.getCatalogFallbackImages()
   ]);
 
   // Cross-reference admin-managed catalogs with the live facet counts so tiles only
@@ -40,16 +41,6 @@ export default async function HomePage() {
       imageUrl: c.imageUrl,
       count: facetCountBySlug.get(c.slug.toLowerCase()) ?? 0
     }));
-
-  // Per-weave fallback image sourced from the first featured product tagged with
-  // that weave — used only when the catalog itself has no imageUrl set.
-  const fallbackImageBySlug: Record<string, string> = {};
-  for (const p of featured) {
-    const key = p.weave?.toLowerCase();
-    if (!key || fallbackImageBySlug[key]) continue;
-    const img = p.images[0]?.url;
-    if (img) fallbackImageBySlug[key] = img;
-  }
 
   return (
     <div className="flex w-full flex-col bg-cream">
