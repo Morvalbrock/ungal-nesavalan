@@ -23,9 +23,8 @@ function getSecret(): Uint8Array {
 }
 
 function stripPassword(u: { passwordHash?: string } & PublicUser): PublicUser {
-  const { passwordHash: _ignored, ...pub } = u as unknown as PublicUser & { passwordHash?: string };
-  void _ignored;
-  return pub;
+  const { passwordHash, ...pub } = u as unknown as PublicUser & { passwordHash?: string };
+  return { ...pub, hasPassword: Boolean(passwordHash) };
 }
 
 async function sign(payload: SessionPayload): Promise<string> {
@@ -58,13 +57,22 @@ export const jwtAuthProvider: AuthProvider = {
   },
 
   async login(input: LoginInput) {
-    const user = await userRepo.findByEmail(input.email);
-    if (!user) throw new AuthError("invalid_credentials", "Email or password is incorrect");
+    const raw = input.email.trim();
+    let user = null;
+    if (raw.includes("@")) {
+      user = await userRepo.findByEmail(raw.toLowerCase());
+    } else {
+      user = await userRepo.findByPhone(normalizePhone(raw));
+    }
+    if (!user) throw new AuthError("invalid_credentials", "Email/mobile or password is incorrect");
     if (!user.passwordHash) {
-      throw new AuthError("invalid_credentials", "This account uses Google sign-in. Please continue with Google.");
+      if (user.googleId) {
+        throw new AuthError("invalid_credentials", "This account uses Google sign-in. Please continue with Google.");
+      }
+      throw new AuthError("invalid_credentials", "No password set for this account. Please sign in via Mobile OTP or set a password in your Profile.");
     }
     const ok = await bcrypt.compare(input.password, user.passwordHash);
-    if (!ok) throw new AuthError("invalid_credentials", "Email or password is incorrect");
+    if (!ok) throw new AuthError("invalid_credentials", "Email/mobile or password is incorrect");
     const token = await sign({ userId: user.id, email: user.email, name: user.name, role: user.role });
     return { user: stripPassword(user), token };
   },

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getSession } from "@/features/auth/session";
 import {
   abandonedCartRepo,
+  categoryRepo,
   couponRepo,
   orderRepo,
   paymentRepo,
@@ -10,6 +11,7 @@ import {
 } from "@/server/repositories";
 import { addressSchema } from "@/features/checkout/checkout.schema";
 import { buildOrderFromCart, OrderBuildError } from "@/features/checkout/build-order";
+import { computeCodDepositForCart } from "@/features/checkout/cod";
 import { getPaymentProvider } from "@/features/payments";
 import { couponErrorMessage, evaluateCoupon } from "@/features/coupons/evaluate";
 
@@ -28,16 +30,6 @@ const bodySchema = z.object({
     )
     .min(1)
 });
-
-const COD_MIN_TOTAL_PAISE = 100000; // ₹1,000
-const COD_MIN_DEPOSIT_PAISE = 9900; // ₹99
-const COD_DEPOSIT_PCT = 0.10;
-
-function computeCodDeposit(totalPaise: number): number {
-  const tenPct = Math.ceil(totalPaise * COD_DEPOSIT_PCT);
-  const deposit = Math.max(tenPct, COD_MIN_DEPOSIT_PAISE);
-  return Math.min(deposit, totalPaise);
-}
 
 function isTamilNaduPincode(pincode: string | undefined): boolean {
   const p = (pincode ?? "").trim();
@@ -127,13 +119,22 @@ export async function POST(req: Request) {
 
   const totalPaise = Math.max(0, built.subtotalPaise - discountPaise + built.shippingPaise);
 
+  const uniqueCategoryIds = Array.from(new Set(built.codLines.map((l) => l.categoryId)));
+  const categoryList = await Promise.all(
+    uniqueCategoryIds.map((id) => categoryRepo.findById(id))
+  );
+  const categoryById = new Map(
+    categoryList.filter((c): c is NonNullable<typeof c> => Boolean(c)).map((c) => [c.id, c])
+  );
+  const codQuote = computeCodDepositForCart(built.codLines, categoryById, totalPaise);
+
   const paymentMode: "prepaid" | "cod" =
     requestedMode === "cod" &&
-    totalPaise >= COD_MIN_TOTAL_PAISE &&
+    codQuote.eligible &&
     isTamilNaduAddress({ state: address.state, pincode: address.pincode })
       ? "cod"
       : "prepaid";
-  const chargeNowPaise = paymentMode === "cod" ? computeCodDeposit(totalPaise) : totalPaise;
+  const chargeNowPaise = paymentMode === "cod" ? codQuote.depositPaise : totalPaise;
   const amountDuePaise = paymentMode === "cod" ? totalPaise - chargeNowPaise : 0;
 
   const order = await orderRepo.create({

@@ -111,7 +111,7 @@ export function LoginForm() {
             disabled={isOtpFlowLocked}
             onClick={() => setMode("email")}
           >
-            ✉️ Email
+            ✉️ Password
           </TabButton>
         </div>
         {isOtpFlowLocked && (
@@ -128,10 +128,11 @@ export function LoginForm() {
         />
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <AuthField label="Email" error={errors.email?.message}>
+          <AuthField label="Email or Mobile" error={errors.email?.message}>
             <input
-              type="email"
-              autoComplete="email"
+              type="text"
+              autoComplete="username"
+              placeholder="you@example.com or 9876543210"
               {...register("email")}
               className={authInputCls}
             />

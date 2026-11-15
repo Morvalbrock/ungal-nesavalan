@@ -18,4 +18,6 @@ export interface User {
   createdAt: string;
 }
 
-export type PublicUser = Omit<User, "passwordHash">;
+export type PublicUser = Omit<User, "passwordHash"> & {
+  hasPassword?: boolean;
+};

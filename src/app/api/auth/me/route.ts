@@ -7,7 +7,6 @@ export async function GET() {
   if (!session) return NextResponse.json({ user: null });
   const user = await userRepo.findById(session.userId);
   if (!user) return NextResponse.json({ user: null });
-  const { passwordHash: _pw, ...pub } = user;
-  void _pw;
-  return NextResponse.json({ user: pub });
+  const { passwordHash, ...pub } = user;
+  return NextResponse.json({ user: { ...pub, hasPassword: Boolean(passwordHash) } });
 }

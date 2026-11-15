@@ -21,7 +21,6 @@ export async function requestPasswordReset(email: string): Promise<void> {
   if (!normalised) return;
   const user = await userRepo.findByEmail(normalised);
   if (!user) return;
-  if (!user.passwordHash) return;
 
   await passwordResetRepo.invalidateAllForUser(user.id);
 

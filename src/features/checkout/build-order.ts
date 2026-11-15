@@ -4,6 +4,7 @@ import { productRepo } from "@/server/repositories";
 import { newId } from "@/server/db/json-store";
 import { shippingQuote } from "@/features/shipping/calculate";
 import type { ShippingZone } from "@/features/shipping/zones";
+import type { CodCartLine } from "./cod";
 
 type BuiltItem = Omit<OrderItem, "orderId">;
 
@@ -15,6 +16,7 @@ export interface CartLinePayload {
 
 export interface BuiltOrderTotals {
   items: BuiltItem[];
+  codLines: CodCartLine[];
   subtotalPaise: number;
   shippingPaise: number;
   shippingZone: ShippingZone;
@@ -50,6 +52,7 @@ export async function buildOrderFromCart(
   products.forEach((p) => p && productMap.set(p.id, p));
 
   const items: BuiltItem[] = [];
+  const codLines: CodCartLine[] = [];
   let subtotal = 0;
 
   for (const line of lines) {
@@ -76,7 +79,13 @@ export async function buildOrderFromCart(
       );
     }
     const unit = priceOf(product, variant);
-    subtotal += unit * line.quantity;
+    const linePaise = unit * line.quantity;
+    subtotal += linePaise;
+    codLines.push({
+      productId: product.id,
+      categoryId: product.categoryId,
+      linePaise
+    });
     items.push({
       id: newId("oi"),
       productId: product.id,
@@ -94,6 +103,7 @@ export async function buildOrderFromCart(
   const quote = shippingQuote({ subtotalPaise: subtotal, pincode: opts.pincode });
   return {
     items,
+    codLines,
     subtotalPaise: subtotal,
     shippingPaise: quote.ratePaise,
     shippingZone: quote.zone,

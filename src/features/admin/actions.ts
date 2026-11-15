@@ -347,15 +347,26 @@ export async function setUserRole(
   return { ok: true };
 }
 
-const categorySchema = z.object({
-  id: z.string().optional(),
-  name: z.string().trim().min(2),
-  slug: z.string().trim().optional(),
-  description: z.string().trim().optional(),
-  image: z.string().optional(),
-  headerImage: z.string().optional(),
-  sort: z.coerce.number().default(0)
-});
+const categorySchema = z
+  .object({
+    id: z.string().optional(),
+    name: z.string().trim().min(2),
+    slug: z.string().trim().optional(),
+    description: z.string().trim().optional(),
+    image: z.string().optional(),
+    headerImage: z.string().optional(),
+    sort: z.coerce.number().default(0),
+    codAdvanceType: z.enum(["percent", "fixed"]).optional(),
+    codAdvanceValue: z.coerce.number().min(0).optional(),
+    codMinOrderPaise: z.coerce.number().int().min(0).optional()
+  })
+  .refine(
+    (d) =>
+      d.codAdvanceType !== "percent" ||
+      d.codAdvanceValue === undefined ||
+      d.codAdvanceValue <= 100,
+    { path: ["codAdvanceValue"], message: "Percent must be between 0 and 100" }
+  );
 
 export async function upsertCategory(values: z.input<typeof categorySchema>): Promise<ActionResult> {
   await requireAdmin();
@@ -369,13 +380,18 @@ export async function upsertCategory(values: z.input<typeof categorySchema>): Pr
   }
   const d = parsed.data;
   const slug = d.slug?.trim() ? slugify(d.slug) : slugify(d.name);
+  const codConfigProvided =
+    d.codAdvanceType !== undefined || d.codAdvanceValue !== undefined;
   const payload = {
     slug,
     name: d.name,
     description: d.description || undefined,
     image: d.image || undefined,
     headerImage: d.headerImage || undefined,
-    sort: d.sort
+    sort: d.sort,
+    codAdvanceType: codConfigProvided ? d.codAdvanceType ?? "percent" : undefined,
+    codAdvanceValue: codConfigProvided ? d.codAdvanceValue : undefined,
+    codMinOrderPaise: d.codMinOrderPaise
   };
   if (d.id) {
     const updated = await categoryRepo.update(d.id, payload);

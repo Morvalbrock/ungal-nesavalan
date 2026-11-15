@@ -11,13 +11,11 @@ import { cn, formatINR } from "@/lib/utils";
 import { CouponBox } from "./CouponBox";
 import { PayButton } from "./PayButton";
 
-const COD_MIN_TOTAL_PAISE = 100000;
-const COD_MIN_DEPOSIT_PAISE = 9900;
-const COD_DEPOSIT_PCT = 0.10;
-
-function computeCodDeposit(totalPaise: number): number {
-  const tenPct = Math.ceil(totalPaise * COD_DEPOSIT_PCT);
-  return Math.min(Math.max(tenPct, COD_MIN_DEPOSIT_PAISE), totalPaise);
+interface CodQuoteResponse {
+  eligible: boolean;
+  depositPaise: number;
+  dueOnDeliveryPaise: number;
+  minOrderPaise: number;
 }
 
 function isTamilNaduPincode(pincode: string | undefined): boolean {
@@ -72,12 +70,60 @@ export function ReviewStep({
     }
   }, [preferredCourier, onPreferredCourierChange]);
 
-  // Payment method handling
+  // Payment method handling — fetch category-aware COD quote from the server.
   const isTnAddress = isTamilNaduAddress({ state: address.state, pincode: address.pincode });
-  const meetsCodMin = payable >= COD_MIN_TOTAL_PAISE;
-  const canUseCod = isTnAddress && meetsCodMin;
-  const codDeposit = computeCodDeposit(payable);
-  const codDue = Math.max(0, payable - codDeposit);
+  const [codQuote, setCodQuote] = useState<CodQuoteResponse | null>(null);
+
+  const codRequestKey = useMemo(
+    () =>
+      JSON.stringify({
+        payable,
+        items: items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+          unitPricePaise: i.unitPricePaise
+        }))
+      }),
+    [payable, items]
+  );
+
+  useEffect(() => {
+    if (items.length === 0 || payable <= 0) {
+      setCodQuote(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/checkout/cod-quote", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            payablePaise: payable,
+            items: items.map((i) => ({
+              productId: i.productId,
+              quantity: i.quantity,
+              unitPricePaise: i.unitPricePaise
+            }))
+          })
+        });
+        if (!res.ok) throw new Error("cod_quote_failed");
+        const data = (await res.json()) as CodQuoteResponse;
+        if (!cancelled) setCodQuote(data);
+      } catch {
+        if (!cancelled) setCodQuote(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // codRequestKey captures items + payable; linter needs the raw deps too.
+  }, [codRequestKey, items, payable]);
+
+  const canUseCod = isTnAddress && (codQuote?.eligible ?? false);
+  const codDeposit = codQuote?.depositPaise ?? 0;
+  const codDue = codQuote?.dueOnDeliveryPaise ?? Math.max(0, payable - codDeposit);
+  const codMinOrderPaise = codQuote?.minOrderPaise ?? 0;
 
   useEffect(() => {
     if (!canUseCod && paymentMode === "cod") {
@@ -190,7 +236,9 @@ export function ReviewStep({
                   </p>
                 ) : (
                   <p className="text-xs text-ink-muted">
-                    Available on orders of {formatINR(COD_MIN_TOTAL_PAISE)} and above
+                    {codMinOrderPaise > 0
+                      ? `Available on orders of ${formatINR(codMinOrderPaise)} and above`
+                      : "Checking eligibility…"}
                   </p>
                 )}
               </div>

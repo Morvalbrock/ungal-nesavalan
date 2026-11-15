@@ -30,6 +30,9 @@ type DraftCategory = {
   image: string;
   headerImage: string;
   sort: number | string;
+  codAdvanceType: "" | "percent" | "fixed";
+  codAdvanceValue: number | string;
+  codMinOrderRupees: number | string;
 };
 
 const emptyDraft: DraftCategory = {
@@ -38,7 +41,10 @@ const emptyDraft: DraftCategory = {
   description: "",
   image: "",
   headerImage: "",
-  sort: 0
+  sort: 0,
+  codAdvanceType: "",
+  codAdvanceValue: "",
+  codMinOrderRupees: ""
 };
 
 interface CategoryManagerProps {
@@ -76,6 +82,19 @@ export function CategoryManager({ categories, initialPageBanners = [] }: Categor
     if (!draft) return;
     setBanner(null);
     setSuccessMsg(null);
+    const codType = draft.codAdvanceType === "" ? undefined : draft.codAdvanceType;
+    const rawValue = String(draft.codAdvanceValue).trim();
+    // For "fixed" the admin enters rupees; convert to paise for storage so it
+    // lines up with linePaise during checkout. "percent" stays as a percentage.
+    const codValue =
+      codType && rawValue !== ""
+        ? codType === "fixed"
+          ? Math.round(Number(rawValue) * 100)
+          : Number(rawValue)
+        : undefined;
+    const rawMinRupees = String(draft.codMinOrderRupees).trim();
+    const codMinPaise =
+      rawMinRupees !== "" ? Math.round(Number(rawMinRupees) * 100) : undefined;
     startTransition(async () => {
       const res = await upsertCategory({
         id: draft.id,
@@ -84,7 +103,10 @@ export function CategoryManager({ categories, initialPageBanners = [] }: Categor
         description: draft.description || undefined,
         image: draft.image || undefined,
         headerImage: draft.headerImage || undefined,
-        sort: draft.sort as unknown as number
+        sort: draft.sort as unknown as number,
+        codAdvanceType: codType,
+        codAdvanceValue: codValue,
+        codMinOrderPaise: codMinPaise
       });
       if (res.ok) {
         setDraft(null);
@@ -300,7 +322,18 @@ export function CategoryManager({ categories, initialPageBanners = [] }: Categor
                               description: c.description ?? "",
                               image: c.image ?? "",
                               headerImage: c.headerImage ?? "",
-                              sort: c.sort
+                              sort: c.sort,
+                              codAdvanceType: c.codAdvanceType ?? "",
+                              codAdvanceValue:
+                                typeof c.codAdvanceValue === "number"
+                                  ? c.codAdvanceType === "fixed"
+                                    ? c.codAdvanceValue / 100
+                                    : c.codAdvanceValue
+                                  : "",
+                              codMinOrderRupees:
+                                typeof c.codMinOrderPaise === "number"
+                                  ? c.codMinOrderPaise / 100
+                                  : ""
                             })
                           }
                           className="mr-2 inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-ink-soft hover:bg-ink/5 hover:text-ink"
@@ -442,6 +475,81 @@ export function CategoryManager({ categories, initialPageBanners = [] }: Categor
                     aspect="portrait"
                     previewHeight={140}
                   />
+                </div>
+
+                {/* COD advance configuration */}
+                <div className="rounded-card border border-border bg-cream-warm/40 p-4">
+                  <div className="mb-3">
+                    <h4 className="font-display text-base font-semibold text-ink">
+                      Cash on Delivery Advance
+                    </h4>
+                    <p className="text-xs text-ink-muted">
+                      Override the global COD advance for sarees in this category. Leave blank
+                      to use the global default (10%, minimum ₹99, minimum order ₹1,000).
+                      In a mixed cart, the strictest rule across items applies.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <label className="block text-sm">
+                      <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-ink-muted">
+                        Advance Type
+                      </span>
+                      <select
+                        value={draft.codAdvanceType}
+                        onChange={(e) =>
+                          setDraft({
+                            ...draft,
+                            codAdvanceType: e.target.value as DraftCategory["codAdvanceType"]
+                          })
+                        }
+                        className={inputCls}
+                      >
+                        <option value="">Use global default</option>
+                        <option value="percent">Percentage of order</option>
+                        <option value="fixed">Flat amount</option>
+                      </select>
+                    </label>
+
+                    <label className="block text-sm">
+                      <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-ink-muted">
+                        {draft.codAdvanceType === "fixed"
+                          ? "Amount (₹)"
+                          : "Percent (0–100)"}
+                      </span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min={0}
+                        step={draft.codAdvanceType === "fixed" ? "1" : "0.1"}
+                        value={draft.codAdvanceValue}
+                        onChange={(e) =>
+                          setDraft({ ...draft, codAdvanceValue: e.target.value })
+                        }
+                        disabled={draft.codAdvanceType === ""}
+                        placeholder={draft.codAdvanceType === "" ? "—" : ""}
+                        className={inputCls}
+                      />
+                    </label>
+
+                    <label className="block text-sm">
+                      <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-ink-muted">
+                        Minimum order (₹)
+                      </span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min={0}
+                        step="1"
+                        value={draft.codMinOrderRupees}
+                        onChange={(e) =>
+                          setDraft({ ...draft, codMinOrderRupees: e.target.value })
+                        }
+                        placeholder="1000"
+                        className={inputCls}
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 border-t border-border/80 pt-4">

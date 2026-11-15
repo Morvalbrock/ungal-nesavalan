@@ -1,3 +1,5 @@
+export type CodAdvanceType = "percent" | "fixed";
+
 export interface Category {
   id: string;
   slug: string;
@@ -7,4 +9,7 @@ export interface Category {
   headerImage?: string;
   description?: string;
   sort: number;
+  codAdvanceType?: CodAdvanceType;
+  codAdvanceValue?: number;
+  codMinOrderPaise?: number;
 }
