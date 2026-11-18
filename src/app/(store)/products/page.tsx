@@ -6,7 +6,7 @@ import { ProductGrid } from "@/components/product/ProductGrid";
 import { SortSelect } from "@/components/product/SortSelect";
 import { Ornament } from "@/components/home/Ornament";
 import { readQueryFromSearchParams } from "@/features/products/filters";
-import { productRepo, reviewRepo, pageBannerRepo, catalogRepo } from "@/server/repositories";
+import { productRepo, reviewRepo, pageBannerRepo, catalogRepo, categoryRepo } from "@/server/repositories";
 
 export const metadata = { title: "All Sarees" };
 
@@ -15,13 +15,14 @@ type Search = Record<string, string | string[] | undefined>;
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const query = readQueryFromSearchParams(sp);
-  const [[{ items, total }, facets], banner, catalogs] = await Promise.all([
+  const [[{ items, total }, facets], banner, catalogs, categories] = await Promise.all([
     Promise.all([
       productRepo.list({ ...query, perPage: 60 }),
       productRepo.getAvailableFacets()
     ]),
     pageBannerRepo.findByPage("/products"),
-    catalogRepo.list()
+    catalogRepo.list(),
+    categoryRepo.list()
   ]);
   const ratings = await reviewRepo.aggregateForMany(items.map((p) => p.id));
 
@@ -30,8 +31,23 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     ? catalogs.find((c) => c.slug.toLowerCase() === activeWeaveSlug.toLowerCase())
     : null;
 
+  const activeCategory = query.category
+    ? categories.find(
+        (c) =>
+          c.id.toLowerCase() === query.category?.toLowerCase() ||
+          c.slug.toLowerCase() === query.category?.toLowerCase()
+      )
+    : null;
+
+  const bannerImageUrl =
+    matchedCatalog?.imageUrl ||
+    activeCategory?.headerImage ||
+    activeCategory?.image ||
+    banner?.imageUrl;
+
   const weaveTitle =
     matchedCatalog?.name ||
+    activeCategory?.name ||
     (activeWeaveSlug
       ? activeWeaveSlug
           .split("-")
@@ -39,14 +55,20 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           .join(" ")
       : null);
 
+  const bannerTitle = weaveTitle || banner?.title || "All Sarees";
+  const bannerSubtitle =
+    activeCategory?.description ||
+    banner?.subtitle ||
+    "Elampillai silk-cotton sarees woven on our own looms — direct from weaver to wardrobe.";
+
   return (
     <>
-      {banner?.imageUrl ? (
+      {bannerImageUrl ? (
         <section className="relative overflow-hidden bg-ink text-cream">
           <div className="absolute inset-0">
             <Image
-              src={banner.imageUrl}
-              alt={banner.title || "All Sarees"}
+              src={bannerImageUrl}
+              alt={bannerTitle}
               fill
               priority
               sizes="100vw"
@@ -58,17 +80,24 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-cream/70">
               <Link href="/" className="hover:text-cream">Home</Link>
               <span className="mx-2 text-cream/40">/</span>
-              <span className="text-cream">{banner.title || "All Sarees"}</span>
+              {weaveTitle ? (
+                <>
+                  <Link href="/products" className="hover:text-cream">All Sarees</Link>
+                  <span className="mx-2 text-cream/40">/</span>
+                  <span className="text-cream">{weaveTitle}</span>
+                </>
+              ) : (
+                <span className="text-cream">{bannerTitle}</span>
+              )}
             </nav>
 
-            <p className="eyebrow-cream mt-6">The full atlas</p>
+            <p className="eyebrow-cream mt-6">{weaveTitle ? "Curated Weave Collection" : "The full atlas"}</p>
             <h1 className="mt-3 font-display text-[46px] leading-none md:text-[62px]">
-              {banner.title || "All Sarees"}
+              {bannerTitle}
             </h1>
             <Ornament className="mt-4 h-4 w-40" tone="gold" />
             <p className="mt-5 max-w-xl text-[15px] leading-[1.7] text-cream/80">
-              {banner.subtitle ||
-                "Elampillai silk-cotton sarees woven on our own looms — direct from weaver to wardrobe."}
+              {bannerSubtitle}
             </p>
           </Container>
         </section>

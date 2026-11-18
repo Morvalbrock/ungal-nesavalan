@@ -1,19 +1,29 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import type { Catalog } from "@/types/catalog";
+import type { Category } from "@/types/category";
 
 interface StitchWeaveFamiliesProps {
-  catalogs?: (Pick<Catalog, "slug" | "name" | "imageUrl"> & { count: number })[];
+  catalogs?: (Pick<Catalog, "slug" | "name" | "imageUrl"> & { count: number; sort?: number })[];
+  categories?: Category[];
   fallbackImageBySlug?: Record<string, string>;
 }
 
-const WEAVE_FAMILIES = [
+const WEAVE_PRESETS: Record<
+  string,
   {
-    title: "Kalyani Silk Cotton",
-    slug: "kalyani-silk-cotton",
+    priceText?: string;
+    subtitle?: string;
+    tag?: string;
+    tagColor?: string;
+    defaultImage?: string;
+  }
+> = {
+  "kalyani-silk-cotton": {
     priceText: "From ₹800",
     subtitle: "Rich Zari Floral Buttas",
     tag: "Popular",
@@ -21,9 +31,7 @@ const WEAVE_FAMILIES = [
     defaultImage:
       "https://res.cloudinary.com/khxbcqk3/image/upload/v1793090878/ungal-nesavalan/products/xlkyzqueh0gj9wchifnj.jpg"
   },
-  {
-    title: "Maheshwari Cotton",
-    slug: "maheshwari-cotton",
+  "maheshwari-cotton": {
     priceText: "From ₹890",
     subtitle: "Mustard & Dark Green",
     tag: "Cool Fabric",
@@ -31,9 +39,7 @@ const WEAVE_FAMILIES = [
     defaultImage:
       "https://res.cloudinary.com/khxbcqk3/image/upload/v1792837551/ungal-nesavalan/products/omxjjqed2mkqhxfd0r2o.jpg"
   },
-  {
-    title: "Aarani Soft Silk",
-    slug: "aarani-soft-silk",
+  "aarani-soft-silk": {
     priceText: "From ₹750",
     subtitle: "Gold Tissue Border",
     tag: "Royal Violet",
@@ -41,9 +47,7 @@ const WEAVE_FAMILIES = [
     defaultImage:
       "https://res.cloudinary.com/khxbcqk3/image/upload/v1792828212/ungal-nesavalan/products/qykhe6ausxa7gskreldn.jpg"
   },
-  {
-    title: "Aarani Checked Sarees",
-    slug: "aarani-checked-sarees",
+  "aarani-checked-sarees": {
     priceText: "From ₹799",
     subtitle: "Traditional Checks",
     tag: "Classic Checks",
@@ -51,9 +55,7 @@ const WEAVE_FAMILIES = [
     defaultImage:
       "https://res.cloudinary.com/khxbcqk3/image/upload/v1792826948/ungal-nesavalan/products/omi8newighip6nx9ohv8.jpg"
   },
-  {
-    title: "Wedding Silk Sarees",
-    slug: "wedding-silk-sarees",
+  "wedding-silk-sarees": {
     priceText: "From ₹1,499",
     subtitle: "Traditional Crimson",
     tag: "Bridal Zari",
@@ -61,38 +63,77 @@ const WEAVE_FAMILIES = [
     defaultImage:
       "https://res.cloudinary.com/khxbcqk3/image/upload/v1792655649/ungal-nesavalan/products/ymfuoncj81pfa6l3ywna.jpg"
   },
-  {
-    title: "Borderless Sarees",
-    slug: "borderless-sarees",
+  "borderless-sarees": {
     priceText: "From ₹750",
     subtitle: "Modern Minimalist Weave",
     tag: "Borderless",
     tagColor: "bg-purple-800/90 text-amber-200",
     defaultImage:
       "https://res.cloudinary.com/khxbcqk3/image/upload/v1793848355/ungal-nesavalan/products/xprqgesbiucrsejmfaur.jpg"
+  },
+  "nayanthara-cotton": {
+    priceText: "From ₹850",
+    subtitle: "Soft Cotton Saree",
+    tag: "Daily Wear",
+    tagColor: "bg-teal-700/90 text-white",
+    defaultImage:
+      "https://res.cloudinary.com/khxbcqk3/image/upload/v1792837551/ungal-nesavalan/products/omxjjqed2mkqhxfd0r2o.jpg"
+  },
+  "embossed-sarees": {
+    priceText: "From ₹950",
+    subtitle: "Embossed Jacquard",
+    tag: "Festive Weave",
+    tagColor: "bg-purple-900/90 text-amber-200",
+    defaultImage:
+      "https://res.cloudinary.com/khxbcqk3/image/upload/v1793090878/ungal-nesavalan/products/xlkyzqueh0gj9wchifnj.jpg"
+  },
+  "bridal-sarees": {
+    priceText: "From ₹1,499",
+    subtitle: "Muhurtham Silk",
+    tag: "Bridal Edit",
+    tagColor: "bg-rose-800/90 text-amber-200",
+    defaultImage:
+      "https://res.cloudinary.com/khxbcqk3/image/upload/v1792655649/ungal-nesavalan/products/ymfuoncj81pfa6l3ywna.jpg"
   }
-];
+};
 
-export function StitchWeaveFamilies({ catalogs, fallbackImageBySlug }: StitchWeaveFamiliesProps) {
-  const items = WEAVE_FAMILIES.map((fam) => {
-    const catalogMatch = catalogs?.find(
-      (c) => c.slug.toLowerCase() === fam.slug.toLowerCase()
-    );
-    const fallbackImg =
-      fallbackImageBySlug && fallbackImageBySlug[fam.slug.toLowerCase()];
-    const imageSrc = catalogMatch?.imageUrl || fallbackImg || fam.defaultImage;
+export function StitchWeaveFamilies({ catalogs, categories, fallbackImageBySlug }: StitchWeaveFamiliesProps) {
+  const items = useMemo(() => {
+    // If catalogs exist from admin panel, prioritize catalogs with in-stock products or custom image
+    const validCatalogs = catalogs && catalogs.length > 0
+      ? [...catalogs]
+          .filter((c) => c.count > 0 || Boolean(c.imageUrl) || Boolean(WEAVE_PRESETS[c.slug.toLowerCase()]))
+          .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
+      : Object.keys(WEAVE_PRESETS).map((slug, idx) => ({
+          slug,
+          name: slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+          imageUrl: undefined,
+          count: 0,
+          sort: idx
+        }));
 
-    return {
-      title: fam.title,
-      slug: fam.slug,
-      priceText: fam.priceText,
-      subtitle: fam.subtitle,
-      tag: fam.tag,
-      tagColor: fam.tagColor,
-      image: imageSrc,
-      count: catalogMatch?.count
-    };
-  });
+    return validCatalogs.map((cat) => {
+      const slugKey = cat.slug.toLowerCase();
+      const preset = WEAVE_PRESETS[slugKey];
+      const fallbackImg = fallbackImageBySlug && fallbackImageBySlug[slugKey];
+      const imageSrc =
+        cat.imageUrl ||
+        fallbackImg ||
+        preset?.defaultImage ||
+        "https://res.cloudinary.com/khxbcqk3/image/upload/v1792828212/ungal-nesavalan/products/qykhe6ausxa7gskreldn.jpg";
+
+      return {
+        title: cat.name,
+        slug: cat.slug,
+        priceText: preset?.priceText || "From ₹750",
+        subtitle: preset?.subtitle || "Authentic Handloom Weave",
+        tag: preset?.tag || (cat.count > 0 ? `${cat.count} Designs` : "Handloom"),
+        tagColor: preset?.tagColor || "bg-purple-950/80 text-amber-300",
+        image: imageSrc,
+        count: cat.count
+      };
+    });
+  }, [catalogs, fallbackImageBySlug]);
 
   return (
     <section
@@ -174,7 +215,7 @@ export function StitchWeaveFamilies({ catalogs, fallbackImageBySlug }: StitchWea
           </div>
         </div>
 
-        {/* Desktop View: Traditional Title and 6-column Grid */}
+        {/* Desktop View: Traditional Title and Grid */}
         <div className="hidden md:block">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <div className="gold-divider text-brand-gold text-xs font-semibold uppercase tracking-widest mb-1.5">

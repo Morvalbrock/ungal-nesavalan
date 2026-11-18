@@ -1,25 +1,52 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Sparkles, ArrowRight, Play, Award, ChevronRight } from "lucide-react";
+import { Sparkles, ArrowRight, Play, Award, ChevronRight, ChevronLeft } from "lucide-react";
+import type { HeroSlide } from "@/types/hero-slide";
 import { useSareeModalStore } from "./saree-modal-store";
 import { MobileHeroSlider } from "./MobileHeroSlider";
 
-export function StitchHero() {
+interface StitchHeroProps {
+  slides?: HeroSlide[];
+}
+
+export function StitchHero({ slides = [] }: StitchHeroProps) {
   const openModal = useSareeModalStore((s) => s.open);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const activeSlides = slides.filter((s) => s.active);
+  const totalSlides = activeSlides.length;
+
+  const currentSlide = totalSlides > 0 ? activeSlides[activeIdx % totalSlides] : null;
+
+  // Autoplay desktop slides if multiple
+  useEffect(() => {
+    if (totalSlides <= 1) return;
+    const t = setInterval(() => {
+      setActiveIdx((prev) => (prev + 1) % totalSlides);
+    }, 6000);
+    return () => clearInterval(t);
+  }, [totalSlides]);
 
   const handleHeroCardClick = () => {
+    if (currentSlide?.ctaPrimaryHref && currentSlide.ctaPrimaryHref !== "/products") {
+      window.location.href = currentSlide.ctaPrimaryHref;
+      return;
+    }
     openModal({
       productId: "hero_royal_violet",
       slug: "royal-violet-aarani-soft-silk-saree",
-      title: "Royal Violet Aarani Soft Silk Saree with Pure Zari Border",
+      title: currentSlide?.featureTitle || "Royal Violet Aarani Soft Silk Saree with Pure Zari Border",
       price: "₹750",
       originalPrice: "₹1,299",
       discount: "35% OFF",
       imageUrl:
+        currentSlide?.featureImageUrl ||
+        currentSlide?.imageUrl ||
         "https://res.cloudinary.com/khxbcqk3/image/upload/v1792828212/ungal-nesavalan/products/qykhe6ausxa7gskreldn.jpg",
-      badge: "Aarani Soft Silk",
+      badge: currentSlide?.featureEyebrow || "Aarani Soft Silk",
       rating: 4.9,
       reviewCount: 96,
       weave: "Authentic Elampillai Pit-loom",
@@ -28,16 +55,36 @@ export function StitchHero() {
       borderWork: "Traditional Floral Peacock Zari Tissue",
       weaver: "Master Weaver Selvam & Family",
       thumbnails: [
-        "https://res.cloudinary.com/khxbcqk3/image/upload/v1792828212/ungal-nesavalan/products/qykhe6ausxa7gskreldn.jpg"
+        currentSlide?.featureImageUrl ||
+          currentSlide?.imageUrl ||
+          "https://res.cloudinary.com/khxbcqk3/image/upload/v1792828212/ungal-nesavalan/products/qykhe6ausxa7gskreldn.jpg"
       ]
     });
   };
+
+  const eyebrow = currentSlide?.eyebrow || "Direct From Our Elampillai Looms";
+  const headline = currentSlide?.headline || "Authentic Weaves,";
+  const headlineItalic = currentSlide?.headlineItalic || "Timeless Elegance.";
+  const subheadline =
+    currentSlide?.subheadline ||
+    "Direct from the master weavers of Elampillai. Pure silk cot silk sarees, lightweight festive wear, and intricately designed borders woven for every auspicious celebration.";
+  const primaryLabel = currentSlide?.ctaPrimaryLabel || "Shop Sarees";
+  const primaryHref = currentSlide?.ctaPrimaryHref || "#weave-families";
+  const secondaryLabel = currentSlide?.ctaSecondaryLabel || "Our Weaver Story";
+  const secondaryHref = currentSlide?.ctaSecondaryHref || "#heritage-section";
+  const visualImage =
+    currentSlide?.featureImageUrl ||
+    currentSlide?.imageUrl ||
+    "https://res.cloudinary.com/khxbcqk3/image/upload/v1792828212/ungal-nesavalan/products/qykhe6ausxa7gskreldn.jpg";
+  const visualAlt = currentSlide?.featureImageAlt || currentSlide?.imageAlt || "Ungal Nesavalan Authentic Handloom Silk Saree";
+  const badgeTitle = currentSlide?.featureTitle || "Tradition Since 1994";
+  const badgeSubtitle = currentSlide?.featureSubtitle || "Pit-loomed in Salem - Elampillai cluster";
 
   return (
     <>
       {/* Mobile-Only Movable Touch & Drag Slider (Stitch Screen Design) */}
       <div className="block lg:hidden">
-        <MobileHeroSlider />
+        <MobileHeroSlider slides={activeSlides} />
       </div>
 
       {/* Desktop Hero Layout */}
@@ -49,55 +96,75 @@ export function StitchHero() {
               {/* Heritage badge */}
               <div className="inline-flex items-center gap-2 bg-purple-100/90 border border-purple-200/80 px-4 py-1.5 rounded-full text-brand-purple text-xs font-semibold tracking-wider uppercase">
                 <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                <span>Direct From Our Elampillai Looms</span>
+                <span>{eyebrow}</span>
               </div>
 
               {/* Headline */}
               <div className="space-y-2">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heritage font-bold text-brand-plum tracking-tight leading-[1.12]">
-                  Authentic Weaves, <br />
-                  <span className="italic text-brand-purple">Timeless Elegance.</span>
+                  {headline} <br />
+                  <span className="italic text-brand-purple">{headlineItalic}</span>
                 </h1>
                 <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto lg:mx-0 font-normal leading-relaxed pt-1">
-                  Direct from the master weavers of Elampillai. Pure silk cot silk sarees, lightweight
-                  festive wear, and intricately designed borders woven for every auspicious celebration.
+                  {subheadline}
                 </p>
               </div>
 
               {/* CTAs */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-                <a
-                  href="#weave-families"
+                <Link
+                  href={primaryHref}
                   className="px-8 py-3.5 rounded-full bg-gradient-to-r from-brand-deep to-brand-purple text-white font-semibold text-sm shadow-lg hover:shadow-purple-500/30 hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  <span>Shop Sarees</span>
+                  <span>{primaryLabel}</span>
                   <ArrowRight className="h-4 w-4" />
-                </a>
-                <a
-                  href="#heritage-section"
+                </Link>
+                <Link
+                  href={secondaryHref}
                   className="px-7 py-3.5 rounded-full bg-white border border-purple-200 text-brand-plum font-semibold text-sm hover:bg-purple-50 hover:border-purple-300 transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  <span>Our Weaver Story</span>
+                  <span>{secondaryLabel}</span>
                   <Play className="h-3 w-3 fill-brand-purple text-brand-purple" />
-                </a>
+                </Link>
               </div>
 
-              {/* Mini trust counters */}
-              <div className="pt-4 flex items-center justify-center lg:justify-start gap-6 text-xs text-slate-500 border-t border-purple-200/60 max-w-md mx-auto lg:mx-0">
-                <div>
-                  <p className="text-brand-plum font-bold text-base">50,000+</p>
-                  <p>Happy Customers</p>
+              {/* Mini trust counters & slide switchers */}
+              <div className="pt-4 flex items-center justify-between border-t border-purple-200/60 max-w-md mx-auto lg:mx-0">
+                <div className="flex items-center gap-6 text-xs text-slate-500">
+                  <div>
+                    <p className="text-brand-plum font-bold text-base">50,000+</p>
+                    <p>Happy Customers</p>
+                  </div>
+                  <div className="w-px h-8 bg-purple-200" />
+                  <div>
+                    <p className="text-brand-plum font-bold text-base">100% Genuine</p>
+                    <p>Handloom Weaves</p>
+                  </div>
+                  <div className="w-px h-8 bg-purple-200" />
+                  <div>
+                    <p className="text-brand-plum font-bold text-base">Direct Rates</p>
+                    <p>No Middlemen</p>
+                  </div>
                 </div>
-                <div className="w-px h-8 bg-purple-200" />
-                <div>
-                  <p className="text-brand-plum font-bold text-base">100% Genuine</p>
-                  <p>Handloom Weaves</p>
-                </div>
-                <div className="w-px h-8 bg-purple-200" />
-                <div>
-                  <p className="text-brand-plum font-bold text-base">Direct Rates</p>
-                  <p>No Middlemen Markup</p>
-                </div>
+
+                {/* Desktop Slide Dots if admin has configured multiple active slides */}
+                {totalSlides > 1 && (
+                  <div className="flex items-center gap-1.5 pl-2">
+                    {activeSlides.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        aria-label={`Go to slide ${i + 1}`}
+                        onClick={() => setActiveIdx(i)}
+                        className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                          i === (activeIdx % totalSlides)
+                            ? "w-6 bg-brand-purple"
+                            : "w-2 bg-purple-200 hover:bg-purple-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -112,8 +179,8 @@ export function StitchHero() {
               >
                 <div className="relative aspect-[4/3] sm:aspect-[16/10] w-full overflow-hidden">
                   <Image
-                    src="/images/img.png"
-                    alt="Ungal Nesavalan Royal Silk Sarees Banner"
+                    src={visualImage}
+                    alt={visualAlt}
                     fill
                     priority
                     sizes="(min-width: 1024px) 50vw, 100vw"
@@ -130,9 +197,9 @@ export function StitchHero() {
                     </div>
                     <div>
                       <h4 className="font-bold text-xs text-brand-plum uppercase tracking-wide">
-                        Tradition Since 1994
+                        {badgeTitle}
                       </h4>
-                      <p className="text-[11px] text-slate-500">Pit-loomed in Salem - Elampillai cluster</p>
+                      <p className="text-[11px] text-slate-500">{badgeSubtitle}</p>
                     </div>
                   </div>
                   <span className="text-xs font-semibold text-brand-purple flex items-center gap-1 group-hover:translate-x-1 transition-transform">

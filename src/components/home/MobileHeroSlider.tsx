@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import type { HeroSlide } from "@/types/hero-slide";
 
 interface SlideData {
   id: string;
@@ -12,38 +13,51 @@ interface SlideData {
   href: string;
 }
 
-const SLIDES: SlideData[] = [
+const DEFAULT_SLIDES: SlideData[] = [
   {
     id: "slide-1",
-    image: "/images/img.png",
+    image: "/images/authentic_indian_handloom_silk_saree.png",
     alt: "Authentic Elampillai Handloom Silk Cotton Sarees",
-    tag: "Pure Silk & Cotton",
+    tag: "Pure Silk Cotton",
     href: "/products?weave=kalyani-silk-cotton"
   },
   {
     id: "slide-2",
-    image: "/images/authentic_indian_handloom_silk_saree.png",
+    image: "https://res.cloudinary.com/khxbcqk3/image/upload/v1792655649/ungal-nesavalan/products/ymfuoncj81pfa6l3ywna.jpg",
     alt: "Bridal Zari Sarees - Elampillai Pit-looms",
     tag: "Bridal Zari Edition",
-    href: "/products?category=bridal-sarees"
+    href: "/category/bridal-sarees"
   },
   {
     id: "slide-3",
-    image: "/images/login.png",
+    image: "https://res.cloudinary.com/khxbcqk3/image/upload/v1792837551/ungal-nesavalan/products/omxjjqed2mkqhxfd0r2o.jpg",
     alt: "Maheshwari & Traditional Pure Cotton Sarees",
-    tag: "Maheshwari & Kasavu",
+    tag: "Maheshwari Handloom",
     href: "/products?weave=maheshwari-cotton"
   },
   {
     id: "slide-4",
-    image: "/images/elegant_south_indian.png",
+    image: "https://res.cloudinary.com/khxbcqk3/image/upload/v1792828212/ungal-nesavalan/products/qykhe6ausxa7gskreldn.jpg",
     alt: "Royal Aarani Soft Silk Sarees with Pure Zari",
     tag: "Aarani Soft Silk",
     href: "/products?weave=aarani-soft-silk"
   }
 ];
 
-export function MobileHeroSlider() {
+export function MobileHeroSlider({ slides }: { slides?: HeroSlide[] }) {
+  const activeSlides: SlideData[] = useMemo(() => {
+    if (slides && slides.length > 0) {
+      return slides.map((s) => ({
+        id: s.id,
+        image: s.imageUrl,
+        alt: s.imageAlt || s.headline || "Ungal Nesavalan Handloom Saree",
+        tag: s.eyebrow || "",
+        href: s.ctaPrimaryHref || "/products"
+      }));
+    }
+    return DEFAULT_SLIDES;
+  }, [slides]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -53,7 +67,7 @@ export function MobileHeroSlider() {
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const hasMovedRef = useRef<boolean>(false);
 
-  const totalSlides = SLIDES.length;
+  const totalSlides = activeSlides.length;
 
   const goToSlide = useCallback(
     (index: number) => {
@@ -70,6 +84,7 @@ export function MobileHeroSlider() {
 
   const startAutoPlay = useCallback(() => {
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    if (totalSlides <= 1) return;
     autoPlayRef.current = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % totalSlides);
     }, 4000);
@@ -192,7 +207,7 @@ export function MobileHeroSlider() {
               : `translateX(-${currentIndex * 100}%)`
           }}
         >
-          {SLIDES.map((slide, idx) => (
+          {activeSlides.map((slide, idx) => (
             <Link
               key={slide.id}
               href={slide.href}
@@ -228,25 +243,27 @@ export function MobileHeroSlider() {
         </div>
 
         {/* Minimal Floating Indicator Dots */}
-        <div className="absolute bottom-2.5 inset-x-0 flex items-center justify-center space-x-1.5 z-10 pointer-events-none">
-          {SLIDES.map((slide, idx) => (
-            <button
-              key={slide.id}
-              type="button"
-              aria-label={`Go to slide ${idx + 1}`}
-              onClick={(e) => {
-                e.preventDefault();
-                goToSlide(idx);
-                startAutoPlay();
-              }}
-              className={`h-1.5 rounded-full transition-all duration-300 pointer-events-auto cursor-pointer ${
-                idx === currentIndex
-                  ? "w-6 bg-amber-400 shadow-xs"
-                  : "w-1.5 bg-white/60 hover:bg-white"
-              }`}
-            />
-          ))}
-        </div>
+        {totalSlides > 1 && (
+          <div className="absolute bottom-2.5 inset-x-0 flex items-center justify-center space-x-1.5 z-10 pointer-events-none">
+            {activeSlides.map((slide, idx) => (
+              <button
+                key={slide.id}
+                type="button"
+                aria-label={`Go to slide ${idx + 1}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  goToSlide(idx);
+                  startAutoPlay();
+                }}
+                className={`h-1.5 rounded-full transition-all duration-300 pointer-events-auto cursor-pointer ${
+                  idx === currentIndex
+                    ? "w-6 bg-amber-400 shadow-xs"
+                    : "w-1.5 bg-white/60 hover:bg-white"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
