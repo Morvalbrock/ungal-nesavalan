@@ -113,11 +113,11 @@ function Slide({
           fill
           sizes="100vw"
           priority={isFirst}
-          className="object-cover object-center opacity-55"
+          className="object-cover object-center opacity-60"
           unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/60 to-ink/10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/75 to-ink/25" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-maroon-dark/20 to-ink/75" />
       </div>
 
       <Container className="relative grid min-h-[220px] items-center gap-4 py-8 sm:min-h-[380px] sm:gap-6 sm:py-10 md:min-h-[420px] md:gap-8 md:py-12 lg:min-h-[460px] lg:grid-cols-[1.15fr_0.85fr] lg:gap-10 lg:py-14">
@@ -178,13 +178,17 @@ function Slide({
               />
             </div>
             {slide.featureTitle && (
-              <div className="absolute -bottom-4 -left-4 hidden w-48 rounded-card bg-cream p-3.5 text-ink shadow-elev md:block">
-                {slide.featureEyebrow && <p className="eyebrow">{slide.featureEyebrow}</p>}
-                <p className="mt-1 font-display text-base leading-tight">{slide.featureTitle}</p>
+              <div className="absolute -bottom-4 -left-4 hidden w-52 rounded-card border border-border/80 bg-cream/95 p-3.5 text-ink shadow-elev backdrop-blur-md md:block">
+                {slide.featureEyebrow && (
+                  <p className="inline-block rounded-full bg-maroon/10 px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-wider text-maroon">
+                    {slide.featureEyebrow}
+                  </p>
+                )}
+                <p className="mt-1.5 font-display text-base font-medium leading-tight">{slide.featureTitle}</p>
                 {slide.featureSubtitle && (
                   <p className="mt-0.5 text-[11px] text-ink-muted">{slide.featureSubtitle}</p>
                 )}
-                <Ornament className="mt-2 h-3 w-full" tone="ink" />
+                <Ornament className="mt-2 h-3 w-full" tone="maroon" />
               </div>
             )}
           </div>

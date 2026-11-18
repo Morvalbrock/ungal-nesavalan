@@ -74,7 +74,7 @@ export function NewArrivalsRail({ products }: NewArrivalsRailProps) {
       <Container>
         <div className="mb-6 flex flex-col gap-4 sm:mb-8 md:mb-10 md:flex-row md:items-end md:justify-between md:gap-8">
           <div className="max-w-xl">
-            <span className="eyebrow">Just Off the Pit-Loom</span>
+            <span className="eyebrow text-maroon font-semibold">Just Off the Pit-Loom</span>
             <h2 className="mt-3 font-display text-3xl leading-tight text-ink md:text-[42px]">
               This Week&rsquo;s Weave
             </h2>
@@ -86,7 +86,7 @@ export function NewArrivalsRail({ products }: NewArrivalsRailProps) {
           <div className="flex items-center gap-3 self-start md:self-end">
             <Link
               href="/products"
-              className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-deep transition-colors hover:text-ink"
+              className="text-[11px] font-semibold uppercase tracking-[0.25em] text-maroon transition-colors hover:text-gold-deep"
             >
               Open the Whole Shelf →
             </Link>
@@ -140,7 +140,7 @@ export function NewArrivalsRail({ products }: NewArrivalsRailProps) {
                 <div
                   key={p.id}
                   data-rail-card
-                  className="group relative flex w-[260px] shrink-0 snap-start flex-col overflow-hidden rounded-card border border-border bg-cream shadow-card transition-shadow hover:shadow-elev sm:w-[calc((100%_-_1rem)/2)] md:w-[calc((100%_-_2.5rem)/3)] lg:w-[calc((100%_-_3.75rem)/4)]"
+                  className="group relative flex w-[260px] shrink-0 snap-start flex-col overflow-hidden rounded-card border border-border/80 bg-cream shadow-card transition-all duration-300 hover:border-maroon/40 hover:shadow-elev sm:w-[calc((100%_-_1rem)/2)] md:w-[calc((100%_-_2.5rem)/3)] lg:w-[calc((100%_-_3.75rem)/4)]"
                 >
                   <div className="relative w-full aspect-[3/4] overflow-hidden bg-cream-warm/60">
                     <Link href={`/products/${p.slug}`} className="block h-full w-full">

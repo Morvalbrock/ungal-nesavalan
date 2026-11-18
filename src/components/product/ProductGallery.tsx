@@ -128,10 +128,10 @@ export function ProductGallery({
                 onClick={() => setActive(i)}
                 aria-label={`View photo ${i + 1}`}
                 className={cn(
-                  "relative aspect-square w-11 sm:w-14 shrink-0 overflow-hidden rounded-card border transition-all sm:w-full",
+                  "relative aspect-square w-11 sm:w-14 shrink-0 overflow-hidden rounded-xl border transition-all sm:w-full",
                   i === active
-                    ? "border-maroon ring-2 ring-maroon/25 opacity-100"
-                    : "border-border/70 opacity-70 hover:opacity-100 hover:border-ink/40"
+                    ? "border-brand-purple ring-2 ring-brand-purple/30 opacity-100"
+                    : "border-purple-200/80 opacity-70 hover:opacity-100 hover:border-purple-400"
                 )}
               >
                 <Image
@@ -152,7 +152,7 @@ export function ProductGallery({
           onMouseEnter={onMove}
           onMouseMove={onMove}
           onMouseLeave={() => setZoom(null)}
-          className="relative order-1 aspect-[4/5] max-h-[340px] sm:max-h-[440px] md:max-h-[480px] w-full flex-1 overflow-hidden rounded-card bg-cream-warm shadow-xs sm:order-2"
+          className="relative order-1 aspect-[4/5] max-h-[340px] sm:max-h-[440px] md:max-h-[480px] w-full flex-1 overflow-hidden rounded-2xl bg-white border border-purple-100 shadow-sm sm:order-2"
         >
           <Image
             src={activeImg.url}
@@ -189,7 +189,7 @@ export function ProductGallery({
                 type="button"
                 onClick={() => setActive((i) => (i - 1 + count) % count)}
                 aria-label="Previous image"
-                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-cream/90 px-3 py-1 text-sm text-ink shadow hover:bg-cream md:hidden"
+                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-1 text-sm text-brand-plum shadow-md hover:bg-white md:hidden"
               >
                 ‹
               </button>
@@ -197,11 +197,11 @@ export function ProductGallery({
                 type="button"
                 onClick={() => setActive((i) => (i + 1) % count)}
                 aria-label="Next image"
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-cream/90 px-3 py-1 text-sm text-ink shadow hover:bg-cream md:hidden"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-1 text-sm text-brand-plum shadow-md hover:bg-white md:hidden"
               >
                 ›
               </button>
-              <span className="absolute bottom-3 right-3 rounded-full bg-ink/75 px-2.5 py-0.5 text-[10px] font-medium text-cream shadow-xs">
+              <span className="absolute bottom-3 right-3 rounded-full bg-brand-plum/85 px-2.5 py-0.5 text-[10px] font-semibold text-white shadow-xs">
                 {active + 1} / {count}
               </span>
             </>
@@ -229,15 +229,15 @@ export function ProductGallery({
         <div className="mt-4">
           <div className="mb-3.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-widest2 text-ink-muted">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-purple-900/70">
                 Choose a Variant
               </span>
-              <span className="rounded-full bg-cream-warm px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold text-brand-purple">
                 {totalVariants} {totalVariants === 1 ? "Option" : "Options"}
               </span>
             </div>
             {currentVariant && (
-              <span className="text-[12px] font-medium text-ink capitalize">
+              <span className="text-xs font-semibold text-brand-plum capitalize">
                 {currentVariant.color}
               </span>
             )}
@@ -275,14 +275,14 @@ export function ProductGallery({
                   aria-label={`Select ${v.color}${isOutOfStock ? " - Out of stock" : ""}`}
                   aria-pressed={isSelected}
                   className={cn(
-                    "group relative flex flex-col overflow-hidden rounded-card border text-left transition-all duration-200",
+                    "group relative flex flex-col overflow-hidden rounded-xl border text-left transition-all duration-200",
                     isSelected
-                      ? "border-maroon ring-1 ring-maroon/25 shadow-xs bg-cream-warm/20"
-                      : "border-border/80 bg-white hover:border-ink/50",
+                      ? "border-brand-purple ring-1 ring-brand-purple/30 shadow-xs bg-purple-50/50"
+                      : "border-purple-200/80 bg-white hover:border-brand-purple/60",
                     isOutOfStock && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  <div className="relative aspect-square w-full overflow-hidden bg-cream-warm">
+                  <div className="relative aspect-square w-full overflow-hidden bg-purple-50/30">
                     {variantImg ? (
                       <Image
                         src={variantImg}
@@ -298,20 +298,20 @@ export function ProductGallery({
                         style={{ backgroundColor: `${v.colorHex}20` }}
                       >
                         <span
-                          className="h-6 w-6 rounded-full border border-ink/20 shadow-xs"
+                          className="h-6 w-6 rounded-full border border-purple-200 shadow-xs"
                           style={{ backgroundColor: v.colorHex }}
                         />
                       </div>
                     )}
 
                     {isSelected && (
-                      <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-maroon text-white shadow-xs">
+                      <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-purple text-white shadow-xs">
                         <Check className="h-2.5 w-2.5 stroke-[2.5]" />
                       </span>
                     )}
 
                     {isOutOfStock && (
-                      <span className="absolute inset-x-0 bottom-0 bg-ink/80 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wider text-cream">
+                      <span className="absolute inset-x-0 bottom-0 bg-brand-plum/80 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wider text-white">
                         Sold Out
                       </span>
                     )}
@@ -319,10 +319,10 @@ export function ProductGallery({
 
                   <div className="flex items-center gap-1 px-1.5 py-1">
                     <span
-                      className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border border-ink/20"
+                      className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border border-purple-200"
                       style={{ backgroundColor: v.colorHex }}
                     />
-                    <span className="truncate text-[10.5px] font-medium capitalize text-ink">
+                    <span className="truncate text-[10.5px] font-medium capitalize text-slate-800">
                       {v.color}
                     </span>
                   </div>
@@ -339,16 +339,16 @@ export function ProductGallery({
               >
                 <div className="relative flex aspect-square w-full items-center justify-center">
                   <div className="flex flex-col items-center gap-0.5">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/25 text-ink group-hover:border-maroon group-hover:text-maroon">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-purple-200 text-purple-700 group-hover:border-brand-purple group-hover:text-brand-purple">
                       <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                     </span>
-                    <span className="text-[9.5px] font-semibold uppercase tracking-wider text-ink">
+                    <span className="text-[9.5px] font-semibold uppercase tracking-wider text-purple-900">
                       +{hiddenCount}
                     </span>
                   </div>
                 </div>
                 <div className="px-1.5 py-1">
-                  <span className="truncate text-[10.5px] font-medium text-ink">Show more</span>
+                  <span className="truncate text-[10.5px] font-medium text-purple-900">Show more</span>
                 </div>
               </button>
             )}
@@ -358,15 +358,15 @@ export function ProductGallery({
                 type="button"
                 onClick={() => setShowAllVariants(false)}
                 aria-label="Show fewer variants"
-                className="group relative flex flex-col overflow-hidden rounded-card border border-dashed border-ink/30 bg-cream-warm/40 text-left transition-all duration-200 hover:border-ink/70 hover:bg-cream-warm"
+                className="group relative flex flex-col overflow-hidden rounded-xl border border-dashed border-purple-300 bg-purple-50/50 text-left transition-all duration-200 hover:border-brand-purple hover:bg-purple-50"
               >
                 <div className="relative flex aspect-square w-full items-center justify-center">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/25 text-ink group-hover:border-maroon group-hover:text-maroon">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-purple-200 text-purple-700 group-hover:border-brand-purple group-hover:text-brand-purple">
                     <Minus className="h-3.5 w-3.5 stroke-[2.5]" />
                   </span>
                 </div>
                 <div className="px-1.5 py-1">
-                  <span className="truncate text-[10.5px] font-medium text-ink">Show less</span>
+                  <span className="truncate text-[10.5px] font-medium text-purple-900">Show less</span>
                 </div>
               </button>
             )}

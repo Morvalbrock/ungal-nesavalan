@@ -6,7 +6,7 @@ import { ProductGrid } from "@/components/product/ProductGrid";
 import { SortSelect } from "@/components/product/SortSelect";
 import { Ornament } from "@/components/home/Ornament";
 import { readQueryFromSearchParams } from "@/features/products/filters";
-import { productRepo, reviewRepo, pageBannerRepo } from "@/server/repositories";
+import { productRepo, reviewRepo, pageBannerRepo, catalogRepo } from "@/server/repositories";
 
 export const metadata = { title: "All Sarees" };
 
@@ -15,14 +15,29 @@ type Search = Record<string, string | string[] | undefined>;
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const query = readQueryFromSearchParams(sp);
-  const [[{ items, total }, facets], banner] = await Promise.all([
+  const [[{ items, total }, facets], banner, catalogs] = await Promise.all([
     Promise.all([
       productRepo.list({ ...query, perPage: 60 }),
       productRepo.getAvailableFacets()
     ]),
-    pageBannerRepo.findByPage("/products")
+    pageBannerRepo.findByPage("/products"),
+    catalogRepo.list()
   ]);
   const ratings = await reviewRepo.aggregateForMany(items.map((p) => p.id));
+
+  const activeWeaveSlug = query.weave?.[0];
+  const matchedCatalog = activeWeaveSlug
+    ? catalogs.find((c) => c.slug.toLowerCase() === activeWeaveSlug.toLowerCase())
+    : null;
+
+  const weaveTitle =
+    matchedCatalog?.name ||
+    (activeWeaveSlug
+      ? activeWeaveSlug
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ")
+      : null);
 
   return (
     <>
@@ -58,33 +73,46 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           </Container>
         </section>
       ) : (
-        <section className="border-b border-border/60 bg-cream-warm/60">
-          <Container className="py-14">
-            <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-ink-muted">
-              <Link href="/" className="hover:text-ink">Home</Link>
-              <span className="mx-2 text-ink-muted/60">/</span>
-              <span className="text-ink">All Sarees</span>
+        <section className="border-b border-purple-100 bg-lavender-mist">
+          <Container className="py-10 sm:py-14">
+            <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-slate-500">
+              <Link href="/" className="hover:text-brand-purple transition-colors">Home</Link>
+              <span className="mx-2 text-purple-300">/</span>
+              {weaveTitle ? (
+                <>
+                  <Link href="/products" className="hover:text-brand-purple transition-colors">All Sarees</Link>
+                  <span className="mx-2 text-purple-300">/</span>
+                  <span className="text-brand-plum font-semibold">{weaveTitle}</span>
+                </>
+              ) : (
+                <span className="text-brand-plum font-semibold">All Sarees</span>
+              )}
             </nav>
 
-            <div className="mt-6 flex flex-col items-start gap-3 md:flex-row md:items-end md:justify-between">
+            <div className="mt-5 flex flex-col items-start gap-3 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="eyebrow">The full atlas</p>
-                <h1 className="mt-2 font-display text-[42px] leading-none md:text-[52px]">All Sarees</h1>
-                <p className="mt-3 max-w-lg text-[14.5px] leading-[1.6] text-ink-soft">
-                  Elampillai silk-cotton sarees woven on our own looms — direct
-                  from weaver to wardrobe.
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-100/90 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-brand-purple">
+                  {weaveTitle ? "Weave Family Collection" : "Loom Fresh Atlas"}
+                </span>
+                <h1 className="mt-3 font-heritage text-[38px] font-bold text-brand-plum leading-tight md:text-[52px]">
+                  {weaveTitle || "All Sarees"}
+                </h1>
+                <p className="mt-2.5 max-w-lg text-sm text-slate-600 leading-relaxed">
+                  {weaveTitle
+                    ? `Explore our authentic ${weaveTitle} collection woven using traditional jacquard and pit-loom techniques — direct from master weaver to your wardrobe.`
+                    : "Elampillai silk-cotton and pure soft silk sarees woven on our own pit-looms — direct from master weaver to your wardrobe."}
                 </p>
               </div>
-              <Ornament className="hidden h-4 w-40 md:block" tone="gold" />
+              <Ornament className="hidden h-4 w-40 md:block" tone="maroon" />
             </div>
           </Container>
         </section>
       )}
 
-      <Container className="py-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-5">
-          <p className="text-[12.5px] text-ink-muted">
-            Showing <span className="font-medium text-ink">{total}</span> piece{total === 1 ? "" : "s"}
+      <Container className="py-8 sm:py-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-purple-100 pb-5">
+          <p className="text-xs text-slate-500">
+            Showing <span className="font-bold text-brand-plum">{total}</span> piece{total === 1 ? "" : "s"}
           </p>
           <SortSelect />
         </div>

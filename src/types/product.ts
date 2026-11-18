@@ -73,7 +73,12 @@ export type ProductSummary = Pick<
   | "images"
   | "categoryId"
   | "featured"
->;
+> & {
+  lengthMeters?: number;
+  blousePieceIncluded?: boolean;
+  defaultVariantId?: string;
+  variants?: Variant[];
+};
 
 export interface ProductQuery {
   q?: string;

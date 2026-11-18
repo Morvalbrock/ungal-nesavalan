@@ -56,29 +56,31 @@ export default async function CategoryPage({
             <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/30 to-ink/80" />
           </div>
         )}
-        <Container className="relative flex min-h-[340px] flex-col justify-end py-16">
-          <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-cream/70">
-            <Link href="/" className="hover:text-cream">Home</Link>
-            <span className="mx-2 text-cream/40">/</span>
-            <Link href="/products" className="hover:text-cream">Sarees</Link>
-            <span className="mx-2 text-cream/40">/</span>
-            <span className="text-cream">{category.name}</span>
+        <Container className="relative flex min-h-[300px] sm:min-h-[340px] flex-col justify-end py-12 sm:py-16">
+          <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-purple-200/80">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <span className="mx-2 text-purple-300/40">/</span>
+            <Link href="/products" className="hover:text-white transition-colors">Sarees</Link>
+            <span className="mx-2 text-purple-300/40">/</span>
+            <span className="text-white font-semibold">{category.name}</span>
           </nav>
 
-          <p className="eyebrow-cream mt-6">The collection</p>
-          <h1 className="mt-3 font-display text-[46px] leading-none md:text-[62px]">{category.name}</h1>
+          <div className="mt-5 inline-flex items-center gap-1.5 self-start rounded-full border border-purple-300/40 bg-purple-900/60 backdrop-blur-md px-3 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-purple-200">
+            Artisan Handloom Collection
+          </div>
+          <h1 className="mt-3 font-heritage text-[40px] font-bold text-white leading-none md:text-[56px]">{category.name}</h1>
           <Ornament className="mt-4 h-4 w-40" tone="gold" />
           {category.description && (
-            <p className="mt-5 max-w-xl text-[15px] leading-[1.7] text-cream/80">{category.description}</p>
+            <p className="mt-4 max-w-xl text-[14.5px] leading-relaxed text-purple-100/90">{category.description}</p>
           )}
         </Container>
       </section>
 
-      <Container className="py-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-5">
-          <p className="text-[12.5px] text-ink-muted">
-            Showing <span className="font-medium text-ink">{total}</span> piece{total === 1 ? "" : "s"} in{" "}
-            <span className="font-medium text-ink">{category.name}</span>
+      <Container className="py-8 sm:py-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-purple-100 pb-5">
+          <p className="text-xs text-slate-500">
+            Showing <span className="font-bold text-brand-plum">{total}</span> piece{total === 1 ? "" : "s"} in{" "}
+            <span className="font-semibold text-brand-purple">{category.name}</span>
           </p>
           <SortSelect />
         </div>

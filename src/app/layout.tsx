@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Cormorant_Garamond, Fraunces, Inter } from "next/font/google";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { getSession } from "@/features/auth/session";
 import { userRepo } from "@/server/repositories";
@@ -14,6 +14,14 @@ const display = Fraunces({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["400", "500", "600", "700"],
+  display: "swap"
+});
+
+const heritage = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-heritage",
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
   display: "swap"
 });
 
@@ -49,7 +57,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f5eddc"
+  themeColor: "#FFFFFF"
 };
 
 const ORGANIZATION_JSONLD = {
@@ -67,7 +75,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const initialUser = user ? (({ passwordHash: _pw, ...rest }) => rest)(user) : null;
 
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
+    <html lang="en" className={`${display.variable} ${heritage.variable} ${body.variable}`}>
       <head>
         <JsonLd data={ORGANIZATION_JSONLD} />
         <PlausibleScript />

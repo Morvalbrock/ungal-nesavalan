@@ -26,55 +26,80 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const ratings = items.length ? await reviewRepo.aggregateForMany(items.map((p) => p.id)) : {};
 
   return (
-    <Container className="py-12">
-      <div className="max-w-2xl">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Search</p>
-        <h1 className="mt-2 font-display text-4xl">
-          {q ? <>Results for &ldquo;{q}&rdquo;</> : "Find your saree"}
-        </h1>
-        {q && <p className="mt-2 text-sm text-ink-muted">{total} piece{total === 1 ? "" : "s"} match</p>}
-      </div>
-
-      <div className="mt-8 max-w-xl">
-        <SearchBox autoFocus={!q} />
-      </div>
-
-      {!q && (
-        <div className="mt-10">
-          <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Browse by category</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {categories.slice(0, 12).map((c) => (
-              <Link
-                key={c.id}
-                href={`/category/${c.slug}`}
-                className="rounded-full border border-border px-4 py-2 text-sm text-ink-soft transition hover:border-ink hover:text-ink"
-              >
-                {c.name}
-              </Link>
-            ))}
+    <div className="bg-[#faf7fd] min-h-[75vh]">
+      <section className="bg-lavender-mist border-b border-purple-100 py-12">
+        <Container>
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100/80 px-3 py-1 text-xs font-semibold text-brand-purple tracking-wide uppercase">
+              Curated Search
+            </span>
+            <h1 className="mt-3 font-heritage text-3xl sm:text-4xl text-brand-plum">
+              {q ? <>Results for &ldquo;{q}&rdquo;</> : "Find Your Signature Saree"}
+            </h1>
+            {q && (
+              <p className="mt-2 text-sm text-purple-900/70">
+                {total} piece{total === 1 ? "" : "s"} found directly from Elampillai master weavers
+              </p>
+            )}
           </div>
-          <div className="mt-8">
-            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Try searching</p>
-            <div className="mt-3 flex flex-wrap gap-2 text-sm">
-              {["kanjivaram", "banarasi", "bridal red", "cotton daily", "tissue", "patola"].map((s) => (
+
+          <div className="mt-6 max-w-xl">
+            <SearchBox autoFocus={!q} />
+          </div>
+        </Container>
+      </section>
+
+      <Container className="py-10">
+        {!q && (
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-purple-900/80">
+              Browse by Weave & Collection
+            </h2>
+            <div className="mt-4 flex flex-wrap gap-2.5">
+              {categories.slice(0, 16).map((c) => (
                 <Link
-                  key={s}
-                  href={`/search?q=${encodeURIComponent(s)}`}
-                  className="rounded-full bg-cream-warm px-3 py-1 text-ink-soft hover:text-ink"
+                  key={c.id}
+                  href={`/category/${c.slug}`}
+                  className="rounded-full border border-purple-200/90 bg-white px-4 py-2 text-xs font-medium text-brand-plum shadow-xs transition hover:border-brand-purple hover:bg-purple-100/60"
                 >
-                  {s}
+                  {c.name}
                 </Link>
               ))}
             </div>
-          </div>
-        </div>
-      )}
 
-      {q && (
-        <div className="mt-10">
-          <ProductGrid items={items} ratings={ratings} />
-        </div>
-      )}
-    </Container>
+            <div className="mt-8 border-t border-purple-100 pt-8">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-purple-900/70">
+                Popular Searches
+              </h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  "Kalyani Cotton",
+                  "Elampillai Soft Silk",
+                  "Bridal Muhurtham",
+                  "Gold Zari Jacquard",
+                  "Tissue Silk",
+                  "Daily Wear Handloom",
+                  "Pure Cotton Butta"
+                ].map((s) => (
+                  <Link
+                    key={s}
+                    href={`/search?q=${encodeURIComponent(s)}`}
+                    className="rounded-full bg-purple-100/70 px-3 py-1 text-xs font-medium text-purple-900 hover:bg-brand-purple hover:text-white transition"
+                  >
+                    {s}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {q && (
+          <div>
+            <ProductGrid items={items} ratings={ratings} />
+          </div>
+        )}
+      </Container>
+    </div>
   );
 }

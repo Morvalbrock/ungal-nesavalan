@@ -39,11 +39,11 @@ export function ResetPasswordForm({ id, token }: { id: string; token: string }) 
 
   if (done) {
     return (
-      <div className="rounded-card border border-border bg-cream-warm/50 p-4 text-sm text-ink-soft">
-        <p>Password updated. Redirecting to sign in…</p>
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-800">
+        <p className="font-semibold">Password updated successfully! Redirecting to sign in…</p>
         <p className="mt-3">
-          <Link href="/login" className="link-underline">
-            Go to sign in
+          <Link href="/login" className="text-brand-purple font-semibold hover:underline text-xs">
+            Proceed to sign in →
           </Link>
         </p>
       </div>
@@ -52,27 +52,29 @@ export function ResetPasswordForm({ id, token }: { id: string; token: string }) 
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <AuthField label="New password">
+      <AuthField label="New Password">
         <PasswordInput
           autoComplete="new-password"
           required
           minLength={8}
+          placeholder="At least 8 characters"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
       </AuthField>
-      <AuthField label="Confirm new password" error={error ?? undefined}>
+      <AuthField label="Confirm New Password" error={error ?? undefined}>
         <PasswordInput
           autoComplete="new-password"
           required
           minLength={8}
+          placeholder="Re-enter password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           error={!!error}
         />
       </AuthField>
-      <button type="submit" disabled={pending} className="btn-primary w-full">
-        {pending ? "Updating…" : "Update password"}
+      <button type="submit" disabled={pending} className="btn-primary w-full font-semibold shadow-md shadow-brand-deep/20 py-3">
+        {pending ? "Updating Password…" : "Update Password"}
       </button>
     </form>
   );

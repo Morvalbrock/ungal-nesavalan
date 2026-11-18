@@ -35,15 +35,15 @@ export function WishlistButton({ productId, variant = "icon", className }: Props
         disabled={busy}
         aria-pressed={active}
         className={cn(
-          "inline-flex w-full items-center justify-center gap-2 rounded-card border px-4 py-2.5 text-sm transition",
+          "inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm transition font-medium",
           active
-            ? "border-maroon bg-maroon/5 text-maroon"
-            : "border-border text-ink-soft hover:border-ink hover:text-ink",
+            ? "border-brand-purple bg-purple-50 text-brand-purple"
+            : "border-purple-200 text-slate-700 hover:border-brand-purple hover:text-brand-plum",
           className
         )}
       >
-        <Heart className={cn("h-4 w-4", active && "fill-current")} />
-        {active ? "Saved to wishlist" : "Save for later"}
+        <Heart className={cn("h-4 w-4", active && "fill-current text-brand-purple")} />
+        {active ? "Saved in Wishlist" : "Save to Wishlist"}
       </button>
     );
   }
@@ -56,12 +56,12 @@ export function WishlistButton({ productId, variant = "icon", className }: Props
       aria-pressed={active}
       aria-label={active ? "Remove from wishlist" : "Save to wishlist"}
       className={cn(
-        "inline-flex h-9 w-9 items-center justify-center rounded-full bg-cream/90 text-ink shadow-sm backdrop-blur transition hover:bg-cream",
-        active && "text-maroon",
+        "inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm backdrop-blur transition hover:bg-purple-50 hover:text-brand-purple",
+        active && "text-brand-purple",
         className
       )}
     >
-      <Heart className={cn("h-4 w-4", active && "fill-current")} />
+      <Heart className={cn("h-4 w-4", active && "fill-current text-brand-purple")} />
     </button>
   );
 }

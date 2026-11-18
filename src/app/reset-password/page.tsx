@@ -29,9 +29,9 @@ export default async function ResetPasswordPage({
   if (!id || !token) {
     return (
       <AuthShell title="Reset your password" tagline={INVALID_COPY.missing}>
-        <div className="rounded-card border border-border bg-cream-warm/50 p-4 text-sm text-ink-soft">
-          <Link href="/forgot-password" className="link-underline">
-            ← Request a new link
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs sm:text-sm text-rose-800">
+          <Link href="/forgot-password" className="text-brand-purple font-semibold hover:underline">
+            ← Request a new reset link
           </Link>
         </div>
       </AuthShell>
@@ -42,9 +42,9 @@ export default async function ResetPasswordPage({
   if (!check.ok) {
     return (
       <AuthShell title="Reset your password" tagline={INVALID_COPY[check.reason]}>
-        <div className="rounded-card border border-border bg-cream-warm/50 p-4 text-sm text-ink-soft">
-          <Link href="/forgot-password" className="link-underline">
-            ← Request a new link
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs sm:text-sm text-rose-800">
+          <Link href="/forgot-password" className="text-brand-purple font-semibold hover:underline">
+            ← Request a new reset link
           </Link>
         </div>
       </AuthShell>

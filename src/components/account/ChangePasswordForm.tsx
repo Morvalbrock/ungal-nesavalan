@@ -93,26 +93,26 @@ export function ChangePasswordForm() {
   };
 
   return (
-    <div className="max-w-md rounded-card border border-border bg-cream-warm/40 p-6 shadow-sm">
-      <div className="mb-5 flex items-center gap-3 border-b border-border/80 pb-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink/5 text-ink">
+    <div className="max-w-md rounded-2xl border border-purple-100 bg-white p-6 shadow-xs">
+      <div className="mb-5 flex items-center gap-3 border-b border-purple-100 pb-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-100 text-brand-purple">
           {hasPassword ? <KeyRound className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
         </div>
         <div>
-          <h3 className="font-display text-lg text-ink">
+          <h3 className="font-heritage text-xl font-bold text-brand-plum">
             {hasPassword ? "Change Password" : "Set Account Password"}
           </h3>
-          <p className="text-xs text-ink-muted">
+          <p className="text-xs text-purple-900/60">
             {hasPassword
-              ? "Ensure your account is using a long, random password to stay secure."
+              ? "Ensure your account is using a secure password."
               : "Enable password sign-in for your account so you can log in with email or phone."}
           </p>
         </div>
       </div>
 
       {!hasPassword && (
-        <div className="mb-5 flex items-start gap-2.5 rounded-card border border-gold-deep/30 bg-gold-soft/10 p-3 text-xs leading-relaxed text-ink-soft">
-          <ShieldCheck className="h-4 w-4 shrink-0 text-gold-deep mt-0.5" />
+        <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-purple-200/80 bg-purple-50/60 p-3 text-xs leading-relaxed text-purple-950">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-brand-purple mt-0.5" />
           <span>
             You currently log in using <strong>Mobile OTP</strong> or <strong>Google</strong>. Set a password below to also enable password-based sign in anytime!
           </span>
@@ -120,14 +120,14 @@ export function ChangePasswordForm() {
       )}
 
       {serverError && (
-        <div className="mb-4 flex items-center gap-2 rounded-card border border-maroon/40 bg-maroon/10 p-3 text-xs text-maroon">
+        <div className="mb-4 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{serverError}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="mb-4 flex items-center gap-2 rounded-card border border-moss/40 bg-moss/10 p-3 text-xs text-moss">
+        <div className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           <span>{successMsg}</span>
         </div>
@@ -145,7 +145,7 @@ export function ChangePasswordForm() {
               />
             </AuthField>
             <div className="mt-1 text-right">
-              <Link href="/forgot-password" className="text-[11px] text-ink-muted hover:text-ink underline">
+              <Link href="/forgot-password" className="text-xs text-brand-purple hover:underline">
                 Forgot current password?
               </Link>
             </div>
@@ -170,7 +170,7 @@ export function ChangePasswordForm() {
           />
         </AuthField>
 
-        <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
+        <button type="submit" disabled={isSubmitting} className="btn-primary w-full font-semibold">
           {isSubmitting ? "Updating Password…" : hasPassword ? "Update Password" : "Set Password"}
         </button>
       </form>

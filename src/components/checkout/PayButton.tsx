@@ -149,7 +149,7 @@ export function PayButton({
         email: data.customer.email,
         contact: data.customer.phone
       },
-      theme: { color: "#7a1f2b" },
+      theme: { color: "#4a0e4e" },
       modal: {
         ondismiss: () => {
           setBusy(false);
@@ -184,22 +184,22 @@ export function PayButton({
         type="button"
         onClick={start}
         disabled={disabled || busy || items.length === 0}
-        className="btn-primary w-full sm:w-auto"
+        className="btn-primary w-full sm:w-auto font-semibold shadow-md shadow-brand-deep/20 text-sm py-3.5 px-8"
       >
         {busy
-          ? "Processing…"
+          ? "Securing Loom Order…"
           : paymentMode === "cod"
-            ? `Pay ${formatINR(amountPaise)} deposit`
-            : `Pay ${formatINR(amountPaise)}`}
+            ? `Pay ${formatINR(amountPaise)} Deposit & Confirm Booking`
+            : `Pay ${formatINR(amountPaise)} & Place Order`}
       </button>
       {paymentMode === "cod" && dueOnDeliveryPaise > 0 && (
-        <p className="mt-2 text-xs text-ink-soft">
-          {formatINR(dueOnDeliveryPaise)} will be collected in cash on delivery.
+        <p className="mt-2 text-xs text-purple-950 font-medium">
+          Balance {formatINR(dueOnDeliveryPaise)} will be collected in cash upon delivery.
         </p>
       )}
-      {error && <p className="mt-3 text-xs text-maroon">{error}</p>}
-      <p className="mt-3 text-[11px] uppercase tracking-widest text-ink-muted">
-        {scriptReady ? "Powered by Razorpay · UPI · Cards · Netbanking" : "Loading secure payment…"}
+      {error && <p className="mt-3 text-xs text-rose-600 font-medium">{error}</p>}
+      <p className="mt-3 text-xs text-purple-900/60">
+        {scriptReady ? "Direct Weaver Verification · 256-bit SSL Encrypted Payment" : "Loading secure payment…"}
       </p>
     </div>
   );

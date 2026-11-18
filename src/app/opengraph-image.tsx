@@ -20,7 +20,7 @@ async function loadDataUrl(relativePath: string, mime: string): Promise<string |
 export default async function OpenGraphImage() {
   const [heroSrc, logoSrc] = await Promise.all([
     loadDataUrl("images/elegant_south_indian.png", "image/png"),
-    loadDataUrl("images/logo.png", "image/png")
+    loadDataUrl("images/logo.jpeg", "image/jpeg")
   ]);
 
   return new ImageResponse(

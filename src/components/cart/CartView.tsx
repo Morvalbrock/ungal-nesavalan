@@ -20,32 +20,41 @@ export function CartView() {
 
   if (items.length === 0) {
     return (
-      <Container className="py-24 text-center">
-        <ShoppingBag className="mx-auto h-10 w-10 text-ink-muted" />
-        <h1 className="mt-6 font-display text-4xl">Your bag is empty</h1>
-        <p className="mt-3 text-ink-muted">Once you add a saree, it will show up here.</p>
-        <Link href="/products" className="btn-primary mt-8 inline-flex">
-          Explore sarees
-        </Link>
-      </Container>
+      <div className="bg-[#faf7fd] min-h-[60vh] flex items-center justify-center">
+        <Container className="py-20 text-center">
+          <div className="mx-auto w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center text-brand-purple">
+            <ShoppingBag className="h-8 w-8" />
+          </div>
+          <h1 className="mt-6 font-heritage text-3xl sm:text-4xl text-brand-plum">Your Bag is Empty</h1>
+          <p className="mt-2 text-sm text-purple-900/70">Once you select a handloom drape from our weavers, it will appear here.</p>
+          <Link href="/products" className="btn-primary mt-8 inline-flex">
+            Explore Handloom Sarees
+          </Link>
+        </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="py-12">
-      <h1 className="font-display text-4xl">Your Bag</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        Review your selection before checkout. Handpicked, hand-loomed, shipped from India.
-      </p>
+    <div className="bg-[#faf7fd] min-h-[75vh]">
+      <Container className="py-10 sm:py-14">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-brand-purple tracking-wide uppercase">
+          Your Selection
+        </span>
+        <h1 className="mt-3 font-heritage text-3xl sm:text-4xl text-brand-plum">Shopping Bag</h1>
+        <p className="mt-1 text-sm text-purple-900/70">
+          Directly from the looms of Elampillai, Salem · Handloom Mark Certified
+        </p>
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]">
-        <div>
-          {items.map((i) => (
-            <CartLine key={i.variantId} item={i} />
-          ))}
+        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px] items-start">
+          <div className="rounded-2xl border border-purple-100 bg-white p-6 shadow-xs">
+            {items.map((i) => (
+              <CartLine key={i.variantId} item={i} />
+            ))}
+          </div>
+          <CartSummary />
         </div>
-        <CartSummary />
-      </div>
-    </Container>
+      </Container>
+    </div>
   );
 }

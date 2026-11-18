@@ -147,59 +147,60 @@ export function ReviewStep({
   const chargeNowPaise = paymentMode === "cod" ? codDeposit : payable;
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
-      <div className="space-y-8">
-        <section>
+    <div className="grid gap-8 lg:grid-cols-[1fr_380px] items-start">
+      <div className="space-y-6">
+        {/* Shipping address card */}
+        <section className="rounded-2xl border border-purple-100 bg-white p-5 sm:p-6 shadow-xs">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-2xl">Shipping to</h2>
-            <button type="button" onClick={onEdit} className="text-sm underline text-ink-muted hover:text-ink">
-              Edit
+            <h2 className="font-heritage text-xl font-bold text-brand-plum">Delivery Destination</h2>
+            <button type="button" onClick={onEdit} className="text-xs font-semibold text-brand-purple hover:underline">
+              Edit Address
             </button>
           </div>
-          <div className="mt-3 rounded-card border border-border p-4 text-sm leading-relaxed">
-            <p className="font-medium">{address.fullName}</p>
+          <div className="mt-3 rounded-xl border border-purple-100 bg-purple-50/20 p-4 text-xs sm:text-sm leading-relaxed text-slate-700">
+            <p className="font-bold text-brand-plum">{address.fullName}</p>
             <p>{address.line1}{address.line2 ? `, ${address.line2}` : ""}</p>
             <p>{address.city}, {address.state} {address.pincode}</p>
             <p>{address.country} · {address.phone}</p>
-            <p className="text-ink-muted">{address.email}</p>
-            {address.notes && <p className="mt-2 text-ink-soft">Note: {address.notes}</p>}
+            <p className="text-purple-900/60">{address.email}</p>
+            {address.notes && <p className="mt-2 text-purple-950 font-medium bg-purple-50 p-2 rounded-lg">Note: {address.notes}</p>}
           </div>
-          <div className="mt-3 rounded-card bg-cream-warm/60 p-3 text-xs text-ink-soft">
+          <div className="mt-3 rounded-xl bg-purple-50/60 border border-purple-100 p-3 text-xs text-purple-950">
             <p>
-              <span className="text-ink-muted">Shipping:</span>{" "}
+              <span className="text-purple-900/60 font-medium">Shipping Charge:</span>{" "}
               {shipping.shippingPaise === 0 ? (
-                <span className="font-medium text-emerald-700">Free</span>
+                <span className="font-bold text-emerald-700">Free</span>
               ) : (
-                formatINR(shipping.shippingPaise)
+                <span className="font-semibold">{formatINR(shipping.shippingPaise)}</span>
               )}
               {" · "}
-              <span className="text-ink-muted">Arrives</span> {estimatedDeliveryLabel(eta)}
+              <span className="text-purple-900/60 font-medium">Estimated Arrival:</span> {estimatedDeliveryLabel(eta)}
             </p>
           </div>
           {shipping.usedFallback && (
-            <div className="mt-2 rounded-card border border-amber-500/40 bg-amber-50 p-3 text-xs text-amber-900">
-              Shipping to <strong>{address.state}</strong> uses our default rate. Please contact
-              support for an exact quote before placing this order.
+            <div className="mt-2 rounded-xl border border-amber-500/40 bg-amber-50 p-3 text-xs text-amber-900">
+              Shipping to <strong>{address.state}</strong> uses our standard handloom courier rate.
             </div>
           )}
         </section>
 
-        <section>
-          <h2 className="font-display text-2xl">Preferred courier</h2>
-          <p className="mt-1 text-xs text-ink-muted">
-            Select your preferred courier service for delivery.
+        {/* Preferred Courier */}
+        <section className="rounded-2xl border border-purple-100 bg-white p-5 sm:p-6 shadow-xs">
+          <h2 className="font-heritage text-xl font-bold text-brand-plum">Preferred Courier Partner</h2>
+          <p className="mt-1 text-xs text-purple-900/60">
+            All dispatches are tracked directly from Salem/Elampillai hub.
           </p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="mt-3.5 grid gap-2.5 sm:grid-cols-2">
             {RECOMMENDED_COURIERS.map((c) => {
               const selected = preferredCourier === c;
               return (
                 <label
                   key={c}
                   className={cn(
-                    "flex cursor-pointer items-center gap-3 rounded-card border p-3 text-sm transition",
+                    "flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm transition",
                     selected
-                      ? "border-ink bg-cream/40 font-medium text-ink shadow-xs"
-                      : "border-border hover:border-ink/60 text-ink-soft hover:text-ink"
+                      ? "border-brand-purple bg-purple-50/70 font-semibold text-brand-plum ring-1 ring-brand-purple/30"
+                      : "border-purple-200/80 bg-white hover:border-brand-purple/50 text-slate-700"
                   )}
                 >
                   <input
@@ -207,7 +208,7 @@ export function ReviewStep({
                     name="preferredCourier"
                     checked={selected}
                     onChange={() => onPreferredCourierChange(c)}
-                    className="accent-ink"
+                    className="accent-purple-800"
                   />
                   <span>{c}</span>
                 </label>
@@ -216,27 +217,28 @@ export function ReviewStep({
           </div>
         </section>
 
-        <section>
-          <h2 className="font-display text-2xl">Payment method</h2>
-          <div className="mt-3 space-y-2">
-            <label className="flex cursor-pointer items-start gap-3 rounded-card border border-border p-3 text-sm hover:border-ink">
+        {/* Payment mode */}
+        <section className="rounded-2xl border border-purple-100 bg-white p-5 sm:p-6 shadow-xs">
+          <h2 className="font-heritage text-xl font-bold text-brand-plum">Payment Options</h2>
+          <div className="mt-3.5 space-y-2.5">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-purple-200/80 p-3.5 text-sm hover:border-brand-purple transition bg-purple-50/20">
               <input
                 type="radio"
                 name="paymentMode"
                 checked={paymentMode === "prepaid"}
                 onChange={() => onPaymentModeChange("prepaid")}
-                className="mt-0.5 accent-ink"
+                className="mt-0.5 accent-purple-800"
               />
               <div>
-                <p className="font-medium">Pay full amount now</p>
-                <p className="text-xs text-ink-muted">Secure payment via UPI, card, or netbanking.</p>
+                <p className="font-bold text-brand-plum">Pay Full Amount Now (UPI, Cards, Netbanking)</p>
+                <p className="text-xs text-purple-900/60">Instant verification · Priority dispatch from loom within 24 hours.</p>
               </div>
             </label>
             <label
-              className={`flex items-start gap-3 rounded-card border p-3 text-sm ${
+              className={`flex items-start gap-3 rounded-xl border p-3.5 text-sm transition ${
                 canUseCod
-                  ? "cursor-pointer border-border hover:border-ink"
-                  : "cursor-not-allowed border-border/60 opacity-60"
+                  ? "cursor-pointer border-purple-200/80 hover:border-brand-purple bg-purple-50/20"
+                  : "cursor-not-allowed border-purple-100 bg-slate-50 opacity-60"
               }`}
             >
               <input
@@ -245,20 +247,20 @@ export function ReviewStep({
                 checked={paymentMode === "cod"}
                 onChange={() => canUseCod && onPaymentModeChange("cod")}
                 disabled={!canUseCod}
-                className="mt-0.5 accent-ink"
+                className="mt-0.5 accent-purple-800"
               />
               <div>
-                <p className="font-medium">Cash on Delivery</p>
+                <p className="font-bold text-brand-plum">Cash on Delivery (Tamil Nadu Exclusive)</p>
                 {canUseCod ? (
-                  <p className="text-xs text-ink-muted">
-                    Pay <strong>{formatINR(codDeposit)}</strong> deposit now · {formatINR(codDue)} in cash on delivery
+                  <p className="text-xs text-purple-900/70">
+                    Pay <strong>{formatINR(codDeposit)}</strong> deposit now to confirm loom booking · {formatINR(codDue)} cash upon delivery.
                   </p>
                 ) : !isTnAddress ? (
-                  <p className="text-xs text-ink-muted">
-                    Cash on Delivery is available only for Tamil Nadu addresses (pincode 600001–643999).
+                  <p className="text-xs text-purple-900/60">
+                    Cash on Delivery is available across Tamil Nadu (pincodes 600001–643999).
                   </p>
                 ) : (
-                  <p className="text-xs text-ink-muted">
+                  <p className="text-xs text-purple-900/60">
                     {codMinOrderPaise > 0
                       ? `Available on orders of ${formatINR(codMinOrderPaise)} and above`
                       : "Checking eligibility…"}
@@ -269,16 +271,18 @@ export function ReviewStep({
           </div>
         </section>
 
-        <section>
-          <h2 className="font-display text-2xl">Your order</h2>
+        {/* Order items */}
+        <section className="rounded-2xl border border-purple-100 bg-white p-5 sm:p-6 shadow-xs">
+          <h2 className="font-heritage text-xl font-bold text-brand-plum">Selected Sarees ({items.length})</h2>
           <div className="mt-3">
             {items.map((i) => <CartLine key={i.variantId} item={i} compact />)}
           </div>
         </section>
 
-        <section>
-          <h2 className="font-display text-2xl">Coupon</h2>
-          <div className="mt-3">
+        {/* Coupon */}
+        <section className="rounded-2xl border border-purple-100 bg-white p-5 sm:p-6 shadow-xs">
+          <h2 className="font-heritage text-xl font-bold text-brand-plum mb-3">Apply Coupon or Gift Code</h2>
+          <div>
             <CouponBox />
           </div>
         </section>

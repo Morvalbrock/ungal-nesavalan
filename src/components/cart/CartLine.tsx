@@ -65,10 +65,10 @@ export function CartLine({ item, compact = false }: { item: CartItem; compact?: 
   };
 
   return (
-    <div className="flex gap-4 border-b border-border/70 py-4 last:border-b-0">
+    <div className="flex gap-4 border-b border-purple-100 py-4 last:border-b-0">
       <Link
         href={`/products/${item.slug}`}
-        className={`relative shrink-0 overflow-hidden rounded-card bg-cream-warm ${
+        className={`relative shrink-0 overflow-hidden rounded-xl border border-purple-200/80 bg-purple-50/40 ${
           compact ? "h-20 w-16" : "h-28 w-24"
         }`}
       >
@@ -80,29 +80,29 @@ export function CartLine({ item, compact = false }: { item: CartItem; compact?: 
       <div className="flex flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <Link href={`/products/${item.slug}`} className="font-display text-base leading-tight hover:underline">
+            <Link href={`/products/${item.slug}`} className="font-heritage font-bold text-base leading-snug text-brand-plum hover:text-brand-purple transition">
               {item.name}
             </Link>
             {item.variantLabel && (
-              <p className="mt-1 text-xs text-ink-muted">Colour · {item.variantLabel}</p>
+              <p className="mt-0.5 text-xs font-medium text-purple-900/60">Colour: <span className="text-slate-800">{item.variantLabel}</span></p>
             )}
           </div>
           <button
             type="button"
             onClick={() => removeItem(item.variantId)}
             aria-label={`Remove ${item.name}`}
-            className="rounded-full p-1 text-ink-muted transition hover:bg-ink/5 hover:text-ink"
+            className="rounded-full p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <div className="mt-auto flex items-center justify-between pt-2">
-          <div className="inline-flex items-center rounded-card border border-border bg-white text-sm">
+          <div className="inline-flex items-center rounded-xl border border-purple-200 bg-white text-sm shadow-xs overflow-hidden">
             <button
               type="button"
               onClick={() => handleStep(-1)}
-              className="h-8 w-8 flex items-center justify-center text-ink-muted hover:text-ink hover:bg-cream/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
+              className="h-8 w-8 flex items-center justify-center text-purple-800 hover:text-brand-plum hover:bg-purple-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
               disabled={item.quantity <= 1}
               aria-label="Decrease"
             >
@@ -115,20 +115,20 @@ export function CartLine({ item, compact = false }: { item: CartItem; compact?: 
               value={typedQty}
               onChange={handleInputChange}
               onBlur={handleInputBlur}
-              className="h-8 w-10 border-x border-border/60 bg-transparent text-center text-xs font-semibold text-ink focus:bg-cream/30 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="h-8 w-10 border-x border-purple-100 bg-transparent text-center text-xs font-semibold text-brand-plum focus:bg-purple-50/50 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               aria-label="Quantity"
             />
             <button
               type="button"
               onClick={() => handleStep(1)}
-              className="h-8 w-8 flex items-center justify-center text-ink-muted hover:text-ink hover:bg-cream/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
+              className="h-8 w-8 flex items-center justify-center text-purple-800 hover:text-brand-plum hover:bg-purple-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
               disabled={item.quantity >= maxAllowed}
               aria-label="Increase"
             >
               +
             </button>
           </div>
-          <p className="font-medium">{formatINR(item.unitPricePaise * item.quantity)}</p>
+          <p className="font-heritage font-bold text-base text-brand-plum">{formatINR(item.unitPricePaise * item.quantity)}</p>
         </div>
       </div>
     </div>

@@ -7,7 +7,6 @@ import { Plus, Pencil, Trash2, X, Search, AlertCircle, Check, ImageOff, Upload }
 import type { Catalog } from "@/types/catalog";
 import { deleteCatalog, upsertCatalog } from "@/features/admin/actions";
 import { cn } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 
 type Draft = {
   id?: string;

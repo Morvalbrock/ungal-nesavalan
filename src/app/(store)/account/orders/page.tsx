@@ -8,13 +8,13 @@ import { formatISTDate } from "@/lib/datetime";
 export const metadata: Metadata = { title: "Orders" };
 
 const STATUS_COLOURS: Record<string, string> = {
-  pending: "bg-ink/10 text-ink",
-  paid: "bg-gold/10 text-gold",
-  packed: "bg-gold/10 text-gold",
-  shipped: "bg-emerald-500/10 text-emerald-700",
-  delivered: "bg-emerald-500/10 text-emerald-700",
-  cancelled: "bg-maroon/10 text-maroon",
-  refunded: "bg-maroon/10 text-maroon"
+  pending: "bg-purple-100 text-purple-900 border border-purple-200",
+  paid: "bg-amber-100 text-amber-900 border border-amber-200",
+  packed: "bg-purple-100 text-brand-purple border border-purple-200",
+  shipped: "bg-blue-100 text-blue-900 border border-blue-200",
+  delivered: "bg-emerald-100 text-emerald-900 border border-emerald-200",
+  cancelled: "bg-rose-100 text-rose-900 border border-rose-200",
+  refunded: "bg-rose-100 text-rose-900 border border-rose-200"
 };
 
 export default async function OrdersPage() {
@@ -24,12 +24,12 @@ export default async function OrdersPage() {
   if (orders.length === 0) {
     return (
       <section>
-        <h2 className="font-display text-2xl">Orders</h2>
-        <p className="mt-1 text-sm text-ink-muted">Once you place an order, it will appear here.</p>
-        <div className="mt-6 rounded-card border border-border/70 bg-cream-warm/40 p-10 text-center">
-          <p className="font-display text-xl">No orders yet</p>
-          <Link href="/products" className="btn-primary mt-4 inline-flex">
-            Start shopping
+        <h2 className="font-heritage text-2xl font-bold text-brand-plum">Your Orders</h2>
+        <p className="mt-1 text-xs text-purple-900/60">Once you place an order with our master weavers, it will appear here.</p>
+        <div className="mt-6 rounded-2xl border border-purple-100 bg-purple-50/50 p-10 text-center">
+          <p className="font-heritage text-xl font-bold text-brand-plum">No orders yet</p>
+          <Link href="/products" className="btn-primary mt-4 inline-flex font-semibold">
+            Start Shopping
           </Link>
         </div>
       </section>
@@ -38,24 +38,24 @@ export default async function OrdersPage() {
 
   return (
     <section>
-      <h2 className="font-display text-2xl">Orders</h2>
+      <h2 className="font-heritage text-2xl font-bold text-brand-plum">Your Orders</h2>
       <div className="mt-6 grid gap-4">
         {orders.map((o) => (
           <Link
             key={o.id}
             href={`/account/orders/${o.id}`}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-border p-5 hover:border-ink"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-100 bg-white p-5 hover:border-brand-purple hover:shadow-xs transition"
           >
             <div>
-              <p className="text-xs uppercase tracking-widest text-ink-muted">{o.orderNumber}</p>
-              <p className="mt-1 font-display text-lg">
+              <p className="text-xs uppercase font-bold tracking-wider text-brand-purple">{o.orderNumber}</p>
+              <p className="mt-1 font-heritage font-bold text-lg text-brand-plum">
                 {o.items.length} item{o.items.length === 1 ? "" : "s"} · {formatINR(o.totalPaise)}
               </p>
-              <p className="mt-1 text-xs text-ink-muted">
-                Placed {formatISTDate(o.createdAt)}
+              <p className="mt-0.5 text-xs text-purple-900/60">
+                Placed on {formatISTDate(o.createdAt)}
               </p>
             </div>
-            <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-widest ${STATUS_COLOURS[o.status] ?? "bg-ink/10 text-ink"}`}>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${STATUS_COLOURS[o.status] ?? "bg-purple-100 text-purple-900"}`}>
               {o.status}
             </span>
           </Link>

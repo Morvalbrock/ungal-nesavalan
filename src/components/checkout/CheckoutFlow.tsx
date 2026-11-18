@@ -86,68 +86,73 @@ export function CheckoutFlow({
   }
 
   return (
-    <Container className="py-12">
-      <h1 className="font-display text-4xl">Checkout</h1>
-      <Steps step={step} onStepClick={(s) => (s === "address" ? setStep("address") : null)} />
+    <div className="bg-[#faf7fd] min-h-[80vh]">
+      <Container className="py-10 sm:py-14">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-brand-purple tracking-wide uppercase">
+          Loom Direct Dispatch
+        </span>
+        <h1 className="mt-3 font-heritage text-3xl sm:text-4xl text-brand-plum">Checkout</h1>
+        <Steps step={step} onStepClick={(s) => (s === "address" ? setStep("address") : null)} />
 
-      <div className="mt-10">
-        {step === "address" && (
-          <AddressStep
-            initial={
-              address ??
-              (prefill
-                ? ({
-                    fullName: prefill.name ?? "",
-                    email: prefill.email ?? "",
-                    phone: prefill.phone ?? ""
-                  } as Partial<AddressForm> as AddressForm)
-                : undefined)
-            }
-            onSubmit={(data) => {
-              setAddress(data);
-
-              // Progressive profile backfill: if user is logged in, sync any missing details in the background
-              if (user) {
-                void fetch("/api/account/profile", {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    name: data.fullName,
-                    phone: data.phone,
-                    email: data.email
-                  })
-                }).catch(() => undefined);
+        <div className="mt-8">
+          {step === "address" && (
+            <AddressStep
+              initial={
+                address ??
+                (prefill
+                  ? ({
+                      fullName: prefill.name ?? "",
+                      email: prefill.email ?? "",
+                      phone: prefill.phone ?? ""
+                    } as Partial<AddressForm> as AddressForm)
+                  : undefined)
               }
+              onSubmit={(data) => {
+                setAddress(data);
 
-              setStep("review");
-              if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          />
-        )}
-        {step === "review" && address && (
-          <ReviewStep
-            address={address}
-            onEdit={() => setStep("address")}
-            preferredCourier={preferredCourier}
-            onPreferredCourierChange={setPreferredCourier}
-            paymentMode={paymentMode}
-            onPaymentModeChange={setPaymentMode}
-            shippingCharges={shippingCharges}
-            shippingDefaults={shippingDefaults}
-          />
-        )}
-      </div>
-    </Container>
+                // Progressive profile backfill: if user is logged in, sync any missing details in the background
+                if (user) {
+                  void fetch("/api/account/profile", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      name: data.fullName,
+                      phone: data.phone,
+                      email: data.email
+                    })
+                  }).catch(() => undefined);
+                }
+
+                setStep("review");
+                if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          )}
+          {step === "review" && address && (
+            <ReviewStep
+              address={address}
+              onEdit={() => setStep("address")}
+              preferredCourier={preferredCourier}
+              onPreferredCourierChange={setPreferredCourier}
+              paymentMode={paymentMode}
+              onPaymentModeChange={setPaymentMode}
+              shippingCharges={shippingCharges}
+              shippingDefaults={shippingDefaults}
+            />
+          )}
+        </div>
+      </Container>
+    </div>
   );
 }
 
 function Steps({ step, onStepClick }: { step: Step; onStepClick: (s: Step) => void }) {
   const stages: { key: Step; label: string; index: number }[] = [
-    { key: "address", label: "Shipping", index: 1 },
-    { key: "review", label: "Review", index: 2 }
+    { key: "address", label: "Delivery Address", index: 1 },
+    { key: "review", label: "Review & Payment", index: 2 }
   ];
   return (
-    <ol className="mt-6 flex items-center gap-4 text-sm text-ink-muted">
+    <ol className="mt-5 flex items-center gap-4 text-xs font-medium text-purple-900/60">
       {stages.map((s, i) => {
         const active = s.key === step;
         const done = stages.findIndex((x) => x.key === step) > i;
@@ -157,14 +162,20 @@ function Steps({ step, onStepClick }: { step: Step; onStepClick: (s: Step) => vo
               type="button"
               onClick={() => onStepClick(s.key)}
               disabled={!done && !active}
-              className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs transition ${
-                active ? "border-ink bg-ink text-cream" : done ? "border-ink" : "border-border"
+              className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold transition ${
+                active
+                  ? "border-brand-deep bg-brand-deep text-white shadow-xs"
+                  : done
+                    ? "border-brand-purple bg-purple-100 text-brand-purple"
+                    : "border-purple-200 text-purple-900/40"
               }`}
             >
               {s.index}
             </button>
-            <span className={active ? "text-ink" : done ? "text-ink" : ""}>{s.label}</span>
-            {i < stages.length - 1 && <span className="mx-2 h-px w-8 bg-border" />}
+            <span className={active ? "text-brand-plum font-semibold" : done ? "text-brand-purple font-medium" : ""}>
+              {s.label}
+            </span>
+            {i < stages.length - 1 && <span className="mx-2 h-px w-8 bg-purple-200" />}
           </li>
         );
       })}

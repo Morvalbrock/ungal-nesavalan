@@ -33,11 +33,11 @@ export default async function WishlistPage() {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-card border border-border bg-cream-warm p-10 text-center">
-        <p className="font-display text-2xl">Your wishlist is empty</p>
-        <p className="mt-2 text-sm text-ink-muted">Save sarees you love — they'll wait here for you.</p>
-        <Link href="/products" className="btn-primary mt-6 inline-flex">
-          Browse sarees
+      <div className="rounded-2xl border border-purple-100 bg-purple-50/50 p-10 text-center">
+        <p className="font-heritage text-2xl font-bold text-brand-plum">Your Wishlist is Empty</p>
+        <p className="mt-2 text-sm text-purple-900/60">Save sarees you love while browsing — they'll wait here for you.</p>
+        <Link href="/products" className="btn-primary mt-6 inline-flex font-semibold">
+          Explore Handloom Sarees
         </Link>
       </div>
     );
@@ -46,10 +46,10 @@ export default async function WishlistPage() {
   return (
     <section>
       <div className="mb-6 flex items-end justify-between">
-        <h2 className="font-display text-2xl">Saved sarees</h2>
-        <span className="text-sm text-ink-muted">{items.length} item{items.length === 1 ? "" : "s"}</span>
+        <h2 className="font-heritage text-2xl font-bold text-brand-plum">Saved Handloom Sarees</h2>
+        <span className="text-xs font-semibold text-purple-900/60">{items.length} item{items.length === 1 ? "" : "s"}</span>
       </div>
-      <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
         {items.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}

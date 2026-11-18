@@ -457,10 +457,10 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
 
       {/* Loading lockout backdrop to prevent any background action */}
       {loading && (
-        <div className="absolute -inset-2 z-40 flex items-center justify-center rounded-xl bg-white/70 backdrop-blur-[2px]">
-          <div className="flex flex-col items-center gap-2 text-ink">
-            <Loader2 className="h-6 w-6 animate-spin text-maroon" />
-            <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
+        <div className="absolute -inset-2 z-40 flex items-center justify-center rounded-xl bg-white/80 backdrop-blur-[2px]">
+          <div className="flex flex-col items-center gap-2 text-brand-plum">
+            <Loader2 className="h-6 w-6 animate-spin text-brand-purple" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-purple-900/70">
               {step === "phone" ? "Sending code…" : step === "otp" ? "Verifying…" : "Saving…"}
             </span>
           </div>
@@ -491,19 +491,19 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
           </AuthField>
 
           {country.code === "IN" && (
-            <p className="text-[11px] text-ink-muted">
+            <p className="text-[11px] text-purple-900/60">
               Enter 10-digit Indian mobile number without country code
             </p>
           )}
 
-          {serverError && <p className="text-xs text-maroon">{serverError}</p>}
+          {serverError && <p className="text-xs text-rose-600 font-medium">{serverError}</p>}
 
           <button
             type="submit"
             disabled={loading || nationalNumber.length === 0}
-            className="btn-primary flex w-full items-center justify-center gap-2"
+            className="btn-primary flex w-full items-center justify-center gap-2 font-semibold shadow-md shadow-brand-deep/20 py-3"
           >
-            <span>Send OTP</span>
+            <span>Send Verification OTP</span>
             <ArrowRight className="h-4 w-4" />
           </button>
         </form>
@@ -512,15 +512,15 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
       {/* STEP 2: ENTER OTP (LOCKED STATE) */}
       {step === "otp" && (
         <form onSubmit={handleVerifyOtp} className="space-y-4">
-          <div className="rounded-card border border-border/80 bg-cream/70 p-3.5">
+          <div className="rounded-xl border border-purple-200/80 bg-purple-50/60 p-3.5">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="text-[11px] font-medium uppercase tracking-wider text-ink-muted">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-purple-900/60">
                   {isExistingUser ? "Welcome back" : "Welcome"}
                 </p>
-                <p className="mt-0.5 text-xs text-ink">
+                <p className="mt-0.5 text-xs text-brand-plum">
                   Code sent to{" "}
-                  <span className="font-semibold tabular-nums text-ink">
+                  <span className="font-bold tabular-nums text-brand-plum">
                     {country.dialCode} {nationalNumber}
                   </span>
                 </p>
@@ -529,7 +529,7 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
                 type="button"
                 onClick={handleChangeNumber}
                 disabled={loading}
-                className="text-xs font-medium text-maroon underline decoration-maroon/40 underline-offset-4 hover:decoration-maroon"
+                className="text-xs font-semibold text-brand-purple underline decoration-purple-300 underline-offset-4 hover:decoration-brand-purple"
               >
                 Change
               </button>
@@ -550,7 +550,7 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
               }}
               disabled={loading}
               autoFocus
-              className={`${authInputCls} text-center text-xl font-bold tracking-[0.5em] text-ink`}
+              className={`${authInputCls} text-center text-xl font-bold tracking-[0.5em] text-brand-plum`}
             />
           </AuthField>
 
@@ -561,19 +561,19 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
                 type="button"
                 onClick={handleResend}
                 disabled={loading}
-                className="text-xs font-semibold uppercase tracking-wider text-maroon underline decoration-maroon/40 underline-offset-4 hover:decoration-maroon"
+                className="text-xs font-semibold uppercase tracking-wider text-brand-purple underline decoration-purple-300 underline-offset-4 hover:decoration-brand-purple"
               >
                 Resend OTP
               </button>
             )}
           </div>
 
-          {serverError && <p className="text-xs text-maroon">{serverError}</p>}
+          {serverError && <p className="text-xs text-rose-600 font-medium">{serverError}</p>}
 
           <button
             type="submit"
             disabled={loading || otpCode.length !== 6}
-            className="btn-primary w-full"
+            className="btn-primary w-full font-semibold shadow-md shadow-brand-deep/20 py-3"
           >
             {loading ? "Verifying…" : "Verify & Sign in"}
           </button>
@@ -583,9 +583,9 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
       {/* STEP 3: COMPLETE PROFILE (FOR NEW USERS) */}
       {step === "profile" && (
         <form onSubmit={handleSaveProfile} className="space-y-4">
-          <div className="border-b border-border pb-3">
-            <h3 className="font-display text-xl text-ink">Welcome to Ungal Nesavalan</h3>
-            <p className="mt-1 text-xs text-ink-muted">
+          <div className="border-b border-purple-100 pb-3">
+            <h3 className="font-heritage text-xl font-bold text-brand-plum">Welcome to Ungal Nesavalan</h3>
+            <p className="mt-1 text-xs text-purple-900/60">
               Add your name so our master weavers and atelier stylists can personalize your orders.
             </p>
           </div>
@@ -612,18 +612,18 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
               disabled={loading}
               className={authInputCls}
             />
-            <p className="mt-1 text-[11px] text-ink-muted">
+            <p className="mt-1 text-[11px] text-purple-900/60">
               Used for digital order receipts and courier dispatch updates.
             </p>
           </AuthField>
 
-          {serverError && <p className="text-xs text-maroon">{serverError}</p>}
+          {serverError && <p className="text-xs text-rose-600 font-medium">{serverError}</p>}
 
           <div className="space-y-2 pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full"
+              className="btn-primary w-full font-semibold shadow-md shadow-brand-deep/20 py-3"
             >
               {loading ? "Saving…" : "Save & Continue"}
             </button>
@@ -632,7 +632,7 @@ export function PhoneOtpFlow({ onSuccess, onStepChange }: PhoneOtpFlowProps) {
               type="button"
               onClick={handleSkipProfile}
               disabled={loading}
-              className="w-full py-2 text-center text-xs text-ink-muted transition hover:text-ink hover:underline"
+              className="w-full py-2 text-center text-xs text-purple-900/60 transition hover:text-brand-purple hover:underline"
             >
               I&apos;ll do this later (Skip)
             </button>

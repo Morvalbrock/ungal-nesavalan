@@ -69,6 +69,7 @@ export async function getInStockCraftClusters(): Promise<CraftCluster[]> {
 }
 
 function toSummary(p: Product): ProductSummary {
+  const firstInStock = p.variants?.find((v) => (Number(v.stock) || 0) > 0) ?? p.variants?.[0];
   return {
     id: p.id,
     slug: p.slug,
@@ -80,7 +81,11 @@ function toSummary(p: Product): ProductSummary {
     occasion: p.occasion,
     images: p.images,
     categoryId: p.categoryId,
-    featured: p.featured
+    featured: p.featured,
+    lengthMeters: p.lengthMeters,
+    blousePieceIncluded: p.blousePieceIncluded,
+    defaultVariantId: firstInStock?.id,
+    variants: p.variants
   };
 }
 

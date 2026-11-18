@@ -49,17 +49,16 @@ export function AdminSidebar() {
   return (
     <aside className="hidden w-60 shrink-0 border-r border-border/70 bg-cream lg:flex lg:flex-col">
       <div className="border-b border-border/70 px-5 py-5">
-        <Link href="/admin" className="flex items-center gap-2.5">
+        <Link href="/admin" className="flex items-center">
           <Image
-            src="/images/logo.png"
-            alt=""
-            width={32}
-            height={32}
-            className="h-8 w-8 shrink-0"
+            src="/images/logo.jpeg"
+            alt="Ungal Nesavalan Admin"
+            width={140}
+            height={44}
+            className="h-8 w-auto object-contain"
           />
-          <span className="font-display text-lg font-semibold">Ungal Nesavalan</span>
         </Link>
-        <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-ink-muted">Admin</p>
+        <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-ink-muted">Admin Panel</p>
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4 text-sm">

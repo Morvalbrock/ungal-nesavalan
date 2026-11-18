@@ -97,29 +97,29 @@ export function FilterSidebar({
   return (
     <aside className="space-y-6 lg:space-y-8">
       {/* Mobile filter toggle bar */}
-      <div className="flex items-center justify-between rounded-card border border-border bg-cream-warm/60 px-4 py-3 lg:hidden">
+      <div className="flex items-center justify-between rounded-2xl border border-purple-200 bg-purple-50/60 px-4 py-3 lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen((v) => !v)}
-          className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-ink"
+          className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-plum"
         >
-          <SlidersHorizontal className="h-4 w-4 text-maroon" />
+          <SlidersHorizontal className="h-4 w-4 text-brand-purple" />
           <span>Filter Sarees {activeCount > 0 && `(${activeCount} active)`}</span>
           <ChevronDown className={cn("h-3.5 w-3.5 transition", mobileOpen && "rotate-180")} />
         </button>
         {hasAny && (
-          <button type="button" onClick={clearAll} className="text-xs underline text-ink-muted hover:text-ink">
+          <button type="button" onClick={clearAll} className="text-xs font-medium underline text-brand-purple hover:text-brand-plum">
             Clear all
           </button>
         )}
       </div>
 
       {/* Filter groups: toggleable on mobile, always visible on desktop */}
-      <div className={cn("space-y-8 rounded-card border border-border/80 bg-cream-warm/20 p-4 sm:p-5 lg:border-0 lg:bg-transparent lg:p-0 lg:block", mobileOpen ? "block" : "hidden")}>
-        <div className="hidden items-center justify-between lg:flex">
-          <h2 className="text-xs font-medium uppercase tracking-[0.25em] text-ink-muted">Refine</h2>
+      <div className={cn("space-y-7 rounded-2xl border border-purple-100 bg-white p-5 shadow-sm lg:p-0 lg:bg-transparent lg:border-0 lg:shadow-none lg:block", mobileOpen ? "block" : "hidden")}>
+        <div className="hidden items-center justify-between lg:flex pb-2 border-b border-purple-100">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-brand-plum">Refine Weaves</h2>
           {hasAny && (
-            <button type="button" onClick={clearAll} className="text-xs underline text-ink-muted hover:text-ink">
+            <button type="button" onClick={clearAll} className="text-xs font-semibold text-brand-purple hover:underline">
               Clear all
             </button>
           )}
@@ -200,8 +200,8 @@ export function FilterSidebar({
                 >
                   <span
                     className={cn(
-                      "flex h-3 w-3 items-center justify-center rounded-full border border-ink/40",
-                      active && "border-maroon bg-maroon"
+                      "flex h-3 w-3 items-center justify-center rounded-full border border-purple-300",
+                      active && "border-brand-purple bg-brand-purple"
                     )}
                   />
                   {b.label}
@@ -230,10 +230,10 @@ function FilterChip({ active, label, onClick }: { active: boolean; label: string
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-3 py-1 text-xs capitalize transition",
+        "rounded-full border px-3 py-1 text-xs capitalize transition font-medium",
         active
-          ? "border-ink bg-ink text-cream"
-          : "border-border text-ink-soft hover:border-ink hover:text-ink"
+          ? "border-brand-purple bg-brand-purple text-white shadow-sm"
+          : "border-purple-200 bg-white text-slate-600 hover:border-brand-purple hover:text-brand-plum hover:bg-purple-50/60"
       )}
     >
       {label}

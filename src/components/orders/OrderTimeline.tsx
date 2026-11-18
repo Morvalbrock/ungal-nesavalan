@@ -103,23 +103,23 @@ export function OrderTimeline({ order }: { order: Order }) {
   ];
 
   return (
-    <div className="rounded-card border border-border bg-cream p-5 sm:p-6">
-      <div className="flex items-center justify-between border-b border-border/70 pb-4">
+    <div className="rounded-2xl border border-purple-100 bg-white p-5 sm:p-6 shadow-xs">
+      <div className="flex items-center justify-between border-b border-purple-100 pb-4">
         <div>
-          <p className="text-[11px] uppercase tracking-widest text-ink-muted">Fulfillment Journey</p>
-          <h2 className="font-display text-lg text-ink">Order Lifecycle & Tracking</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-purple-900/60">Fulfillment Journey</p>
+          <h2 className="font-heritage text-lg font-bold text-brand-plum">Order Lifecycle &amp; Tracking</h2>
         </div>
         <span
-          className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${
+          className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider border ${
             isCancelled
-              ? "bg-maroon/10 text-maroon"
+              ? "bg-rose-100 text-rose-900 border-rose-200"
               : isRefunded
-                ? "bg-purple-100 text-purple-800"
+                ? "bg-purple-100 text-purple-900 border-purple-200"
                 : order.status === "delivered"
-                  ? "bg-emerald-100 text-emerald-800"
+                  ? "bg-emerald-100 text-emerald-900 border-emerald-200"
                   : order.status === "pending"
-                    ? "bg-amber-100 text-amber-800"
-                    : "bg-ink text-white"
+                    ? "bg-amber-100 text-amber-900 border-amber-200"
+                    : "bg-brand-deep text-white border-brand-deep"
           }`}
         >
           {order.status.replace("_", " ")}
@@ -127,20 +127,20 @@ export function OrderTimeline({ order }: { order: Order }) {
       </div>
 
       {isCancelled ? (
-        <div className="mt-5 flex items-start gap-3 rounded-card border border-maroon/20 bg-maroon/5 p-4 text-maroon">
+        <div className="mt-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800">
           <XCircle className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
-            <p className="font-medium text-sm">Order Cancelled</p>
-            <p className="mt-0.5 text-xs text-maroon/80">
+            <p className="font-bold text-sm">Order Cancelled</p>
+            <p className="mt-0.5 text-xs text-rose-700">
               This order has been cancelled. If any payment was captured, refund processing will be initiated according to policy.
             </p>
           </div>
         </div>
       ) : isRefunded ? (
-        <div className="mt-5 flex items-start gap-3 rounded-card border border-purple-200 bg-purple-50 p-4 text-purple-900">
+        <div className="mt-5 flex items-start gap-3 rounded-xl border border-purple-200 bg-purple-50 p-4 text-purple-900">
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
-            <p className="font-medium text-sm">Order Refunded</p>
+            <p className="font-bold text-sm">Order Refunded</p>
             <p className="mt-0.5 text-xs text-purple-800">
               This order was refunded to the customer.
             </p>
@@ -148,7 +148,7 @@ export function OrderTimeline({ order }: { order: Order }) {
         </div>
       ) : (
         <div className="mt-6">
-          <ol className="relative border-l border-border/80 ml-3 sm:ml-4 space-y-6">
+          <ol className="relative border-l border-purple-200 ml-3 sm:ml-4 space-y-6">
             {steps.map((step) => {
               const Icon = step.icon;
               const isDone = step.status === "completed";
@@ -160,10 +160,10 @@ export function OrderTimeline({ order }: { order: Order }) {
                   <span
                     className={`absolute -left-[37px] top-0 flex h-6 w-6 items-center justify-center rounded-full text-xs transition ${
                       isDone
-                        ? "bg-emerald-600 text-white ring-4 ring-emerald-50"
+                        ? "bg-brand-purple text-white ring-4 ring-purple-100"
                         : isCurrent
-                          ? "bg-ink text-white ring-4 ring-ink/10 animate-pulse"
-                          : "border border-border bg-cream text-ink-muted/50"
+                          ? "bg-brand-deep text-white ring-4 ring-purple-200 animate-pulse"
+                          : "border border-purple-200 bg-white text-purple-300"
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -171,14 +171,14 @@ export function OrderTimeline({ order }: { order: Order }) {
 
                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
                     <h3
-                      className={`text-sm font-medium ${
-                        isDone ? "text-ink" : isCurrent ? "text-ink font-semibold" : "text-ink-muted"
+                      className={`text-sm font-semibold ${
+                        isDone ? "text-brand-plum" : isCurrent ? "text-brand-purple font-bold" : "text-purple-900/50"
                       }`}
                     >
                       {step.label}
                     </h3>
                     {step.date && (
-                      <span className="text-[11px] text-ink-muted">{step.date}</span>
+                      <span className="text-[11px] text-purple-900/60">{step.date}</span>
                     )}
                   </div>
 
@@ -186,10 +186,10 @@ export function OrderTimeline({ order }: { order: Order }) {
                     <p
                       className={`mt-0.5 text-xs ${
                         isCurrent
-                          ? "text-ink font-medium"
+                          ? "text-slate-800 font-medium"
                           : isDone
-                            ? "text-ink-soft"
-                            : "text-ink-muted/70"
+                            ? "text-slate-600"
+                            : "text-purple-900/40"
                       }`}
                     >
                       {step.description}

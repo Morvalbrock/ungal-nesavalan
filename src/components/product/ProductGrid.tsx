@@ -10,14 +10,19 @@ interface Props {
 export function ProductGrid({ items, ratings }: Props) {
   if (items.length === 0) {
     return (
-      <div className="rounded-card border border-border/70 bg-cream-warm/50 px-6 py-24 text-center">
-        <p className="font-display text-2xl text-ink">No sarees match those filters.</p>
-        <p className="mt-2 text-sm text-ink-muted">Try clearing a filter or two.</p>
+      <div className="rounded-2xl border border-purple-100 bg-[#fdfaff] p-12 text-center shadow-sm">
+        <p className="font-heritage text-2xl font-bold text-brand-plum">
+          No sarees match those filters.
+        </p>
+        <p className="mt-2 text-sm text-slate-500">
+          Try clearing a filter or searching for another weave variety.
+        </p>
       </div>
     );
   }
+
   return (
-    <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((p) => {
         const r = ratings?.[p.id];
         return (

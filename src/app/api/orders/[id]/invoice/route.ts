@@ -26,10 +26,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: "not_downloadable" }, { status: 409 });
   }
 
-  // Read logo from public/images/invoice_logo.jpeg
+  // Read logo from public/images/logo.jpeg (or fallback to invoice_logo.jpeg)
   let logoDataUrl: string | undefined;
   try {
-    const logoPath = path.join(process.cwd(), "public", "images", "invoice_logo.jpeg");
+    const logoJpeg = path.join(process.cwd(), "public", "images", "logo.jpeg");
+    const invoiceLogoPath = path.join(process.cwd(), "public", "images", "invoice_logo.jpeg");
+    const logoPath = fs.existsSync(logoJpeg) ? logoJpeg : invoiceLogoPath;
     if (fs.existsSync(logoPath)) {
       const buffer = fs.readFileSync(logoPath);
       logoDataUrl = `data:image/jpeg;base64,${buffer.toString("base64")}`;

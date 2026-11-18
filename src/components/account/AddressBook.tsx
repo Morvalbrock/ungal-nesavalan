@@ -88,20 +88,20 @@ export function AddressBook() {
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2">
           {items.map((a) => (
-            <li key={a.id} className="rounded-card border border-border p-4 text-sm">
+            <li key={a.id} className="rounded-xl border border-purple-100 bg-white p-4 text-sm shadow-xs">
               <div className="flex items-start justify-between">
-                <p className="font-medium">{a.fullName}</p>
+                <p className="font-bold text-brand-plum">{a.fullName}</p>
                 {a.isDefault ? (
-                  <span className="rounded-full bg-gold/10 px-2 py-0.5 text-[10px] uppercase tracking-widest text-gold">
+                  <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-brand-purple border border-purple-200">
                     Default
                   </span>
                 ) : (
-                  <button type="button" onClick={() => setDefault(a.id)} className="text-[10px] uppercase tracking-widest text-ink-muted hover:text-ink">
-                    Make default
+                  <button type="button" onClick={() => setDefault(a.id)} className="text-xs font-semibold text-brand-purple hover:underline">
+                    Make Default
                   </button>
                 )}
               </div>
-              <p className="mt-1 leading-relaxed">
+              <p className="mt-1 leading-relaxed text-slate-700 text-xs sm:text-sm">
                 {a.line1}
                 {a.line2 ? `, ${a.line2}` : ""}
                 <br />
@@ -112,7 +112,7 @@ export function AddressBook() {
               <button
                 type="button"
                 onClick={() => remove(a.id)}
-                className="mt-3 text-xs text-maroon underline"
+                className="mt-3 text-xs font-medium text-rose-600 hover:underline"
               >
                 Remove
               </button>
@@ -122,10 +122,10 @@ export function AddressBook() {
       )}
 
       {showForm ? (
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 rounded-card border border-border p-5 sm:grid-cols-2">
-          <div className="sm:col-span-2 flex items-center justify-between">
-            <p className="font-display text-lg">New address</p>
-            <button type="button" onClick={() => setShowForm(false)} className="text-xs text-ink-muted hover:text-ink">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 rounded-2xl border border-purple-100 bg-purple-50/40 p-6 sm:grid-cols-2">
+          <div className="sm:col-span-2 flex items-center justify-between border-b border-purple-100 pb-3">
+            <p className="font-heritage text-lg font-bold text-brand-plum">Add New Address</p>
+            <button type="button" onClick={() => setShowForm(false)} className="text-xs font-semibold text-purple-900/60 hover:text-brand-plum">
               Cancel
             </button>
           </div>
@@ -157,20 +157,20 @@ export function AddressBook() {
           <AuthField label="Pincode" error={errors.pincode?.message}>
             <input inputMode="numeric" maxLength={6} {...register("pincode")} className={authInputCls} />
           </AuthField>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...register("isDefault")} />
-            <span>Set as default</span>
+          <label className="flex items-center gap-2 text-sm text-slate-800">
+            <input type="checkbox" {...register("isDefault")} className="accent-purple-800" />
+            <span>Set as default delivery address</span>
           </label>
-          {error && <p className="sm:col-span-2 text-xs text-maroon">{error}</p>}
-          <div className="sm:col-span-2">
+          {error && <p className="sm:col-span-2 text-xs text-rose-600 font-medium">{error}</p>}
+          <div className="sm:col-span-2 pt-2">
             <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? "Saving…" : "Save address"}
+              {saving ? "Saving…" : "Save Address"}
             </button>
           </div>
         </form>
       ) : (
-        <button type="button" onClick={() => setShowForm(true)} className="btn-ghost">
-          + Add a new address
+        <button type="button" onClick={() => setShowForm(true)} className="btn-ghost font-semibold">
+          + Add New Address
         </button>
       )}
     </div>

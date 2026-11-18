@@ -29,12 +29,12 @@ function TabButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`flex-1 rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wider transition ${
+      className={`flex-1 rounded-lg px-4 py-2 text-xs font-semibold tracking-wide transition ${
         active
-          ? "bg-ink text-white"
+          ? "bg-brand-deep text-white shadow-xs"
           : disabled
-            ? "cursor-not-allowed text-ink-muted/40"
-            : "text-ink-muted hover:bg-cream"
+            ? "cursor-not-allowed text-purple-300"
+            : "text-purple-900/70 hover:bg-purple-100/60"
       }`}
     >
       {children}
@@ -87,15 +87,15 @@ export function RegisterForm() {
   return (
     <div className="space-y-5">
       <GoogleSignInButton />
-      <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-ink-muted">
-        <span className="h-px flex-1 bg-border" />
+      <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-purple-900/40">
+        <span className="h-px flex-1 bg-purple-100" />
         <span>or</span>
-        <span className="h-px flex-1 bg-border" />
+        <span className="h-px flex-1 bg-purple-100" />
       </div>
 
       {/* Mode toggle */}
       <div className="relative">
-        <div className="flex gap-1 rounded-full border border-border p-1">
+        <div className="flex gap-1 rounded-xl border border-purple-200 bg-purple-50/50 p-1">
           <TabButton
             active={mode === "phone"}
             disabled={isOtpFlowLocked}
@@ -108,11 +108,11 @@ export function RegisterForm() {
             disabled={isOtpFlowLocked}
             onClick={() => setMode("email")}
           >
-            ✉️ Email & Password
+            ✉️ Email &amp; Password
           </TabButton>
         </div>
         {isOtpFlowLocked && (
-          <p className="mt-1.5 text-center text-[10px] text-ink-muted">
+          <p className="mt-1.5 text-center text-[10px] text-purple-900/60">
             Verification in progress. Click &ldquo;Change&rdquo; above to switch methods.
           </p>
         )}
@@ -126,10 +126,10 @@ export function RegisterForm() {
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <AuthField label="Full name" error={errors.name?.message}>
-            <input autoComplete="name" {...register("name")} className={authInputCls} />
+            <input autoComplete="name" placeholder="Priyadarshini" {...register("name")} className={authInputCls} />
           </AuthField>
           <AuthField label="Email" error={errors.email?.message}>
-            <input type="email" autoComplete="email" {...register("email")} className={authInputCls} />
+            <input type="email" autoComplete="email" placeholder="you@example.com" {...register("email")} className={authInputCls} />
           </AuthField>
           <AuthField label="Mobile (optional)" error={errors.phone?.message}>
             <input inputMode="tel" placeholder="+91 9876543210" {...register("phone")} className={authInputCls} />
@@ -137,17 +137,17 @@ export function RegisterForm() {
           <AuthField label="Password" error={errors.password?.message}>
             <PasswordInput autoComplete="new-password" {...register("password")} error={!!errors.password} />
           </AuthField>
-          {serverError && <p className="text-xs text-maroon">{serverError}</p>}
-          <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
-            {isSubmitting ? "Creating account…" : "Create account"}
+          {serverError && <p className="text-xs text-rose-600 font-medium">{serverError}</p>}
+          <button type="submit" disabled={isSubmitting} className="btn-primary w-full font-semibold shadow-md shadow-brand-deep/20 py-3">
+            {isSubmitting ? "Creating account…" : "Create Account"}
           </button>
-          <p className="text-xs text-ink-muted">
+          <p className="text-xs text-purple-900/70 text-center pt-2">
             Already have an account?{" "}
             <Link
               href={`/login${sp.get("next") ? `?next=${encodeURIComponent(sp.get("next")!)}` : ""}`}
-              className="link-underline"
+              className="text-brand-purple font-semibold hover:underline"
             >
-              Sign in
+              Sign in →
             </Link>
           </p>
         </form>

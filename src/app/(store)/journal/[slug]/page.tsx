@@ -76,50 +76,52 @@ export default async function JournalPostPage({ params }: { params: Promise<{ sl
   };
 
   return (
-    <Container className="py-12">
-      <JsonLd data={articleJsonLd} />
-      <div className="mx-auto max-w-3xl">
-        <Link href="/journal" className="text-[11px] uppercase tracking-[0.3em] text-ink-muted hover:text-ink">
-          ← Journal
-        </Link>
-        <p className="mt-6 text-[11px] uppercase tracking-[0.25em] text-ink-muted">
-          {new Date(post.publishedAt).toLocaleDateString("en-IN", {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-          })}{" "}
-          · {post.readingTimeMin} min read
-        </p>
-        <h1 className="mt-3 font-display text-4xl leading-tight md:text-5xl">{post.title}</h1>
-        <p className="mt-4 text-lg text-ink-soft">{post.excerpt}</p>
-      </div>
-
-      {post.heroImage && (
-        <div className="relative mx-auto mt-10 aspect-[16/9] max-w-5xl overflow-hidden rounded-card bg-cream-warm">
-          <Image
-            src={post.heroImage}
-            alt={post.title}
-            fill
-            sizes="(min-width: 1024px) 60vw, 100vw"
-            className="object-cover"
-          />
+    <div className="bg-[#faf7fd] min-h-[85vh] py-10 sm:py-14">
+      <Container>
+        <JsonLd data={articleJsonLd} />
+        <div className="mx-auto max-w-3xl">
+          <Link href="/journal" className="inline-block text-xs font-semibold text-brand-purple hover:underline">
+            ← Back to Journal
+          </Link>
+          <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-purple-900/60">
+            {new Date(post.publishedAt).toLocaleDateString("en-IN", {
+              year: "numeric",
+              month: "long",
+              day: "numeric"
+            })}{" "}
+            · {post.readingTimeMin} min read
+          </p>
+          <h1 className="mt-3 font-heritage font-bold text-3xl sm:text-4xl md:text-5xl text-brand-plum leading-[1.15]">{post.title}</h1>
+          <p className="mt-3 text-base sm:text-lg text-slate-700 leading-relaxed">{post.excerpt}</p>
         </div>
-      )}
 
-      <article className="prose-journal mx-auto mt-10 max-w-3xl">
-        <MDXRemote source={post.content} />
-      </article>
-
-      {related.length > 0 && (
-        <section className="mx-auto mt-16 max-w-5xl border-t border-border/70 pt-10">
-          <h2 className="font-display text-2xl">Sarees mentioned</h2>
-          <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-4">
-            {related.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+        {post.heroImage && (
+          <div className="relative mx-auto mt-8 aspect-[16/9] max-w-4xl overflow-hidden rounded-2xl border border-purple-100 shadow-sm bg-purple-50">
+            <Image
+              src={post.heroImage}
+              alt={post.title}
+              fill
+              sizes="(min-width: 1024px) 60vw, 100vw"
+              className="object-cover"
+            />
           </div>
-        </section>
-      )}
-    </Container>
+        )}
+
+        <article className="prose-journal mx-auto mt-8 max-w-3xl rounded-2xl border border-purple-100 bg-white p-6 sm:p-10 shadow-xs">
+          <MDXRemote source={post.content} />
+        </article>
+
+        {related.length > 0 && (
+          <section className="mx-auto mt-14 max-w-4xl border-t border-purple-100 pt-10">
+            <h2 className="font-heritage text-2xl sm:text-3xl font-bold text-brand-plum">Handloom Sarees Featured</h2>
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">
+              {related.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        )}
+      </Container>
+    </div>
   );
 }

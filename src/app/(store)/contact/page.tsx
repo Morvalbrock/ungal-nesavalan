@@ -10,55 +10,63 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <Container className="py-12">
-      <div className="max-w-2xl">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-ink-muted">Contact</p>
-        <h1 className="mt-2 font-display text-4xl">Write to us</h1>
-        <p className="mt-4 text-ink-muted">
-          Real people at real looms. If you're weighing a saree for a wedding, we're happy to answer over WhatsApp too.
-        </p>
-      </div>
+    <div className="bg-[#faf7fd] min-h-[75vh]">
+      <section className="bg-lavender-mist border-b border-purple-100 py-12">
+        <Container>
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-brand-purple tracking-wide uppercase">
+              Direct Contact
+            </span>
+            <h1 className="mt-3 font-heritage text-3xl sm:text-4xl text-brand-plum font-bold">Write to Our Weavers &amp; Stylists</h1>
+            <p className="mt-2 text-sm text-purple-900/70">
+              Direct from Salem &amp; Elampillai looms. Whether planning a bridal trousseau or asking about weave care, we are here to help.
+            </p>
+          </div>
+        </Container>
+      </section>
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">
-        <ContactForm />
-        <aside className="space-y-6 text-sm text-ink-soft">
-          <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Care team</p>
-            <p className="mt-2">
-              <a className="link-underline" href="mailto:ungalnesavalan01@gmail.com">
-                ungalnesavalan01@gmail.com
-              </a>
-            </p>
-            <p>Mon–Sat, 10:00–19:00 IST</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">WhatsApp / Phone</p>
-            <p className="mt-2">
-              <a className="link-underline" href="tel:+918825810897">
-                +91 88258 10897
-              </a>
-            </p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Studio & Dispatch Hub</p>
-            <p className="mt-2 leading-relaxed">
-              Nandhakumar, 3/364,
-              <br />
-              KK Nagar West,
-              <br />
-              Edanganasalai, Salem - 637502,
-              <br />
-              Tamil Nadu
-            </p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-ink-muted">Support & Queries</p>
-            <p className="mt-2">
-              <a className="link-underline" href="mailto:ungalnesavalan01@gmail.com">ungalnesavalan01@gmail.com</a>
-            </p>
-          </div>
-        </aside>
-      </div>
-    </Container>
+      <Container className="py-12">
+        <div className="grid gap-10 lg:grid-cols-[1fr_340px] items-start">
+          <ContactForm />
+          <aside className="rounded-2xl border border-purple-100 bg-white p-6 sm:p-7 shadow-xs space-y-6 text-sm text-slate-700">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-brand-plum">Weaver Care Team</p>
+              <p className="mt-1.5">
+                <a className="text-brand-purple font-medium hover:underline" href="mailto:ungalnesavalan01@gmail.com">
+                  ungalnesavalan01@gmail.com
+                </a>
+              </p>
+              <p className="text-xs text-purple-900/60 mt-0.5">Mon–Sat, 10:00 AM – 7:00 PM IST</p>
+            </div>
+
+            <div className="border-t border-purple-50 pt-5">
+              <p className="text-xs font-bold uppercase tracking-wider text-brand-plum">WhatsApp / Phone Hotline</p>
+              <p className="mt-1.5">
+                <a className="text-brand-purple font-bold text-base hover:underline" href="tel:+918825810897">
+                  +91 88258 10897
+                </a>
+              </p>
+              <p className="text-xs text-purple-900/60 mt-0.5">Live video drape consultations available on request</p>
+            </div>
+
+            <div className="border-t border-purple-50 pt-5">
+              <p className="text-xs font-bold uppercase tracking-wider text-brand-plum">Studio &amp; Dispatch Hub</p>
+              <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-slate-700">
+                <strong>Nandhakumar</strong>, 3/364,<br />
+                KK Nagar West, Edanganasalai,<br />
+                Salem - 637502, Tamil Nadu, India
+              </p>
+            </div>
+
+            <div className="border-t border-purple-50 pt-5">
+              <p className="text-xs font-bold uppercase tracking-wider text-brand-plum">Wholesale &amp; Bulk Trousseaus</p>
+              <p className="mt-1 text-xs text-purple-900/70">
+                Direct loom batches available for wedding celebrations and family functions.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </Container>
+    </div>
   );
 }

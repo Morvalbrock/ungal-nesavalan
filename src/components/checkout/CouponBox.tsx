@@ -55,17 +55,17 @@ export function CouponBox() {
 
   if (applied) {
     return (
-      <div className="flex items-center justify-between rounded-card border border-maroon/40 bg-maroon/5 px-4 py-3 text-sm">
+      <div className="flex items-center justify-between rounded-xl border border-purple-200 bg-purple-50/70 px-4 py-3 text-sm text-purple-950">
         <div className="flex items-center gap-2">
-          <Tag className="h-4 w-4 text-maroon" />
+          <Tag className="h-4 w-4 text-brand-purple" />
           <span>
-            <strong>{applied.code}</strong> applied — {formatINR(applied.discountPaise)} off
+            <strong className="text-brand-plum">{applied.code}</strong> applied — {formatINR(applied.discountPaise)} discount
           </span>
         </div>
         <button
           type="button"
           onClick={() => clear()}
-          className="rounded p-1 text-ink-muted hover:text-maroon"
+          className="rounded-full p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
           aria-label="Remove coupon"
         >
           <X className="h-4 w-4" />
@@ -80,14 +80,14 @@ export function CouponBox() {
         <input
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="Coupon code"
-          className="flex-1 rounded-card border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-ink"
+          placeholder="Enter coupon code"
+          className="flex-1 rounded-xl border border-purple-200 bg-purple-50/20 px-3.5 py-2 text-sm text-slate-800 outline-none transition focus:border-brand-purple focus:bg-white focus:ring-2 focus:ring-brand-purple/20"
         />
-        <button type="submit" disabled={pending || !code.trim()} className="btn-ghost">
-          {pending ? "Checking…" : "Apply"}
+        <button type="submit" disabled={pending || !code.trim()} className="btn-ghost rounded-xl !border-purple-300 hover:!bg-purple-50 !text-brand-plum text-xs font-semibold px-4">
+          {pending ? "Checking…" : "Apply Code"}
         </button>
       </div>
-      {error && <p className="text-xs text-maroon">{error}</p>}
+      {error && <p className="text-xs text-rose-600 font-medium">{error}</p>}
     </form>
   );
 }

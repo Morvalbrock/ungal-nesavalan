@@ -37,27 +37,27 @@ export function MiniCart() {
         onClick={() => setOpen((v) => !v)}
         aria-label="Cart"
         aria-expanded={open}
-        className="relative rounded-full p-2 text-ink hover:bg-ink/5"
+        className="relative rounded-full p-2 text-slate-700 hover:text-brand-purple hover:bg-purple-50 transition"
       >
         <ShoppingBag className="h-5 w-5" />
         {showCount && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-maroon px-1 text-[10px] font-medium text-cream">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-deep px-1 text-[10px] font-bold text-white border-2 border-white">
             {count}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-[360px] rounded-card border border-border bg-cream shadow-xl">
-          <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
-            <p className="font-display text-lg">Your bag</p>
-            <span className="text-xs text-ink-muted">{count} item{count === 1 ? "" : "s"}</span>
+        <div className="absolute right-0 top-full z-50 mt-2 w-[360px] rounded-2xl border border-purple-100 bg-white shadow-xl">
+          <div className="flex items-center justify-between border-b border-purple-100 px-4 py-3">
+            <p className="font-heritage font-bold text-lg text-brand-plum">Your Bag</p>
+            <span className="text-xs text-purple-900/60 font-medium">{count} item{count === 1 ? "" : "s"}</span>
           </div>
 
           {items.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm text-ink-muted">
+            <div className="px-4 py-8 text-center text-sm text-purple-900/60">
               Your bag is empty.
-              <Link href="/products" onClick={() => setOpen(false)} className="mt-3 block link-underline">
+              <Link href="/products" onClick={() => setOpen(false)} className="mt-3 block text-brand-purple hover:underline font-medium">
                 Browse sarees →
               </Link>
             </div>
@@ -68,16 +68,16 @@ export function MiniCart() {
                   <CartLine key={i.variantId} item={i} compact />
                 ))}
               </div>
-              <div className="border-t border-border/70 px-4 py-4">
+              <div className="border-t border-purple-100 px-4 py-4 bg-purple-50/30 rounded-b-2xl">
                 <div className="mb-3 flex justify-between text-sm">
-                  <span className="text-ink-muted">Subtotal</span>
-                  <span className="font-medium">{formatINR(subtotal)}</span>
+                  <span className="text-purple-900/70 font-medium">Subtotal</span>
+                  <span className="font-heritage font-bold text-base text-brand-plum">{formatINR(subtotal)}</span>
                 </div>
                 <div className="flex gap-2">
-                  <Link href="/cart" onClick={() => setOpen(false)} className="btn-ghost flex-1">
-                    View cart
+                  <Link href="/cart" onClick={() => setOpen(false)} className="btn-ghost flex-1 text-center py-2 text-xs font-semibold">
+                    View Cart
                   </Link>
-                  <Link href="/checkout" onClick={() => setOpen(false)} className="btn-primary flex-1">
+                  <Link href="/checkout" onClick={() => setOpen(false)} className="btn-primary flex-1 text-center py-2 text-xs font-semibold">
                     Checkout
                   </Link>
                 </div>

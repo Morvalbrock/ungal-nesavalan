@@ -21,35 +21,35 @@ export function CartSummary({
   const total = Math.max(0, subtotal - discount + (shippingKnown ? shippingPaise : 0));
 
   return (
-    <div className="rounded-card border border-border bg-cream-warm/40 p-6">
-      <h2 className="font-display text-xl">Order Summary</h2>
+    <div className="rounded-2xl border border-purple-100 bg-white p-6 shadow-xs">
+      <h2 className="font-heritage text-2xl font-bold text-brand-plum">Order Summary</h2>
 
-      <dl className="mt-5 space-y-2 text-sm">
+      <dl className="mt-5 space-y-2.5 text-sm">
         <div className="flex justify-between">
-          <dt className="text-ink-muted">Subtotal ({count} item{count === 1 ? "" : "s"})</dt>
-          <dd>{formatINR(subtotal)}</dd>
+          <dt className="text-purple-900/70 font-medium">Subtotal ({count} item{count === 1 ? "" : "s"})</dt>
+          <dd className="font-semibold text-slate-800">{formatINR(subtotal)}</dd>
         </div>
         {discount > 0 && applied && (
-          <div className="flex justify-between text-maroon">
-            <dt>Coupon {applied.code}</dt>
+          <div className="flex justify-between text-amber-700 font-medium">
+            <dt>Coupon Applied ({applied.code})</dt>
             <dd>−{formatINR(discount)}</dd>
           </div>
         )}
         <div className="flex justify-between">
-          <dt className="text-ink-muted">Shipping</dt>
+          <dt className="text-purple-900/70 font-medium">Shipping</dt>
           <dd>
             {!shippingKnown ? (
-              <span className="text-xs text-ink-muted">Calculated at checkout</span>
+              <span className="text-xs text-purple-900/60 font-medium">Calculated at checkout</span>
             ) : shippingPaise === 0 ? (
-              "Free"
+              <span className="text-emerald-700 font-bold">Free</span>
             ) : (
-              formatINR(shippingPaise)
+              <span className="font-semibold text-slate-800">{formatINR(shippingPaise)}</span>
             )}
           </dd>
         </div>
-        <div className="flex justify-between border-t border-border/70 pt-3 text-base font-medium">
-          <dt>Total</dt>
-          <dd>{formatINR(total)}</dd>
+        <div className="flex justify-between border-t border-purple-100 pt-3 text-lg font-bold text-brand-plum font-heritage">
+          <dt>Total Amount</dt>
+          <dd className="text-xl font-bold">{formatINR(total)}</dd>
         </div>
       </dl>
 
@@ -57,15 +57,15 @@ export function CartSummary({
         <Link
           href="/checkout"
           aria-disabled={count === 0}
-          className={`btn-primary mt-6 w-full ${count === 0 ? "pointer-events-none opacity-40" : ""}`}
+          className={`btn-primary mt-6 w-full font-semibold shadow-md shadow-brand-deep/20 ${count === 0 ? "pointer-events-none opacity-40" : ""}`}
         >
-          Proceed to checkout
+          Proceed to Checkout
         </Link>
       )}
 
-      <p className="mt-4 text-[11px] uppercase tracking-widest text-ink-muted">
-        Secure payment · GST included · Handloom Mark certified
-      </p>
+      <div className="mt-4 rounded-xl bg-purple-50/60 p-3 border border-purple-100 text-center text-xs text-purple-900/70">
+        100% Weaver Direct · Handloom Mark Certified · Secure Checkout
+      </div>
     </div>
   );
 }

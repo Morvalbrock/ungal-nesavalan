@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Menu, X, Heart, User, ChevronRight } from "lucide-react";
+import { useMobileNavStore } from "./mobile-nav-store";
 
 const SECTIONS = [
   {
@@ -36,7 +37,9 @@ interface MobileNavProps {
 }
 
 export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNavProps = {}) {
-  const [open, setOpen] = useState(false);
+  const open = useMobileNavStore((s) => s.open);
+  const openDrawer = useMobileNavStore((s) => s.openDrawer);
+  const closeDrawer = useMobileNavStore((s) => s.closeDrawer);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -86,33 +89,29 @@ export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNav
     <div className="fixed inset-0 z-50 flex">
       {/* Full screen backdrop */}
       <div
-        className="fixed inset-0 bg-ink/60 backdrop-blur-sm transition-opacity"
-        onClick={() => setOpen(false)}
+        className="fixed inset-0 bg-[#1f0525]/70 backdrop-blur-sm transition-opacity"
+        onClick={() => closeDrawer()}
         aria-hidden="true"
       />
 
       {/* Slide-out drawer panel */}
-      <div className="relative z-10 flex h-full w-[85%] max-w-sm flex-col bg-cream shadow-2xl">
+      <div className="relative z-10 flex h-full w-[85%] max-w-sm flex-col bg-[#faf7fd] shadow-2xl">
         {/* Drawer Header */}
-        <div className="flex items-center justify-between border-b border-border/80 px-6 py-5">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between border-b border-purple-100 bg-white px-6 py-4">
+          <Link href="/" onClick={() => closeDrawer()} className="flex items-center">
             <Image
-              src="/images/logo.png"
-              alt=""
-              width={36}
-              height={36}
-              className="h-8 w-8 shrink-0"
+              src="/images/logo.jpeg"
+              alt="Ungal Nesavalan"
+              width={140}
+              height={44}
+              className="h-8 w-auto object-contain"
             />
-            <div>
-              <span className="font-display text-base font-semibold text-ink">Ungal Nesavalan</span>
-              <span className="block text-[9px] uppercase tracking-widest text-ink-muted">Elampillai Sarees</span>
-            </div>
-          </div>
+          </Link>
           <button
             type="button"
-            onClick={() => setOpen(false)}
+            onClick={() => closeDrawer()}
             aria-label="Close menu"
-            className="rounded-full p-2 text-ink hover:bg-ink/5"
+            className="rounded-full p-2 text-slate-700 hover:bg-purple-50 hover:text-brand-plum"
           >
             <X className="h-5 w-5" />
           </button>
@@ -120,20 +119,20 @@ export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNav
 
         {/* Scrollable sections */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          <div className="space-y-7">
+          <div className="space-y-6">
             {filteredSections.map((s) => (
               <div key={s.heading}>
-                <p className="eyebrow text-ink-muted/80">{s.heading}</p>
-                <ul className="mt-2.5 space-y-1">
+                <p className="font-heritage font-bold text-xs uppercase tracking-wider text-brand-plum border-b border-purple-100 pb-1.5">{s.heading}</p>
+                <ul className="mt-2 space-y-1">
                   {s.links.map((l) => (
                     <li key={l.label}>
                       <Link
                         href={l.href}
-                        onClick={() => setOpen(false)}
-                        className="flex items-center justify-between rounded-card px-2.5 py-2 text-[14.5px] font-medium text-ink-soft transition hover:bg-cream-warm hover:text-maroon"
+                        onClick={() => closeDrawer()}
+                        className="flex items-center justify-between rounded-xl px-2.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-purple-100/70 hover:text-brand-purple"
                       >
                         <span>{l.label}</span>
-                        <ChevronRight className="h-3.5 w-3.5 text-ink-muted/40" />
+                        <ChevronRight className="h-3.5 w-3.5 text-purple-300" />
                       </Link>
                     </li>
                   ))}
@@ -143,22 +142,22 @@ export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNav
           </div>
 
           {/* Account & Wishlist quick links */}
-          <div className="mt-8 border-t border-border/80 pt-6">
-            <div className="grid grid-cols-2 gap-2 text-[13px]">
+          <div className="mt-8 border-t border-purple-100 pt-6">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <Link
                 href="/account/wishlist"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-2 rounded-card border border-border bg-cream-warm/40 py-2.5 text-ink-soft transition hover:border-ink hover:text-ink"
+                onClick={() => closeDrawer()}
+                className="flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-white py-2.5 font-semibold text-slate-700 transition hover:border-brand-purple hover:text-brand-plum shadow-xs"
               >
-                <Heart className="h-4 w-4 text-maroon" />
+                <Heart className="h-4 w-4 text-brand-purple fill-purple-100" />
                 <span>Wishlist</span>
               </Link>
               <Link
                 href="/account/profile"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-2 rounded-card border border-border bg-cream-warm/40 py-2.5 text-ink-soft transition hover:border-ink hover:text-ink"
+                onClick={() => closeDrawer()}
+                className="flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-white py-2.5 font-semibold text-slate-700 transition hover:border-brand-purple hover:text-brand-plum shadow-xs"
               >
-                <User className="h-4 w-4 text-ink-muted" />
+                <User className="h-4 w-4 text-purple-700" />
                 <span>Account</span>
               </Link>
             </div>
@@ -166,11 +165,11 @@ export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNav
         </div>
 
         {/* Drawer footer CTA */}
-        <div className="border-t border-border/80 p-5">
+        <div className="border-t border-purple-100 p-5 bg-white">
           <Link
             href="/products"
-            onClick={() => setOpen(false)}
-            className="btn-primary w-full justify-center text-center"
+            onClick={() => closeDrawer()}
+            className="btn-primary w-full justify-center text-center font-semibold"
           >
             Explore All Sarees
           </Link>
@@ -184,7 +183,7 @@ export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNav
       <button
         type="button"
         aria-label="Open menu"
-        onClick={() => setOpen(true)}
+        onClick={() => openDrawer()}
         className="rounded-full p-2 text-ink hover:bg-ink/5"
       >
         <Menu className="h-5 w-5" />

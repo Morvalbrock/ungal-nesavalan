@@ -22,7 +22,7 @@ export function SignOutButton({ className }: { className?: string }) {
         disabled={isPending}
         className={
           className ??
-          "w-full rounded-card px-3 py-2 text-left text-sm text-maroon hover:bg-maroon/5 disabled:opacity-50"
+          "w-full rounded-xl px-3.5 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50 transition disabled:opacity-50"
         }
       >
         {isPending ? "Signing out..." : "Sign out"}

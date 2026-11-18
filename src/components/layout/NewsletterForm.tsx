@@ -25,10 +25,8 @@ export function NewsletterForm() {
   }
 
   return (
-    <div className="mt-6">
-      <p className="text-xs font-medium uppercase tracking-[0.25em] text-ink-muted">Loom notes</p>
-      <p className="mt-2 text-sm text-ink-muted">A short letter, once a fortnight.</p>
-      <form onSubmit={submit} className="mt-3 flex gap-2">
+    <div className="w-full">
+      <form onSubmit={submit} className="flex gap-2">
         <label htmlFor="footer-newsletter" className="sr-only">
           Email address
         </label>
@@ -38,20 +36,20 @@ export function NewsletterForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          className="flex-1 rounded-full border border-border bg-cream px-4 py-2 text-sm outline-none focus:border-ink"
+          placeholder="Enter your email"
+          className="flex-1 rounded-full border border-purple-300/40 bg-white/10 px-4 py-2 text-xs sm:text-sm text-white placeholder:text-purple-300/60 outline-none transition focus:border-amber-300 focus:ring-1 focus:ring-amber-300"
         />
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-ink px-4 py-2 text-xs uppercase tracking-wider text-cream disabled:opacity-60"
+          className="rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 px-4 sm:px-5 py-2 text-xs font-bold uppercase tracking-wider text-purple-950 transition shadow-sm disabled:opacity-60"
         >
           {pending ? "…" : "Join"}
         </button>
       </form>
-      {status === "ok" && <p className="mt-2 text-xs text-emerald-700">Thank you — check your inbox for a welcome note.</p>}
-      {status === "already" && <p className="mt-2 text-xs text-ink-muted">You're already on the list.</p>}
-      {status === "err" && <p className="mt-2 text-xs text-maroon">Something went wrong. Try again.</p>}
+      {status === "ok" && <p className="mt-2 text-xs text-emerald-400">Thank you — welcome to our loom circle.</p>}
+      {status === "already" && <p className="mt-2 text-xs text-amber-300">You are already on our weaver circle.</p>}
+      {status === "err" && <p className="mt-2 text-xs text-rose-400">Something went wrong. Please try again.</p>}
     </div>
   );
 }

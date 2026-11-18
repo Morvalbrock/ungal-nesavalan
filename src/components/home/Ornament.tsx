@@ -1,11 +1,17 @@
 interface Props {
   className?: string;
-  tone?: "ink" | "gold" | "cream";
+  tone?: "ink" | "gold" | "cream" | "maroon";
 }
 
 export function Ornament({ className, tone = "ink" }: Props) {
   const stroke =
-    tone === "gold" ? "#b8893a" : tone === "cream" ? "#fbf6ef" : "#1a1310";
+    tone === "gold"
+      ? "#C89B3C"
+      : tone === "cream"
+      ? "#F6F0FA"
+      : tone === "maroon"
+      ? "#5B2A86"
+      : "#140A1F";
   return (
     <svg
       viewBox="0 0 240 24"

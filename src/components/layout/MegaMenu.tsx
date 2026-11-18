@@ -119,29 +119,31 @@ export function MegaMenu({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="link-underline flex items-center gap-1 text-[13px] uppercase tracking-widest2"
+        className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-purple-100 transition hover:text-amber-300"
       >
         All Sarees
-        <ChevronDown className={`h-3.5 w-3.5 transition ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
         <div
-          className="fixed left-0 right-0 top-[calc(72px+32px)] z-40 border-y border-border/70 bg-cream shadow-elev"
+          className="fixed left-0 right-0 top-[116px] z-50 border-y border-purple-100 bg-white/98 backdrop-blur shadow-2xl"
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
-          <div className={`mx-auto grid w-full max-w-[1440px] gap-10 px-6 py-10 ${showBridalPromo ? "lg:grid-cols-[repeat(3,1fr)_320px]" : "lg:grid-cols-3"}`}>
+          <div className={`mx-auto grid w-full max-w-7xl gap-8 px-6 py-10 ${showBridalPromo ? "lg:grid-cols-[repeat(3,1fr)_320px]" : "lg:grid-cols-3"}`}>
             {filteredColumns.map((col) => (
               <div key={col.heading}>
-                <p className="eyebrow">Shop by {col.heading}</p>
+                <p className="font-heritage font-bold text-base uppercase tracking-wider text-brand-plum border-b border-purple-100 pb-2">
+                  Shop by {col.heading}
+                </p>
                 <ul className="mt-4 space-y-2.5">
                   {col.links.map((l) => (
                     <li key={l.label}>
                       <Link
                         href={l.href}
                         onClick={() => setOpen(false)}
-                        className="text-[15px] text-ink-soft transition hover:text-maroon"
+                        className="text-sm font-medium text-slate-700 transition hover:text-brand-purple hover:underline"
                       >
                         {l.label}
                       </Link>
@@ -155,7 +157,7 @@ export function MegaMenu({
               <Link
                 href="/category/bridal-sarees"
                 onClick={() => setOpen(false)}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-card"
+                className="group relative block aspect-[4/5] overflow-hidden rounded-2xl border border-purple-200 shadow-md"
               >
                 <Image
                   src="/images/elegant_south_indian.png"
@@ -164,11 +166,13 @@ export function MegaMenu({
                   sizes="320px"
                   className="object-cover transition duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-5 text-cream">
-                  <p className="eyebrow-cream">Featured</p>
-                  <p className="mt-1 font-display text-2xl">The Bridal Edit</p>
-                  <p className="mt-1 text-[13px] text-cream/80">Kanjivaram, Banarasi & Baluchari</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1f0525]/90 via-[#1f0525]/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-900/70 border border-purple-400/40 px-2.5 py-0.5 text-[10px] font-bold text-amber-300 uppercase">
+                    Featured Heritage
+                  </span>
+                  <p className="mt-2 font-heritage text-2xl font-bold">The Bridal Edit</p>
+                  <p className="mt-0.5 text-xs text-purple-200">Elampillai Silk &amp; Muhurtham Drapes</p>
                 </div>
               </Link>
             )}

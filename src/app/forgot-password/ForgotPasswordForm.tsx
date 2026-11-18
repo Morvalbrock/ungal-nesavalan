@@ -22,14 +22,14 @@ export function ForgotPasswordForm() {
 
   if (done) {
     return (
-      <div className="rounded-card border border-border bg-cream-warm/50 p-4 text-sm text-ink-soft">
-        <p>
-          If an account exists for <strong>{email}</strong>, we’ve sent a password reset link.
+      <div className="rounded-xl border border-purple-200 bg-purple-50/80 p-5 text-sm text-purple-950">
+        <p className="leading-relaxed">
+          If an account exists for <strong className="text-brand-plum">{email}</strong>, we&apos;ve sent a secure password reset link.
           Please check your inbox (and spam folder).
         </p>
-        <p className="mt-3">
-          <Link href="/login" className="link-underline">
-            ← Back to sign in
+        <p className="mt-4">
+          <Link href="/login" className="text-brand-purple font-semibold hover:underline text-xs">
+            ← Return to sign in
           </Link>
         </p>
       </div>
@@ -38,23 +38,24 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <AuthField label="Email">
+      <AuthField label="Account Email Address">
         <input
           type="email"
           autoComplete="email"
           required
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className={authInputCls}
         />
       </AuthField>
-      <button type="submit" disabled={pending} className="btn-primary w-full">
-        {pending ? "Sending…" : "Send reset link"}
+      <button type="submit" disabled={pending} className="btn-primary w-full font-semibold shadow-md shadow-brand-deep/20 py-3">
+        {pending ? "Sending…" : "Send Reset Link"}
       </button>
-      <p className="text-xs text-ink-muted">
+      <p className="text-xs text-purple-900/70 text-center pt-2">
         Remember your password?{" "}
-        <Link href="/login" className="link-underline">
-          Sign in
+        <Link href="/login" className="text-brand-purple font-semibold hover:underline">
+          Sign in →
         </Link>
       </p>
     </form>

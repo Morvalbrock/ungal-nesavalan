@@ -140,17 +140,17 @@ export function PurchasePanel({ product }: { product: Product }) {
   return (
     <div className="space-y-6">
       {!isDefaultOnly && (
-        <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-ink-muted">
-          Colour · {variant?.color ?? "—"}
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-plum">
+          Colour · <span className="text-purple-700 font-bold">{variant?.color ?? "—"}</span>
         </p>
       )}
 
       <div className="flex items-center gap-4">
-        <div className="inline-flex items-center rounded-card border border-border bg-white shadow-xs">
+        <div className="inline-flex items-center rounded-xl border border-purple-200 bg-white shadow-xs overflow-hidden">
           <button
             type="button"
             onClick={() => handleStep(-1)}
-            className="flex h-10 w-10 items-center justify-center text-lg text-ink-muted transition hover:text-ink hover:bg-cream/40 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex h-10 w-10 items-center justify-center text-lg text-purple-800 transition hover:text-brand-plum hover:bg-purple-50 disabled:opacity-30 disabled:cursor-not-allowed"
             disabled={effectiveQty <= 1 || outOfStock}
             aria-label="Decrease quantity"
           >
@@ -164,13 +164,13 @@ export function PurchasePanel({ product }: { product: Product }) {
             onChange={handleInputChange}
             onBlur={handleInputBlur}
             disabled={outOfStock}
-            className="h-10 w-12 border-x border-border/60 bg-transparent text-center text-sm font-semibold text-ink focus:bg-cream/30 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="h-10 w-12 border-x border-purple-100 bg-transparent text-center text-sm font-semibold text-brand-plum focus:bg-purple-50/50 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             aria-label="Quantity"
           />
           <button
             type="button"
             onClick={() => handleStep(1)}
-            className="flex h-10 w-10 items-center justify-center text-lg text-ink-muted transition hover:text-ink hover:bg-cream/40 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex h-10 w-10 items-center justify-center text-lg text-purple-800 transition hover:text-brand-plum hover:bg-purple-50 disabled:opacity-30 disabled:cursor-not-allowed"
             disabled={effectiveQty >= maxQty || outOfStock}
             aria-label="Increase quantity"
           >
@@ -178,11 +178,11 @@ export function PurchasePanel({ product }: { product: Product }) {
           </button>
         </div>
         <div className="flex flex-col">
-          <span className="text-sm text-ink-muted">
-            {outOfStock ? "Out of stock" : `${variant?.stock} available`}
+          <span className="text-sm font-medium text-purple-900/80">
+            {outOfStock ? "Out of stock" : `${variant?.stock} sarees left in loom`}
           </span>
           {!outOfStock && variant && variant.stock > MAX_PURCHASE_LIMIT && (
-            <span className="text-[11px] text-ink-muted/80">Max 30 per order</span>
+            <span className="text-[11px] text-purple-900/60">Max 30 per order</span>
           )}
         </div>
       </div>
@@ -193,8 +193,8 @@ export function PurchasePanel({ product }: { product: Product }) {
           onClick={handleAdd}
           disabled={outOfStock || buyingNow}
           className={cn(
-            "btn-ghost flex-1 transition",
-            justAdded && "!border-ink !bg-ink !text-cream"
+            "btn-ghost flex-1 !border-purple-300 hover:!bg-purple-50 !text-brand-plum font-semibold rounded-xl py-3.5 transition",
+            justAdded && "!border-brand-purple !bg-brand-purple !text-white"
           )}
         >
           {justAdded ? (
@@ -213,18 +213,21 @@ export function PurchasePanel({ product }: { product: Product }) {
           type="button"
           onClick={handleBuyNow}
           disabled={outOfStock || buyingNow}
-          className="btn-primary flex-1 transition"
+          className="btn-primary flex-1 font-semibold rounded-xl py-3.5 transition shadow-md shadow-brand-deep/20"
         >
-          <Zap className="h-4 w-4" />
-          {buyingNow ? "Redirecting…" : outOfStock ? "Sold out" : `Buy now · ${formatINR(unitPrice * effectiveQty)}`}
+          <Zap className="h-4 w-4 text-amber-300 fill-amber-300" />
+          {buyingNow ? "Redirecting to Checkout…" : outOfStock ? "Sold out" : `Direct Buy Now · ${formatINR(unitPrice * effectiveQty)}`}
         </button>
       </div>
 
       <WishlistButton productId={product.id} variant="full" />
 
-      <p className="text-xs text-ink-muted">
-        Free shipping within India · Handloom Mark certified · 7-day return on unworn drapes
-      </p>
+      <div className="rounded-xl border border-purple-200/80 bg-gradient-to-r from-purple-50 to-amber-50/40 p-3 text-xs text-purple-950 flex items-center gap-2.5">
+        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+        <span>
+          <strong>Loom Direct Guarantee:</strong> 100% Genuine Handloom Mark · Free shipping in Tamil Nadu &amp; India · 7-day hassle-free return
+        </span>
+      </div>
     </div>
   );
 }
