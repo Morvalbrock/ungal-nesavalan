@@ -89,16 +89,21 @@ export function ProductRowActions({
   function doDuplicate() {
     setError(null);
     startTransition(async () => {
-      const res = await duplicateProduct(productId);
-      setOpen(false);
-      if (!res.ok) {
-        setError(res.error ?? "failed");
-        return;
-      }
-      if (res.data?.id) {
-        router.push(`/admin/products/${res.data.id}`);
-      } else {
-        router.refresh();
+      try {
+        const res = await duplicateProduct(productId);
+        setOpen(false);
+        if (!res.ok) {
+          setError(res.error ?? "failed");
+          return;
+        }
+        if (res.data?.id) {
+          router.push(`/admin/products/${res.data.id}`);
+        } else {
+          router.refresh();
+        }
+      } catch (err) {
+        setOpen(false);
+        setError((err as Error).message || "Failed to duplicate product");
       }
     });
   }

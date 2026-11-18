@@ -7,11 +7,12 @@ export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [product, categories, catalogs] = await Promise.all([
+  const [initialProduct, categories, catalogs] = await Promise.all([
     productRepo.findById(id),
     categoryRepo.list(),
     catalogRepo.list()
   ]);
+  const product = initialProduct || (await productRepo.findBySlug(id));
   if (!product) notFound();
 
   return (

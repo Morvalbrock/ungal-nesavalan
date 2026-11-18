@@ -61,7 +61,7 @@ type Values = {
   }[];
 };
 
-function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
+function toInitial(p?: Product, defaultCatalog = "kanchivaram", defaultCategory = ""): Values {
   if (!p) {
     return {
       slug: "",
@@ -76,7 +76,7 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram"): Values {
       lengthMeters: 6.25,
       blousePieceIncluded: true,
       careInstructions: "Normal Wash",
-      categoryId: "",
+      categoryId: defaultCategory,
       featured: false,
       published: true,
       images: [{ url: "", alt: "" }],
@@ -137,7 +137,8 @@ export function ProductForm({
 }) {
   const router = useRouter();
   const defaultCatalog = catalogs.find((c) => !c.legacy)?.slug ?? catalogs[0]?.slug ?? "kanchivaram";
-  const [values, setValues] = useState<Values>(() => toInitial(product, defaultCatalog));
+  const defaultCategory = categories[0]?.id ?? "";
+  const [values, setValues] = useState<Values>(() => toInitial(product, defaultCatalog, defaultCategory));
   const activeCatalogs = catalogs.filter((c) => !c.legacy);
   const legacyCatalogs = catalogs.filter((c) => c.legacy);
   // If the loaded product's catalog isn't in the list (e.g. deleted later), still show it as the
@@ -161,18 +162,23 @@ export function ProductForm({
     e.preventDefault();
     setBanner(null);
     setIssues({});
+
+    const rawImages = values.images.map((i, idx) => ({
+      id: i.id,
+      url: i.url.trim(),
+      alt: i.alt.trim(),
+      sort: idx
+    }));
+    const nonEmptyImages = rawImages.filter((i) => i.url.length > 0);
+    const submittedImages = nonEmptyImages.length > 0 ? nonEmptyImages : rawImages;
+
     const payload: ProductFormValues = {
       ...values,
       basePrice: rupeesToPaise(values.basePrice),
       salePrice: values.salePrice === "" ? undefined : rupeesToPaise(values.salePrice),
-      stock: values.stock === "" ? undefined : (values.stock as unknown as number),
-      lengthMeters: values.lengthMeters as unknown as number,
-      images: values.images.map((i, idx) => ({
-        id: i.id,
-        url: i.url,
-        alt: i.alt,
-        sort: idx
-      })),
+      stock: values.stock === "" ? undefined : Number(values.stock),
+      lengthMeters: Number(values.lengthMeters) || 6.25,
+      images: submittedImages,
       variants: values.variants.map((v) => {
         const overrideRupees = v.priceOverride === "" ? undefined : Number(v.priceOverride);
         const overridePaise =
@@ -181,10 +187,10 @@ export function ProductForm({
             : Math.round(overrideRupees * 100);
         return {
           id: v.id,
-          color: v.color,
-          colorHex: v.colorHex,
-          sku: v.sku,
-          stock: v.stock as unknown as number,
+          color: v.color.trim() || "Default",
+          colorHex: v.colorHex.trim() || "#000000",
+          sku: v.sku.trim(),
+          stock: Number(v.stock) || 0,
           priceOverride: overridePaise,
           imageUrl: v.imageUrl?.trim() ? v.imageUrl.trim() : undefined,
           imageAlt: v.imageAlt?.trim() ? v.imageAlt.trim() : undefined
@@ -193,13 +199,17 @@ export function ProductForm({
     } as unknown as ProductFormValues;
 
     startTransition(async () => {
-      const res = await upsertProduct(payload);
-      if (res.ok) {
-        router.push("/admin/products");
-        router.refresh();
-      } else {
-        setIssues(res.issues ?? {});
-        setBanner(res.error === "invalid_input" ? "Please fix the highlighted fields." : res.error);
+      try {
+        const res = await upsertProduct(payload);
+        if (res.ok) {
+          router.push("/admin/products");
+          router.refresh();
+        } else {
+          setIssues(res.issues ?? {});
+          setBanner(res.error === "invalid_input" ? "Please fix the highlighted fields." : res.error);
+        }
+      } catch (err) {
+        setBanner((err as Error).message || "A server error occurred. Please try again.");
       }
     });
   };
@@ -208,12 +218,16 @@ export function ProductForm({
     if (!product) return;
     if (!confirm(`Delete "${product.name}"? This cannot be undone.`)) return;
     startTransition(async () => {
-      const res = await deleteProduct(product.id);
-      if (res.ok) {
-        router.push("/admin/products");
-        router.refresh();
-      } else {
-        setBanner(res.error);
+      try {
+        const res = await deleteProduct(product.id);
+        if (res.ok) {
+          router.push("/admin/products");
+          router.refresh();
+        } else {
+          setBanner(res.error);
+        }
+      } catch (err) {
+        setBanner((err as Error).message || "A server error occurred. Please try again.");
       }
     });
   };

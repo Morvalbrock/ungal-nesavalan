@@ -43,7 +43,7 @@ export interface ProductRepository {
   featured(limit?: number): Promise<ProductSummary[]>;
   getAvailableFacets(): Promise<AvailableFacets>;
   getCatalogFallbackImages(): Promise<Record<string, string>>;
-  create(input: Omit<Product, "id" | "createdAt" | "updatedAt">): Promise<Product>;
+  create(input: Omit<Product, "id" | "createdAt" | "updatedAt"> & { id?: string }): Promise<Product>;
   update(id: string, patch: Partial<Product>): Promise<Product | null>;
   remove(id: string): Promise<boolean>;
   adjustStock(entries: { productId: string; variantId: string; delta: number }[]): Promise<void>;
@@ -234,7 +234,8 @@ export const jsonProductRepo: ProductRepository = {
     return fallbackImageBySlug;
   },
   async create(input) {
-    const created: Product = { ...input, id: newId("prd"), createdAt: nowIso(), updatedAt: nowIso() };
+    const id = (input as { id?: string }).id || newId("prd");
+    const created: Product = { ...input, id, createdAt: nowIso(), updatedAt: nowIso() };
     await mutateCollection<Product>(COLLECTION, [], (rows) => [...rows, created]);
     return created;
   },

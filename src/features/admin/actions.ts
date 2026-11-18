@@ -59,7 +59,12 @@ const productSchema = z.object({
     .array(
       z.object({
         id: z.string().optional(),
-        url: z.string().url("Enter a valid image URL"),
+        url: z
+          .string()
+          .trim()
+          .refine((v) => /^https?:\/\//.test(v) || v.startsWith("/"), {
+            message: "Upload or paste a valid image URL"
+          }),
         alt: z.string().trim().default(""),
         sort: z.coerce.number().default(0)
       })
@@ -99,120 +104,144 @@ export type ActionResult<T = void> =
   | { ok: false; error: string; issues?: Record<string, string[]> };
 
 export async function upsertProduct(values: ProductFormValues): Promise<ActionResult<{ slug: string }>> {
-  await requireAdmin();
-  const parsed = productSchema.safeParse(values);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      error: "invalid_input",
-      issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
-    };
-  }
-  const data = parsed.data;
-  const productId = data.id ?? newId("prd");
-  let slug = data.slug?.trim() ? slugify(data.slug) : slugify(data.name);
+  try {
+    await requireAdmin();
+    const parsed = productSchema.safeParse(values);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: "invalid_input",
+        issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
+      };
+    }
+    const data = parsed.data;
+    const productId = data.id ?? newId("prd");
+    let slug = data.slug?.trim() ? slugify(data.slug) : slugify(data.name);
+    if (!slug) slug = `product-${Date.now().toString(36)}`;
 
-  // Ensure slug uniqueness across products (excluding self if editing)
-  const allProducts = await readCollection<Product>("products");
-  const baseSlug = slug;
-  let counter = 1;
-  while (allProducts.some((p) => p.id !== productId && p.slug === slug)) {
-    if (counter === 1 && data.variants?.[0]?.color) {
-      const colorPart = slugify(data.variants[0].color);
-      if (colorPart && !slug.endsWith(colorPart)) {
-        slug = `${baseSlug}-${colorPart}`;
-        counter++;
-        continue;
+    // Ensure slug uniqueness across products (excluding self if editing)
+    const allProducts = await readCollection<Product>("products");
+    const baseSlug = slug;
+    let counter = 1;
+    while (allProducts.some((p) => p.id !== productId && p.slug === slug)) {
+      if (counter === 1 && data.variants?.[0]?.color) {
+        const colorPart = slugify(data.variants[0].color);
+        if (colorPart && !slug.endsWith(colorPart)) {
+          slug = `${baseSlug}-${colorPart}`;
+          counter++;
+          continue;
+        }
+      }
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+      if (counter > 100) {
+        slug = `${baseSlug}-${Date.now().toString(36)}`;
+        break;
       }
     }
-    slug = `${baseSlug}-${counter}`;
-    counter++;
-  }
-  const images: ProductImage[] = data.images.map((img, i) => ({
-    id: img.id ?? newId("img"),
-    url: img.url,
-    alt: img.alt || data.name,
-    sort: img.sort ?? i
-  }));
-  // When the admin set a top-level stock and added no colour variants, keep the
-  // persisted shape variant-based by synthesising a single "Default" variant.
-  // Preserve its id on edit (via existing variants[0]) so stock adjustments stay
-  // attached to the same row across saves.
-  let variantsInput = data.variants;
-  if (variantsInput.length === 0 && (data.stock ?? 0) > 0) {
-    const existing = data.id
-      ? (await productRepo.findById(data.id))?.variants.find((v) => v.color === "Default")
-      : undefined;
-    variantsInput = [
-      {
-        id: existing?.id,
-        color: "Default",
-        colorHex: "#000000",
-        sku: existing?.sku ?? `${slug}-default`.toUpperCase(),
-        stock: data.stock ?? 0,
-        priceOverride: undefined,
-        imageUrl: undefined,
-        imageAlt: undefined
+    const images: ProductImage[] = data.images.map((img, i) => ({
+      id: img.id ?? newId("img"),
+      url: img.url,
+      alt: img.alt || data.name,
+      sort: img.sort ?? i
+    }));
+
+    // When the admin set a top-level stock and added no colour variants, keep the
+    // persisted shape variant-based by synthesising a single "Default" variant.
+    // Preserve its id on edit (via existing variants[0]) so stock adjustments stay
+    // attached to the same row across saves.
+    let variantsInput = data.variants;
+    if (!variantsInput || variantsInput.length === 0) {
+      const existing = data.id
+        ? (await productRepo.findById(data.id))?.variants.find((v) => v.color === "Default")
+        : undefined;
+      variantsInput = [
+        {
+          id: existing?.id,
+          color: "Default",
+          colorHex: "#000000",
+          sku: existing?.sku ?? `${slug}-default`.toUpperCase(),
+          stock: data.stock ?? 0,
+          priceOverride: undefined,
+          imageUrl: undefined,
+          imageAlt: undefined
+        }
+      ];
+    }
+    const variants: Variant[] = variantsInput.map((v) => ({
+      id: v.id ?? newId("var"),
+      productId,
+      color: v.color,
+      colorHex: v.colorHex.toLowerCase(),
+      sku: v.sku,
+      stock: v.stock,
+      priceOverride: v.priceOverride,
+      images: v.imageUrl
+        ? [{ id: newId("img"), url: v.imageUrl, alt: v.imageAlt || v.color || data.name, sort: 0 }]
+        : []
+    }));
+
+    const payload: Omit<Product, "createdAt" | "updatedAt"> = {
+      id: productId,
+      slug,
+      name: data.name,
+      description: data.description,
+      basePrice: data.basePrice,
+      salePrice: data.salePrice,
+      fabric: data.fabric,
+      weave: data.weave,
+      occasion: data.occasion,
+      lengthMeters: data.lengthMeters,
+      blousePieceIncluded: data.blousePieceIncluded,
+      careInstructions: data.careInstructions,
+      categoryId: data.categoryId,
+      images,
+      variants,
+      featured: data.featured,
+      published: data.published
+    };
+
+    if (data.id) {
+      const updated = await productRepo.update(data.id, payload);
+      if (!updated) {
+        // Fallback: if record was not found by update, create it with this ID
+        await productRepo.create({ ...payload, id: data.id });
       }
-    ];
+    } else {
+      await productRepo.create(payload);
+    }
+
+    try {
+      revalidatePath("/admin/products");
+      revalidatePath("/products");
+      revalidatePath(`/products/${slug}`);
+      revalidatePath("/");
+    } catch {
+      // Ignore revalidation error so save succeeds
+    }
+    return { ok: true, data: { slug } };
+  } catch (err) {
+    console.error("[upsertProduct] Error:", err);
+    return { ok: false, error: (err as Error).message || "Failed to save product" };
   }
-  const variants: Variant[] = variantsInput.map((v) => ({
-    id: v.id ?? newId("var"),
-    productId,
-    color: v.color,
-    colorHex: v.colorHex.toLowerCase(),
-    sku: v.sku,
-    stock: v.stock,
-    priceOverride: v.priceOverride,
-    images: v.imageUrl
-      ? [{ id: newId("img"), url: v.imageUrl, alt: v.imageAlt || v.color || data.name, sort: 0 }]
-      : []
-  }));
-
-  const payload: Omit<Product, "createdAt" | "updatedAt"> = {
-    id: productId,
-    slug,
-    name: data.name,
-    description: data.description,
-    basePrice: data.basePrice,
-    salePrice: data.salePrice,
-    fabric: data.fabric,
-    weave: data.weave,
-    occasion: data.occasion,
-    lengthMeters: data.lengthMeters,
-    blousePieceIncluded: data.blousePieceIncluded,
-    careInstructions: data.careInstructions,
-    categoryId: data.categoryId,
-    images,
-    variants,
-    featured: data.featured,
-    published: data.published
-  };
-
-  if (data.id) {
-    const updated = await productRepo.update(data.id, payload);
-    if (!updated) return { ok: false, error: "not_found" };
-  } else {
-    await productRepo.create(payload);
-  }
-
-  revalidatePath("/admin/products");
-  revalidatePath("/products");
-  revalidatePath(`/products/${slug}`);
-  // Home page's "Shop by Catalog" tile pulls its fallback image from a
-  // featured product; without this, the tile stays stale for up to 60s
-  // after an edit changes featured/weave/images.
-  revalidatePath("/");
-  return { ok: true, data: { slug } };
 }
 
 export async function deleteProduct(id: string): Promise<ActionResult> {
-  await requireSuperAdmin();
-  const removed = await productRepo.remove(id);
-  if (!removed) return { ok: false, error: "not_found" };
-  revalidatePath("/admin/products");
-  revalidatePath("/products");
-  return { ok: true };
+  try {
+    await requireSuperAdmin();
+    const removed = await productRepo.remove(id);
+    if (!removed) return { ok: false, error: "not_found" };
+    try {
+      revalidatePath("/admin/products");
+      revalidatePath("/products");
+    } catch {
+      // Ignore revalidation error
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error("[deleteProduct] Error:", err);
+    return { ok: false, error: (err as Error).message || "Failed to delete product" };
+  }
 }
 
 // Persist the admin-chosen display order for products within a catalog (weave).
@@ -239,60 +268,93 @@ export async function reorderCatalogProducts(
 // generates a unique slug, clears featured flag, and zeroes variant stock so the
 // clone can't accidentally be listed with real inventory before the admin reviews it.
 export async function duplicateProduct(id: string): Promise<ActionResult<{ id: string; slug: string }>> {
-  await requireAdmin();
-  const source = await productRepo.findById(id);
-  if (!source) return { ok: false, error: "not_found" };
+  try {
+    await requireAdmin();
+    const source = await productRepo.findById(id);
+    if (!source) return { ok: false, error: "not_found" };
 
-  const newProductId = newId("prd");
-  const baseSlug = `${source.slug}-copy`;
-  const slug = `${baseSlug}-${Date.now().toString(36)}`;
+    const newProductId = newId("prd");
+    const baseSlug = `${source.slug}-copy`;
+    let slug = `${baseSlug}-${Date.now().toString(36)}`;
 
-  const images: ProductImage[] = source.images.map((img, i) => ({
-    id: newId("img"),
-    url: img.url,
-    alt: img.alt,
-    sort: img.sort ?? i
-  }));
+    // Ensure slug uniqueness across products
+    const allProducts = await readCollection<Product>("products");
+    let counter = 1;
+    while (allProducts.some((p) => p.slug === slug)) {
+      slug = `${baseSlug}-${Date.now().toString(36)}-${counter}`;
+      counter++;
+      if (counter > 100) break;
+    }
 
-  const variants: Variant[] = source.variants.map((v) => ({
-    id: newId("var"),
-    productId: newProductId,
-    color: v.color,
-    colorHex: v.colorHex,
-    sku: `${v.sku}-copy-${Date.now().toString(36).slice(-4)}`,
-    stock: 0,
-    priceOverride: v.priceOverride,
-    images: v.images.map((img) => ({
+    const images: ProductImage[] = (source.images || []).map((img, i) => ({
       id: newId("img"),
       url: img.url,
-      alt: img.alt,
-      sort: img.sort
-    }))
-  }));
+      alt: img.alt || `${source.name} (Copy)`,
+      sort: img.sort ?? i
+    }));
 
-  const payload: Omit<Product, "createdAt" | "updatedAt"> = {
-    id: newProductId,
-    slug,
-    name: `${source.name} (Copy)`,
-    description: source.description,
-    basePrice: source.basePrice,
-    salePrice: source.salePrice,
-    fabric: source.fabric,
-    weave: source.weave,
-    occasion: source.occasion,
-    lengthMeters: source.lengthMeters,
-    blousePieceIncluded: source.blousePieceIncluded,
-    careInstructions: source.careInstructions,
-    categoryId: source.categoryId,
-    images,
-    variants,
-    featured: false,
-    published: false
-  };
+    const sourceVariants =
+      source.variants && source.variants.length > 0
+        ? source.variants
+        : [
+            {
+              id: newId("var"),
+              productId: newProductId,
+              color: "Default",
+              colorHex: "#000000",
+              sku: `${slug}-DEFAULT`.toUpperCase(),
+              stock: 0,
+              images: []
+            }
+          ];
 
-  await productRepo.create(payload);
-  revalidatePath("/admin/products");
-  return { ok: true, data: { id: newProductId, slug } };
+    const variants: Variant[] = sourceVariants.map((v) => ({
+      id: newId("var"),
+      productId: newProductId,
+      color: v.color || "Default",
+      colorHex: v.colorHex || "#000000",
+      sku: `${v.sku || slug}-copy-${Date.now().toString(36).slice(-4)}`,
+      stock: 0,
+      priceOverride: v.priceOverride,
+      images: (v.images || []).map((img, i) => ({
+        id: newId("img"),
+        url: img.url,
+        alt: img.alt || v.color || "",
+        sort: img.sort ?? i
+      }))
+    }));
+
+    const payload: Omit<Product, "createdAt" | "updatedAt"> & { id: string } = {
+      id: newProductId,
+      slug,
+      name: `${source.name} (Copy)`,
+      description: source.description,
+      basePrice: source.basePrice,
+      salePrice: source.salePrice,
+      fabric: source.fabric,
+      weave: source.weave,
+      occasion: source.occasion,
+      lengthMeters: source.lengthMeters,
+      blousePieceIncluded: source.blousePieceIncluded,
+      careInstructions: source.careInstructions,
+      categoryId: source.categoryId,
+      images,
+      variants,
+      featured: false,
+      published: false
+    };
+
+    const created = await productRepo.create(payload);
+    try {
+      revalidatePath("/admin/products");
+    } catch {
+      // Ignore revalidation error
+    }
+    return { ok: true, data: { id: created.id, slug: created.slug } };
+  } catch (err) {
+    console.error("[duplicateProduct] Error:", err);
+    return { ok: false, error: (err as Error).message || "Failed to duplicate product" };
+  }
 }
 
 export async function toggleProductPublished(id: string, published: boolean): Promise<ActionResult> {
