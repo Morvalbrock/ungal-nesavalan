@@ -85,7 +85,8 @@ function toSummary(p: Product): ProductSummary {
     lengthMeters: p.lengthMeters,
     blousePieceIncluded: p.blousePieceIncluded,
     defaultVariantId: firstInStock?.id,
-    variants: p.variants
+    variants: p.variants,
+    createdAt: p.createdAt
   };
 }
 

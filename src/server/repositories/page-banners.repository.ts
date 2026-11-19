@@ -15,22 +15,22 @@ const DEFAULT_BANNERS: PageBanner[] = [
     "id": "products",
     "page": "/products",
     "title": "All Sarees",
-    "subtitle": "Elampillai silk-cotton sarees woven on our own looms — direct from weaver to wardrobe.",
-    "imageUrl": "https://picsum.photos/seed/hero-saree/1200/600"
+    "subtitle": "Authentic Elampillai silk-cotton, soft silk, and bridal sarees woven directly on our own pit-looms — honest pricing direct from master weavers.",
+    "imageUrl": "/images/authentic_indian_handloom_silk_saree.png"
   },
   {
     "id": "about",
     "page": "/about",
     "title": "Our Weavers",
-    "subtitle": "Rooted in Tamil Nadu, dedicated to handloom traditions across India.",
-    "imageUrl": "https://picsum.photos/seed/weavers/1200/600"
+    "subtitle": "Rooted in Elampillai, Salem, dedicated to pure handloom heritage across Tamil Nadu.",
+    "imageUrl": "/images/authentic_indian_handloom_silk_saree.png"
   },
   {
     "id": "journal",
     "page": "/journal",
     "title": "Stories from the loom",
-    "subtitle": "Weaver profiles, care notes, and dispatches from India's handloom clusters.",
-    "imageUrl": "https://picsum.photos/seed/journal-banner/1200/600"
+    "subtitle": "Weaver profiles, care notes, and dispatches from our Salem handloom workshops.",
+    "imageUrl": "/images/authentic_indian_handloom_silk_saree.png"
   }
 ];
 

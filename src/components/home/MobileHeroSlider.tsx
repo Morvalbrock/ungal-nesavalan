@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { HeroSlide } from "@/types/hero-slide";
 
 interface SlideData {
@@ -241,6 +242,45 @@ export function MobileHeroSlider({ slides }: { slides?: HeroSlide[] }) {
             </Link>
           ))}
         </div>
+
+        {/* Slide Counter Badge */}
+        {totalSlides > 1 && (
+          <div className="absolute top-2.5 right-2.5 z-10 bg-black/55 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/20 pointer-events-none tabular-nums shadow-xs">
+            {currentIndex + 1} / {totalSlides}
+          </div>
+        )}
+
+        {/* Manual Left/Right Arrow Buttons for Direct Click/Tap */}
+        {totalSlides > 1 && (
+          <>
+            <button
+              type="button"
+              aria-label="Previous slide"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                goToSlide(currentIndex - 1);
+                startAutoPlay();
+              }}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/45 hover:bg-black/70 active:scale-90 text-white flex items-center justify-center backdrop-blur-xs border border-white/30 transition-all shadow-md cursor-pointer"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              aria-label="Next slide"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                goToSlide(currentIndex + 1);
+                startAutoPlay();
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/45 hover:bg-black/70 active:scale-90 text-white flex items-center justify-center backdrop-blur-xs border border-white/30 transition-all shadow-md cursor-pointer"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </>
+        )}
 
         {/* Minimal Floating Indicator Dots */}
         {totalSlides > 1 && (

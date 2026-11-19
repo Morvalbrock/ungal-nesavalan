@@ -25,6 +25,7 @@ function toInitial(s?: HeroSlide): HeroSlideFormValues {
         featureEyebrow: s.featureEyebrow,
         featureTitle: s.featureTitle,
         featureSubtitle: s.featureSubtitle,
+        featureProductSlug: s.featureProductSlug ?? "",
         sort: s.sort,
         active: s.active
       }
@@ -44,6 +45,7 @@ function toInitial(s?: HeroSlide): HeroSlideFormValues {
         featureEyebrow: "Featured weave",
         featureTitle: "",
         featureSubtitle: "",
+        featureProductSlug: "",
         sort: 0,
         active: true
       };
@@ -239,6 +241,18 @@ export function HeroSlideForm({
                 onChange={(e) => set("featureSubtitle", e.target.value)}
                 className={inputCls}
                 placeholder="Kanchipuram · Pure zari"
+              />
+            </Field>
+            <Field
+              label="Linked product slug"
+              issues={issues.featureProductSlug}
+              hint="Optional. When set, the hero's quick-view modal shows this product's live price and specs. Leave blank to make the card navigate to the primary CTA instead."
+            >
+              <input
+                value={(values.featureProductSlug ?? "") as string}
+                onChange={(e) => set("featureProductSlug", e.target.value)}
+                className={inputCls}
+                placeholder="royal-violet-aarani-soft-silk-saree"
               />
             </Field>
           </div>

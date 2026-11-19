@@ -904,6 +904,9 @@ const heroSlideSchema = z.object({
   featureEyebrow: z.string().trim().default(""),
   featureTitle: z.string().trim().default(""),
   featureSubtitle: z.string().trim().default(""),
+  // Slug of a real published product to feature in the hero quick-view modal.
+  // Empty string = no linked product (quick-view falls back to navigation).
+  featureProductSlug: z.string().trim().default(""),
   sort: z.coerce.number().int().default(0),
   active: z.boolean().default(true)
 });

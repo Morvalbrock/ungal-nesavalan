@@ -42,7 +42,7 @@ export default async function CategoryPage({
 
   return (
     <>
-      <section className="relative overflow-hidden bg-ink text-cream">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#1f0525] via-[#2d083b] to-[#14021b] text-white">
         {(category.headerImage || category.image) && (
           <div className="absolute inset-0">
             <Image
@@ -51,16 +51,16 @@ export default async function CategoryPage({
               fill
               priority
               sizes="100vw"
-              className="object-cover opacity-45"
+              className="object-cover opacity-40"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/30 to-ink/80" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#1f0525]/80 via-[#2d083b]/50 to-[#14021b]/90" />
           </div>
         )}
         <Container className="relative flex min-h-[300px] sm:min-h-[340px] flex-col justify-end py-12 sm:py-16">
           <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-purple-200/80">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <span className="mx-2 text-purple-300/40">/</span>
-            <Link href="/products" className="hover:text-white transition-colors">Sarees</Link>
+            <Link href="/products" className="hover:text-white transition-colors">All Sarees</Link>
             <span className="mx-2 text-purple-300/40">/</span>
             <span className="text-white font-semibold">{category.name}</span>
           </nav>

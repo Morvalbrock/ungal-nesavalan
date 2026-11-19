@@ -20,32 +20,18 @@ interface NavItem {
 function HeaderNavLinksInner({ inStockSlugs = [] }: HeaderNavLinksProps) {
   const pathname = usePathname() || "/";
   const searchParams = useSearchParams();
-  const categoryParam = searchParams.get("category");
   const sortParam = searchParams.get("sort");
 
-  // Determine active item based on pathname and category parameter
-  const isHomeActive = pathname === "/" && (!categoryParam || categoryParam === "home");
-  const isAllSareesActive =
-    (pathname === "/products" && !sortParam) ||
-    (pathname === "/" && categoryParam === "all");
-  const isBridalActive =
-    pathname.startsWith("/category/bridal-sarees") ||
-    (pathname === "/" && categoryParam === "bridal-sarees");
-  const isSilkActive =
-    pathname.startsWith("/category/silk-sarees") ||
-    (pathname === "/" && categoryParam === "silk-sarees");
-  const isCottonActive =
-    pathname.startsWith("/category/cotton-sarees") ||
-    (pathname === "/" && categoryParam === "cotton-sarees");
-  const isNewArrivalsActive =
-    (pathname === "/products" && sortParam === "newest") ||
-    (pathname === "/" && categoryParam === "new-arrivals");
+  // Determine active item based on pathname and sort parameter
+  const isHomeActive = pathname === "/";
+  const isAllSareesActive = pathname === "/products" && !sortParam;
+  const isBridalActive = pathname.startsWith("/category/bridal-sarees");
+  const isSilkActive = pathname.startsWith("/category/silk-sarees");
+  const isCottonActive = pathname.startsWith("/category/cotton-sarees");
+  const isNewArrivalsActive = pathname === "/products" && sortParam === "newest";
   const isJournalActive = pathname.startsWith("/journal");
-  const isOurWeaversActive = pathname === "/about";
 
   const navItems: (NavItem & { active: boolean })[] = useMemo(() => {
-    const isStorefrontIndex = pathname === "/";
-
     return [
       {
         id: "home",
@@ -56,34 +42,34 @@ function HeaderNavLinksInner({ inStockSlugs = [] }: HeaderNavLinksProps) {
       {
         id: "all-sarees",
         label: "All Sarees",
-        href: isStorefrontIndex ? "/?category=all#this-weeks-weave" : "/products",
+        href: "/products",
         active: isAllSareesActive
       },
       {
         id: "bridal-sarees",
         label: "Bridal Sarees",
-        href: isStorefrontIndex ? "/?category=bridal-sarees#this-weeks-weave" : "/category/bridal-sarees",
+        href: "/category/bridal-sarees",
         active: isBridalActive,
         show: inStockSlugs.length === 0 || inStockSlugs.includes("bridal-sarees")
       },
       {
         id: "silk-sarees",
         label: "Silk Sarees",
-        href: isStorefrontIndex ? "/?category=silk-sarees#this-weeks-weave" : "/category/silk-sarees",
+        href: "/category/silk-sarees",
         active: isSilkActive,
         show: inStockSlugs.length === 0 || inStockSlugs.includes("silk-sarees")
       },
       {
         id: "cotton-sarees",
         label: "Cotton Sarees",
-        href: isStorefrontIndex ? "/?category=cotton-sarees#this-weeks-weave" : "/category/cotton-sarees",
+        href: "/category/cotton-sarees",
         active: isCottonActive,
         show: inStockSlugs.length === 0 || inStockSlugs.includes("cotton-sarees")
       },
       {
         id: "new-arrivals",
         label: "New Arrivals",
-        href: isStorefrontIndex ? "/?category=new-arrivals#this-weeks-weave" : "/products?sort=newest",
+        href: "/products?sort=newest",
         active: isNewArrivalsActive,
         badge: "New"
       },
@@ -92,16 +78,9 @@ function HeaderNavLinksInner({ inStockSlugs = [] }: HeaderNavLinksProps) {
         label: "Journal",
         href: "/journal",
         active: isJournalActive
-      },
-      {
-        id: "our-weavers",
-        label: "Our Weavers",
-        href: "/about",
-        active: isOurWeaversActive
       }
     ];
   }, [
-    pathname,
     isHomeActive,
     isAllSareesActive,
     isBridalActive,
@@ -109,7 +88,6 @@ function HeaderNavLinksInner({ inStockSlugs = [] }: HeaderNavLinksProps) {
     isCottonActive,
     isNewArrivalsActive,
     isJournalActive,
-    isOurWeaversActive,
     inStockSlugs
   ]);
 
@@ -192,7 +170,7 @@ function HeaderNavLinksFallback({ inStockSlugs = [] }: HeaderNavLinksProps) {
       )}
       <li>
         <Link
-          href="/products"
+          href="/products?sort=newest"
           className="px-3 py-1.5 text-purple-100 hover:text-white hover:bg-white/10 rounded-full transition-colors inline-flex items-center gap-1.5"
         >
           <span>New Arrivals</span>
@@ -207,14 +185,6 @@ function HeaderNavLinksFallback({ inStockSlugs = [] }: HeaderNavLinksProps) {
           className="px-3 py-1.5 text-purple-100 hover:text-white hover:bg-white/10 rounded-full transition-colors"
         >
           Journal
-        </Link>
-      </li>
-      <li>
-        <Link
-          href="/about"
-          className="px-3 py-1.5 text-purple-100 hover:text-amber-200 hover:bg-white/10 rounded-full transition-colors"
-        >
-          Our Weavers
         </Link>
       </li>
     </ul>

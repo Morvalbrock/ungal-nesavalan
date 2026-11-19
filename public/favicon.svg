@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Royal Elampillai Plum Gradient -->
+    <radialGradient id="plumBg" cx="50%" cy="42%" r="68%">
+      <stop offset="0%" stop-color="#4e1660"/>
+      <stop offset="45%" stop-color="#2d083b"/>
+      <stop offset="85%" stop-color="#190322"/>
+      <stop offset="100%" stop-color="#0f0115"/>
+    </radialGradient>
+
+    <!-- 24K Pure Zari Gold Metallic Gradient -->
+    <linearGradient id="zariGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF5CC"/>
+      <stop offset="20%" stop-color="#F5CE66"/>
+      <stop offset="45%" stop-color="#E2A832"/>
+      <stop offset="70%" stop-color="#FDE896"/>
+      <stop offset="90%" stop-color="#C58B1B"/>
+      <stop offset="100%" stop-color="#8F5E0B"/>
+    </linearGradient>
+
+    <!-- Warm Silk Thread Shimmer Gradient -->
+    <linearGradient id="silkGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF8D6"/>
+      <stop offset="50%" stop-color="#F5CE66"/>
+      <stop offset="100%" stop-color="#B87B14"/>
+    </linearGradient>
+
+    <linearGradient id="shuttleGleam" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#B87B14"/>
+      <stop offset="25%" stop-color="#FDE896"/>
+      <stop offset="50%" stop-color="#FFFFFF"/>
+      <stop offset="75%" stop-color="#FDE896"/>
+      <stop offset="100%" stop-color="#8F5E0B"/>
+    </linearGradient>
+
+    <!-- Drop Shadow for Royal Depth -->
+    <filter id="royalShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <!-- Golden Aura Glow for Small Favicon Crispness -->
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feColorMatrix type="matrix" values="1 0 0 0 0.95  0 1 0 0 0.82  0 0 1 0 0.45  0 0 0 0.5 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  
+
+  <g transform="translate(0, 0) scale(1)">
+    <!-- 1. SQUIRCLE MEDALLION BASE -->
+    <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#plumBg)" stroke="url(#zariGold)" stroke-width="7" filter="url(#royalShadow)"/>
+
+    <!-- 2. ZARI SARI BORDER ACCENTS -->
+    <rect x="32" y="32" width="448" height="448" rx="92" fill="none" stroke="url(#zariGold)" stroke-width="2" stroke-dasharray="6,5" opacity="0.6"/>
+    <circle cx="256" cy="256" r="214" fill="none" stroke="url(#zariGold)" stroke-width="2" opacity="0.8"/>
+    <circle cx="256" cy="256" r="205" fill="none" stroke="url(#zariGold)" stroke-width="1.2" stroke-dasharray="4,4" opacity="0.45"/>
+
+    <!-- Corner Temple Motifs (Elampillai Kattam Diamonds) -->
+    <polygon points="56,48 64,56 56,64 48,56" fill="url(#zariGold)"/>
+    <polygon points="456,48 464,56 456,64 448,56" fill="url(#zariGold)"/>
+    <polygon points="56,448 64,456 56,464 48,456" fill="url(#zariGold)"/>
+    <polygon points="456,448 464,456 456,464 448,456" fill="url(#zariGold)"/>
+
+    <!-- 3. CENTRAL SACRED CREST -->
+    <g filter="url(#goldGlow)">
+      <!-- APEX: Sacred Lotus Crown (தாமரை) -->
+      <!-- Crown Kalasam Point -->
+      <circle cx="256" cy="74" r="5" fill="url(#zariGold)"/>
+      <polygon points="256,64 260,73 252,73" fill="url(#zariGold)"/>
+      <!-- Center Lotus Petal -->
+      <path d="M 256 80 C 264 104, 274 126, 274 144 C 274 158, 265 166, 256 166 C 247 166, 238 158, 238 144 C 238 126, 248 104, 256 80 Z" fill="url(#zariGold)"/>
+      <!-- Left Flanking Petals -->
+      <path d="M 256 166 C 240 166, 220 154, 212 135 C 206 120, 210 106, 217 96 C 219 112, 229 133, 245 148 C 249 153, 253 160, 256 166 Z" fill="url(#zariGold)" opacity="0.95"/>
+      <path d="M 256 166 C 236 166, 208 150, 196 128 C 190 116, 192 102, 198 94 C 199 106, 206 125, 226 142 C 236 151, 246 160, 256 166 Z" fill="url(#zariGold)" opacity="0.75"/>
+      <!-- Right Flanking Petals -->
+      <path d="M 256 166 C 272 166, 292 154, 300 135 C 306 120, 302 106, 295 96 C 293 112, 283 133, 267 148 C 263 153, 259 160, 256 166 Z" fill="url(#zariGold)" opacity="0.95"/>
+      <path d="M 256 166 C 276 166, 304 150, 316 128 C 322 116, 320 102, 314 94 C 313 106, 306 125, 286 142 C 276 151, 266 160, 256 166 Z" fill="url(#zariGold)" opacity="0.75"/>
+      <!-- Lotus Pedestal -->
+      <ellipse cx="256" cy="170" rx="38" ry="6" fill="url(#zariGold)"/>
+
+      <!-- 4. HANDLOOM STRUCTURE & DRAPE -->
+      <!-- Curved Saree Pallu Drapery Sweeping from Left -->
+      <path d="M 94 220 C 82 280, 102 360, 168 396 C 142 364, 134 300, 146 240 Z" fill="url(#zariGold)" opacity="0.85"/>
+      <path d="M 84 246 C 76 295, 96 364, 150 404 C 130 376, 122 320, 132 265 Z" fill="url(#zariGold)" opacity="0.6"/>
+
+      <!-- Loom Overhead Arch Beam -->
+      <path d="M 140 196 Q 256 178 372 196 L 368 206 Q 256 188 144 206 Z" fill="url(#zariGold)"/>
+      
+      <!-- Twin Loom Pillars -->
+      <rect x="140" y="196" width="9" height="145" rx="2" fill="url(#zariGold)"/>
+      <rect x="363" y="196" width="9" height="145" rx="2" fill="url(#zariGold)"/>
+
+      <!-- Vertical Silk Warp Threads -->
+      <g stroke="url(#silkGold)" stroke-width="2" opacity="0.8">
+        <line x1="175" y1="205" x2="175" y2="340"/>
+        <line x1="193" y1="203" x2="193" y2="340"/>
+        <line x1="211" y1="201" x2="211" y2="340"/>
+        <line x1="229" y1="200" x2="229" y2="340"/>
+        <line x1="247" y1="199" x2="247" y2="340"/>
+        <line x1="265" y1="199" x2="265" y2="340"/>
+        <line x1="283" y1="200" x2="283" y2="340"/>
+        <line x1="301" y1="201" x2="301" y2="340"/>
+        <line x1="319" y1="203" x2="319" y2="340"/>
+        <line x1="337" y1="205" x2="337" y2="340"/>
+      </g>
+
+      <!-- Artisan Weaver Silhouette at the Loom -->
+      <g transform="translate(256, 260) scale(0.9)" opacity="0.95">
+        <circle cx="-15" cy="-28" r="9" fill="url(#zariGold)"/>
+        <path d="M -22 -16 C -28 -8, -32 10, -28 28 L -4 28 C -8 12, -8 -4, -10 -16 Z" fill="url(#zariGold)"/>
+        <path d="M -16 -4 C -4 4, 16 12, 38 10 L 36 3 C 18 5, 2 -2, -12 -10 Z" fill="url(#zariGold)"/>
+      </g>
+
+      <!-- 5. THE GLIDING WEAVING SHUTTLE (நாடா) -->
+      <path d="M 80 268 C 136 248, 376 248, 432 268 C 376 288, 136 288, 80 268 Z" fill="url(#zariGold)"/>
+      <path d="M 170 268 C 200 258, 312 258, 342 268 C 312 278, 200 278, 170 268 Z" fill="#24072f"/>
+      <ellipse cx="256" cy="268" rx="48" ry="6" fill="url(#zariGold)"/>
+      <ellipse cx="256" cy="268" rx="28" ry="3.5" fill="url(#shuttleGleam)"/>
+      <circle cx="88" cy="268" r="3.5" fill="#FFF5CC"/>
+      <circle cx="424" cy="268" r="3.5" fill="#FFF5CC"/>
+
+      <!-- 6. BASE: TEMPLE ZARI BORDER & 'UN' MONOGRAM -->
+      <rect x="136" y="340" width="240" height="12" rx="3" fill="url(#zariGold)"/>
+      
+      <path d="
+        M 144 352 L 152 363 L 160 352
+        M 164 352 L 172 363 L 180 352
+        M 184 352 L 192 363 L 200 352
+        M 204 352 L 212 363 L 220 352
+        M 224 352 L 232 363 L 240 352
+        M 244 352 L 252 363 L 260 352
+        M 264 352 L 272 363 L 280 352
+        M 284 352 L 292 363 L 300 352
+        M 304 352 L 312 363 L 320 352
+        M 324 352 L 332 363 L 340 352
+        M 344 352 L 352 363 L 360 352
+        M 364 352 L 372 363 L 380 352
+      " fill="url(#zariGold)" stroke="url(#zariGold)" stroke-width="1.2"/>
+
+      <g transform="translate(256, 396) scale(1.1)">
+        <path d="M -44 -20 L -33 -20 L -33 4 C -33 14, -24 21, -13 21 C -2 21, 7 14, 7 4 L 7 -20 L 18 -20 L 18 4 C 18 20, 5 30, -13 30 C -31 30, -44 20, -44 4 Z" fill="url(#zariGold)"/>
+        <path d="M -4 -20 L 7 -20 L 28 14 L 28 -20 L 39 -20 L 39 26 L 28 26 L 7 -8 L 7 26 L -4 26 Z" fill="url(#zariGold)"/>
+      </g>
+    </g>
+  </g>
+</svg>

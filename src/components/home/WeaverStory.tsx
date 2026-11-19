@@ -52,8 +52,8 @@ export function WeaverStory() {
             </p>
           </div>
 
-          <Link href="/about" className="btn-outline-cream mt-10 inline-block">
-            Read the story
+          <Link href="/products" className="btn-outline-cream mt-10 inline-block">
+            Explore Handloom Sarees
           </Link>
         </div>
       </div>

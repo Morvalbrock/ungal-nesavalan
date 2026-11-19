@@ -20,7 +20,7 @@ export function GoogleSignInButton({ label = "Continue with Google" }: { label?:
       type="button"
       onClick={onClick}
       disabled={loading}
-      className="flex w-full items-center justify-center gap-3 rounded-xl border border-purple-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-purple-50/60 hover:border-purple-300 shadow-xs disabled:opacity-60"
+      className="w-full h-11 px-4 border border-[#e8dbf2] bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-xl shadow-xs transition-all duration-200 flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-[#3c124d]/30 hover:border-[#3c124d]/40 disabled:opacity-60 group"
     >
       <GoogleGlyph />
       <span>{loading ? "Redirecting…" : label}</span>

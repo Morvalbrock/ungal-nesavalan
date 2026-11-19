@@ -8,7 +8,11 @@ function shell(content: string): string {
 <html><head><meta charset="utf-8"><title>${BRAND}</title></head>
 <body style="margin:0;background:#f5eddc;font-family:Georgia,serif;color:#1a1a1a;">
 <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
-<div style="font-size:22px;font-weight:700;letter-spacing:2px;color:#7a1f2b;">${BRAND}</div>
+<div style="margin-bottom:16px;">
+  <a href="${SITE_URL}" style="text-decoration:none;display:inline-block;">
+    <img src="${SITE_URL}/images/logo.png" alt="${BRAND}" width="180" height="60" style="height:44px;width:auto;display:block;border:0;outline:none;" />
+  </a>
+</div>
 <hr style="border:0;border-top:1px solid #d9c9a9;margin:24px 0;" />
 ${content}
 <hr style="border:0;border-top:1px solid #d9c9a9;margin:32px 0;" />

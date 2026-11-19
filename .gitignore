@@ -48,6 +48,7 @@ data/*.json
 
 # OAuth client secret JSON downloads from Google Cloud Console
 client_secret_*.json
+scripts/inspect-logo.cjs
 
 # MCP/agent config (may contain API keys)
 .agents/

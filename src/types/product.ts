@@ -78,6 +78,9 @@ export type ProductSummary = Pick<
   blousePieceIncluded?: boolean;
   defaultVariantId?: string;
   variants?: Variant[];
+  // Surfaced so client-side sorts ("New Arrivals", "Recently added") can key
+  // off real data instead of silently comparing undefined vs undefined.
+  createdAt?: string;
 };
 
 export interface ProductQuery {

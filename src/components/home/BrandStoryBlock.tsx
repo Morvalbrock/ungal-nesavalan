@@ -46,10 +46,10 @@ export function BrandStoryBlock() {
           </div>
 
           <Link
-            href="/about"
+            href="/contact"
             className="group mt-8 inline-flex items-center gap-2 rounded-full border border-maroon/30 bg-cream px-6 py-2.5 text-[11px] font-semibold uppercase tracking-[0.25em] text-maroon shadow-sm transition-all hover:bg-maroon hover:text-cream hover:shadow-md"
           >
-            Meet Our Master Weavers
+            Connect With Our Team
             <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>

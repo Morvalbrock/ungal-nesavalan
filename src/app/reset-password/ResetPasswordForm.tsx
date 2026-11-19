@@ -39,11 +39,11 @@ export function ResetPasswordForm({ id, token }: { id: string; token: string }) 
 
   if (done) {
     return (
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-800">
-        <p className="font-semibold">Password updated successfully! Redirecting to sign in…</p>
+      <div className="rounded-xl border border-[#e8dbf2] bg-[#f3ecf8]/80 p-5 text-sm text-slate-800">
+        <p className="font-semibold text-slate-900">Password updated successfully! Redirecting to sign in…</p>
         <p className="mt-3">
-          <Link href="/login" className="text-brand-purple font-semibold hover:underline text-xs">
-            Proceed to sign in →
+          <Link href="/login" className="text-[#3c124d] font-bold hover:underline text-xs inline-flex items-center gap-1">
+            <span>Proceed to sign in →</span>
           </Link>
         </p>
       </div>
@@ -73,9 +73,16 @@ export function ResetPasswordForm({ id, token }: { id: string; token: string }) 
           error={!!error}
         />
       </AuthField>
-      <button type="submit" disabled={pending} className="btn-primary w-full font-semibold shadow-md shadow-brand-deep/20 py-3">
-        {pending ? "Updating Password…" : "Update Password"}
-      </button>
+      <div className="pt-1">
+        <button
+          type="submit"
+          disabled={pending}
+          className="w-full py-3 px-4 bg-gradient-to-r from-[#3c124d] to-[#4e1a61] hover:from-[#320f41] hover:to-[#441455] text-white font-medium text-sm rounded-xl shadow-md glow-purple transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50"
+        >
+          <span>{pending ? "Updating Password…" : "Update Password"}</span>
+          <span className="group-hover:translate-x-1 transition-transform">→</span>
+        </button>
+      </div>
     </form>
   );
 }

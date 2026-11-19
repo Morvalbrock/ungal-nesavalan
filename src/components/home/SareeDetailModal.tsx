@@ -260,29 +260,37 @@ export function SareeDetailModal() {
                 {saree.title}
               </h2>
 
-              {/* Rating & Verified Reviews */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center text-amber-500 text-xs gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-                  ))}
+              {/* Rating & Verified Reviews — only shown when real review data exists.
+                   Previously defaulted to 4.9 / 96, which lied about brand-new products. */}
+              {saree.reviewCount && saree.reviewCount > 0 && (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center text-amber-500 text-xs gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                    ))}
+                  </div>
+                  {saree.rating != null && (
+                    <span className="text-xs font-semibold text-slate-700">{saree.rating}</span>
+                  )}
+                  {saree.rating != null && <span className="text-slate-400 text-xs">|</span>}
+                  <span className="text-xs text-brand-purple font-medium hover:underline cursor-pointer">
+                    {saree.reviewCount} verified artisan review{saree.reviewCount === 1 ? "" : "s"}
+                  </span>
                 </div>
-                <span className="text-xs font-semibold text-slate-700">
-                  {saree.rating || 4.9}
-                </span>
-                <span className="text-slate-400 text-xs">|</span>
-                <span className="text-xs text-brand-purple font-medium hover:underline cursor-pointer">
-                  {saree.reviewCount || 96} verified artisan reviews
-                </span>
-              </div>
+              )}
 
-              {/* Price Display */}
+              {/* Price Display — strikethrough + discount badge only when a real
+                   sale is in effect; otherwise show just the live price. */}
               <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200 flex flex-wrap items-baseline gap-3">
                 <span className="text-3xl font-extrabold text-brand-plum">{saree.price}</span>
-                <span className="text-sm text-slate-400 line-through">{saree.originalPrice}</span>
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
-                  {saree.discount}
-                </span>
+                {saree.originalPrice && (
+                  <span className="text-sm text-slate-400 line-through">{saree.originalPrice}</span>
+                )}
+                {saree.discount && (
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                    {saree.discount}
+                  </span>
+                )}
                 <span className="text-[11px] font-semibold text-brand-gold bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full ml-auto">
                   Direct Weaver Price • No Middlemen
                 </span>
@@ -296,12 +304,21 @@ export function SareeDetailModal() {
                     <strong>100% Pit-loom Woven</strong> in Elampillai traditional cluster
                   </span>
                 </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <span>
-                    <strong>Running Blouse Included (0.8m)</strong> with matching rich border
-                  </span>
-                </li>
+                {saree.blousePieceIncluded === false ? (
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span>
+                      <strong>Direct Loom Finish</strong> — blouse piece not included
+                    </span>
+                  </li>
+                ) : (
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span>
+                      <strong>Running Blouse Included (0.8m)</strong> with matching rich border
+                    </span>
+                  </li>
+                )}
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                   <span>
@@ -335,12 +352,14 @@ export function SareeDetailModal() {
                       {saree.length || "6.2 Meters with Blouse Piece"}
                     </span>
                   </div>
-                  <div>
-                    <span className="text-slate-400 block text-[11px]">Border Work:</span>
-                    <span className="font-medium text-slate-800">
-                      {saree.borderWork || "Traditional Floral Peacock Zari Tissue"}
-                    </span>
-                  </div>
+                  {saree.borderWork && (
+                    <div>
+                      <span className="text-slate-400 block text-[11px]">Border Work:</span>
+                      <span className="font-medium text-slate-800">
+                        {saree.borderWork}
+                      </span>
+                    </div>
+                  )}
                   <div className="col-span-2">
                     <span className="text-slate-400 block text-[11px]">Care Instructions:</span>
                     <span className="font-medium text-slate-800">
@@ -350,20 +369,21 @@ export function SareeDetailModal() {
                 </div>
               </div>
 
-              {/* Weaver Origin Box */}
-              <div className="p-3 rounded-xl bg-purple-100/60 border border-purple-200/80 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-brand-deep text-amber-300 flex items-center justify-center shrink-0">
-                  <Home className="h-4 w-4" />
+              {/* Weaver Origin Box — only shown when a specific weaver is known, so we
+                  never claim "Master Weaver Selvam & Family" for every product. */}
+              {saree.weaver && (
+                <div className="p-3 rounded-xl bg-purple-100/60 border border-purple-200/80 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-brand-deep text-amber-300 flex items-center justify-center shrink-0">
+                    <Home className="h-4 w-4" />
+                  </div>
+                  <div className="text-xs">
+                    <p className="font-bold text-brand-plum">{saree.weaver}</p>
+                    <p className="text-slate-500 text-[11px]">
+                      Elampillai Loom · Salem District, Tamil Nadu
+                    </p>
+                  </div>
                 </div>
-                <div className="text-xs">
-                  <p className="font-bold text-brand-plum">
-                    {saree.weaver || "Woven by Master Weaver Selvam & Family"}
-                  </p>
-                  <p className="text-slate-500 text-[11px]">
-                    Elampillai Loom #42, Salem District, Tamil Nadu
-                  </p>
-                </div>
-              </div>
+              )}
 
               {/* Pincode Delivery Check */}
               <div className="pt-1">

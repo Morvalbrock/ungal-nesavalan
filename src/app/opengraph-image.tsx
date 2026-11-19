@@ -20,7 +20,7 @@ async function loadDataUrl(relativePath: string, mime: string): Promise<string |
 export default async function OpenGraphImage() {
   const [heroSrc, logoSrc] = await Promise.all([
     loadDataUrl("images/elegant_south_indian.png", "image/png"),
-    loadDataUrl("images/logo.jpeg", "image/jpeg")
+    loadDataUrl("images/logo.png", "image/png")
   ]);
 
   return new ImageResponse(
@@ -56,28 +56,29 @@ export default async function OpenGraphImage() {
             background: "linear-gradient(180deg, #f5eddc 0%, #ecdfc0 100%)"
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {logoSrc && (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {logoSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={logoSrc}
-                alt=""
-                width={56}
-                height={56}
-                style={{ width: 56, height: 56, borderRadius: 12, objectFit: "cover" }}
+                alt="Ungal Nesavalan"
+                width={204}
+                height={68}
+                style={{ width: 204, height: 68, objectFit: "contain" }}
               />
+            ) : (
+              <div
+                style={{
+                  fontSize: 22,
+                  letterSpacing: 5,
+                  color: "#7a1f2b",
+                  textTransform: "uppercase",
+                  fontWeight: 600
+                }}
+              >
+                Ungal Nesavalan
+              </div>
             )}
-            <div
-              style={{
-                fontSize: 22,
-                letterSpacing: 5,
-                color: "#7a1f2b",
-                textTransform: "uppercase",
-                fontWeight: 600
-              }}
-            >
-              Ungal Nesavalan
-            </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column" }}>

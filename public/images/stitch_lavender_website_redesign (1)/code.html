@@ -1,0 +1,381 @@
+<!DOCTYPE html><html lang="en" style="width: 1280px; height: 1024px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Login &amp; Sign In | Ungal Nesavalan - Authentic Elampillai Handlooms</title>
+<!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              purpleDark: '#290c37',
+              purpleDeep: '#3c124d',
+              purpleRich: '#4e1a61',
+              lavenderLight: '#faf7fc',
+              lavenderSoft: '#f3ecf8',
+              lavenderMuted: '#e8dbf2',
+              gold: '#c9933b',
+              goldLight: '#f4dfaa',
+              goldDark: '#996715',
+            }
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            cinzel: ['Cinzel', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles for Heritage Accents & Layout Fine-tuning -->
+<style data-purpose="heritage-decorative-styles">
+    /* Subtle Gold Pattern Overlay */
+    .bg-loom-overlay {
+      background-image: radial-gradient(rgba(217, 119, 6, 0.12) 1px, transparent 1px),
+                        radial-gradient(rgba(217, 119, 6, 0.08) 1px, rgba(37, 10, 52, 0.94) 1px);
+      background-size: 28px 28px;
+      background-position: 0 0, 14px 14px;
+    }
+
+    /* Glow utilities */
+    .glow-gold-sm {
+      box-shadow: 0 0 15px rgba(217, 119, 6, 0.35);
+    }
+    
+    .glow-purple {
+      box-shadow: 0 10px 30px -10px rgba(60, 18, 77, 0.4);
+    }
+
+    /* Custom scroll styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #faf7fc;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #d8c2e7;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #b592cf;
+    }
+  </style>
+<style></style><style></style></head>
+<body class="min-h-screen bg-[#22072e] font-sans antialiased text-slate-800 flex items-center justify-center p-3 sm:p-5 lg:p-8" data-new-gr-c-s-check-loaded="14.1348.0" data-gr-ext-installed="" data-new-gr-c-s-loaded="14.1348.0">
+<!-- BEGIN: MainAuthWrapper -->
+<main class="w-full max-w-7xl mx-auto rounded-3xl bg-white shadow-2xl overflow-hidden border border-brand-purpleDeep/20 grid grid-cols-1 lg:grid-cols-12 min-h-[750px]">
+<!-- BEGIN: LeftHeritageBanner -->
+<section aria-label="Brand Heritage and Story" class="lg:col-span-5 relative flex flex-col justify-between overflow-hidden bg-brand-purpleDark text-white p-8 lg:p-12 min-h-[580px] lg:min-h-full">
+<!-- Saree Artisan Ambient Background Image -->
+<img alt="Graceful South Indian bride dressed in authentic royal purple and magenta Elampillai pure silk saree" class="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-transform duration-1000 ease-out hover:scale-100" src="https://lh3.googleusercontent.com/aida/ALJJyrChc_17c9YnPooYDb_JaNiY0bq9D-yocZ2NIIxTUmYt5P7Ebd1liOVQgxclrZM6jNPdJ3HunqLwS7XYoQbtFBRCWdBXW52PnHAbwkJZgfjyNzWykqGRq0FLvI-7XnHRaAZ_tkyQVKFa4hcDez7PiHSUb2wD0ruOrh6EQb55BKjOR9NAqgDjBPmZS6UjFWJJqUd8n22xJnecCmQlbR8dG3Qe7l547cKaSGLirm-mLluk">
+<!-- Gradient Wash & Royal Dark Veil -->
+<div class="absolute inset-0 bg-gradient-to-t from-[#290c37]/85 via-[#290c37]/35 to-black/20 pointer-events-none"></div>
+<div class="absolute inset-0 bg-loom-overlay mix-blend-soft-light pointer-events-none"></div>
+<!-- Top Header Elements / Badges -->
+<div class="relative z-10 space-y-4">
+<!-- Loom Origin Pill -->
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-purpleRich/70 border border-brand-gold/40 text-brand-goldLight text-xs tracking-wider uppercase font-semibold backdrop-blur-md shadow-sm">
+<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+<span>✦ Direct From Elampillai Looms</span>
+</div>
+<!-- Global Trust Tagline -->
+<div class="flex items-center gap-2 text-xs text-brand-lavenderMuted/80 font-medium">
+<span class="text-amber-400">★★★★★</span>
+<span>Over 50,000+ Patrons across India &amp; Global</span>
+</div>
+</div>
+<!-- Middle Story / Quote Block -->
+<div class="relative z-10 my-auto py-10 space-y-6">
+<div class="inline-block border-l-2 border-brand-gold pl-4 text-xs font-cinzel tracking-widest text-brand-goldLight uppercase">
+          Authentic Salem Weaves
+        </div>
+<blockquote class="font-serif italic text-2xl lg:text-3xl text-brand-lavenderLight leading-snug drop-shadow-sm">
+          “Every thread carries the sacred prayers and dedication of our master weaver’s loom.”
+        </blockquote>
+<p class="text-brand-lavenderMuted/90 text-sm leading-relaxed max-w-md font-light">
+          Handwoven directly in Tamil Nadu — crafted with heirloom soft silks, Kalyani organic cottons, and bridal drapes certified with Silk Mark &amp; Handloom Mark authenticity.
+        </p>
+<!-- Guarantee Checklist -->
+<div class="pt-2 flex flex-wrap gap-2 text-xs">
+<span class="px-3 py-1 rounded-md bg-white/10 backdrop-blur-sm border border-white/10 text-white flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path></svg>
+            Silk Mark Certified
+          </span>
+<span class="px-3 py-1 rounded-md bg-white/10 backdrop-blur-sm border border-white/10 text-white flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path></svg>
+            Zero Middlemen
+          </span>
+<span class="px-3 py-1 rounded-md bg-white/10 backdrop-blur-sm border border-white/10 text-white flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path></svg>
+            Salem Pure Zari
+          </span>
+</div>
+</div>
+<!-- Bottom Weaver Community Pill -->
+<div class="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-brand-lavenderMuted">
+<div class="flex items-center gap-2">
+<span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 ring-4 ring-emerald-400/20"></span>
+<span>Handcrafted in Salem · 100% Genuine Handloom</span>
+</div>
+<span class="hidden sm:inline font-cinzel text-brand-goldLight tracking-wider">ESTD. 1984</span>
+</div>
+</section>
+<!-- END: LeftHeritageBanner -->
+<!-- BEGIN: RightAuthInterface -->
+<section aria-label="Customer Authentication Form" class="lg:col-span-7 bg-[#faf8fc] flex flex-col justify-between p-6 sm:p-10 lg:p-12">
+<!-- Top Action Navigation Bar -->
+<div class="flex items-center justify-between border-b border-brand-lavenderSoft pb-4 mb-6">
+<!-- Return Link -->
+<a class="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-brand-purpleDeep hover:text-brand-purpleRich transition-colors group" href="#store">
+<span class="transform group-hover:-translate-x-1 transition-transform">←</span>
+<span>Back to Store</span>
+</a>
+<!-- Language Switcher & Support Trigger -->
+<div class="flex items-center gap-3">
+<div class="inline-flex items-center p-0.5 rounded-lg bg-brand-lavenderSoft border border-brand-lavenderMuted/50 text-xs">
+
+
+</div>
+</div>
+</div>
+<!-- Centered Auth Container -->
+<div class="w-full max-w-md mx-auto space-y-6">
+<!-- Brand Identity Logo Display -->
+<header class="text-center space-y-3">
+<div class="flex justify-center">
+<img alt="Ungal Nesavalan Traditional Handloom Silk Logo" class="h-16 sm:h-20 w-auto object-contain transition-transform hover:scale-105 duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2Yz7xbA06aNW_PEMSDYTjLEP9DONVVmW0u-B3kd37NpCa4mIGLGkQKHF_GW8YbVn6K4VKvnpQ-WtIjrJu7bxnffoF_3yBuJ4C3A-rcuFpY6_EN1Rzu1jCoS-Sk8gGReuGC-La0hkLsIUatpwrDN8GfH5MIVMPlMVZftz3NLznqOabFwAm5llgT99-bTtcGp75Ciq_znEDDNkwwUaKvJboKqeQr2wok433QQr-T0PiT8dcMJ6hMwfv">
+</div>
+<div class="space-y-1">
+<h1 class="text-2xl sm:text-3xl font-serif font-bold text-brand-purpleDeep tracking-tight" id="authTitle">Welcome Back</h1>
+<p class="text-xs sm:text-sm text-slate-600" id="authSubtitle">Sign in to view your orders, track shipments, and access your saved drapes.</p>
+</div>
+</header>
+<!-- Social Quick Connect Button -->
+<div>
+<button class="w-full h-11 px-4 border border-brand-lavenderMuted bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-xl shadow-sm transition-all duration-200 flex items-center justify-center gap-3 focus:outline-none focus:ring-2 focus:ring-brand-purpleDeep/30 hover:border-brand-purpleDeep/40" type="button">
+<!-- Google G Logo SVG -->
+<svg class="w-4 h-4" viewBox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
+</svg>
+<span>Continue with Google</span>
+</button>
+</div>
+<!-- Divider with Text -->
+<div class="relative flex items-center justify-center my-2">
+<div class="border-t border-brand-lavenderMuted w-full"></div>
+
+<div class="border-t border-brand-lavenderMuted w-full"></div>
+</div>
+<!-- Auth Method Tabs: Mobile OTP vs Password -->
+<div class="p-1 rounded-xl bg-brand-lavenderSoft border border-brand-lavenderMuted/60 grid grid-cols-2 gap-1 text-sm font-medium">
+<button class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 bg-brand-purpleDeep text-white shadow-sm" id="tabMobileBtn" onclick="switchAuthTab('mobile')" type="button">
+<span>📱 Mobile OTP</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 text-slate-600 hover:text-brand-purpleDeep" id="tabPasswordBtn" onclick="switchAuthTab('password')" type="button">
+<span>🔑 Password</span>
+</button>
+</div>
+<!-- FORM CONTAINER -->
+<div class="mt-4">
+<!-- BEGIN: Mobile OTP View -->
+<form class="space-y-4" id="mobileForm" onsubmit="event.preventDefault();">
+<div class="space-y-1.5 text-left">
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-700" for="mobileInput">Mobile Number</label>
+<!-- Input Group with Country Code Dropdown -->
+<div class="flex rounded-xl shadow-sm border border-slate-300 focus-within:border-brand-purpleDeep focus-within:ring-2 focus-within:ring-brand-purpleDeep/20 overflow-hidden bg-white">
+<div class="relative flex items-center bg-slate-50 border-r border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 cursor-pointer">
+<span>🇮🇳 IN +91</span>
+<svg class="ml-1 w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<input class="flex-1 border-0 py-2.5 px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-0" id="mobileInput" name="mobile" pattern="[0-9]{10}" placeholder="98765 43210" required="" type="tel">
+</div>
+<p class="text-[11px] text-slate-500 pt-0.5">Enter 10-digit Indian mobile number without country code</p>
+</div>
+<!-- Primary Submit Action -->
+<button class="w-full py-3 px-4 bg-gradient-to-r from-brand-purpleDeep to-brand-purpleRich hover:from-[#320f41] hover:to-[#441455] text-white font-medium text-sm rounded-xl shadow-md glow-purple transition-all duration-200 flex items-center justify-center gap-2 group" type="submit">
+<span>Send Verification OTP</span>
+<span class="group-hover:translate-x-1 transition-transform">→</span>
+</button>
+<!-- Quick WhatsApp Option -->
+<div class="text-center pt-1">
+<button class="text-xs text-brand-purpleDeep hover:text-emerald-700 font-medium inline-flex items-center gap-1.5 transition-colors" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Get OTP on WhatsApp instead</span>
+</button>
+</div>
+</form>
+<!-- END: Mobile OTP View -->
+<!-- BEGIN: Password View (Initially Hidden) -->
+<form class="space-y-4 hidden" id="passwordForm" onsubmit="event.preventDefault();">
+<div class="space-y-1.5 text-left">
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-700" for="identityInput">Email or Mobile Number</label>
+<input class="w-full rounded-xl border border-slate-300 py-2.5 px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-purpleDeep focus:ring-2 focus:ring-brand-purpleDeep/20 bg-white" id="identityInput" placeholder="you@example.com or 9876543210" required="" type="text">
+</div>
+<div class="space-y-1.5 text-left">
+<div class="flex items-center justify-between">
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-700" for="passwordInput">Password</label>
+<a class="text-xs text-brand-purpleDeep hover:underline font-medium" href="#forgot">Forgot password?</a>
+</div>
+<div class="relative">
+<input class="w-full rounded-xl border border-slate-300 py-2.5 px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-purpleDeep focus:ring-2 focus:ring-brand-purpleDeep/20 bg-white pr-10" id="passwordInput" placeholder="••••••••••••" required="" type="password">
+<button aria-label="Toggle password visibility" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none" onclick="togglePasswordVisibility()" type="button">
+<svg class="w-4 h-4" fill="none" id="eyeIcon" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="w-full py-3 px-4 bg-brand-purpleDeep hover:bg-[#320f41] text-white font-medium text-sm rounded-xl shadow-md glow-purple transition-all duration-200" type="submit">
+              Sign in to Account
+            </button>
+</form>
+<!-- END: Password View -->
+<!-- BEGIN: Sign Up Registration Form (Toggleable) -->
+<form class="space-y-3 hidden" id="registerForm" onsubmit="event.preventDefault();">
+<div class="space-y-1 text-left">
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Full Name</label>
+<input class="w-full rounded-xl border border-slate-300 py-2 px-3.5 text-sm focus:border-brand-purpleDeep focus:ring-1 focus:ring-brand-purpleDeep bg-white" placeholder="e.g. Priyadarshini Sundaram" required="" type="text">
+</div>
+<div class="space-y-1 text-left">
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Mobile Number</label>
+<div class="flex rounded-xl border border-slate-300 overflow-hidden bg-white">
+<span class="bg-slate-50 px-3 py-2 text-xs text-slate-600 border-r border-slate-200">+91</span>
+<input class="flex-1 border-0 py-2 px-3 text-sm focus:ring-0" placeholder="98765 43210" required="" type="tel">
+</div>
+</div>
+<div class="space-y-1 text-left">
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Weaver Family Referral / Invite Code (Optional)</label>
+<input class="w-full rounded-xl border border-slate-300 py-2 px-3.5 text-sm uppercase tracking-widest text-slate-700 bg-white" placeholder="e.g. SALEM2026" type="text">
+</div>
+<button class="w-full py-3 px-4 bg-brand-purpleDeep text-white font-medium text-sm rounded-xl shadow hover:bg-brand-purpleRich transition-colors" type="submit">
+              Create Patron Account →
+            </button>
+</form>
+<!-- END: Sign Up Registration Form -->
+</div>
+<!-- Account Mode Switcher (Sign in vs Register) -->
+<div class="pt-2 text-center text-xs text-slate-600">
+<span id="accountTogglePrompt">New to Ungal Nesavalan?</span>
+<button class="text-brand-purpleDeep font-bold hover:underline ml-1 inline-flex items-center gap-1" id="accountToggleBtn" onclick="toggleAccountMode()" type="button">
+<span>Create an account</span>
+<span>→</span>
+</button>
+</div>
+<!-- Wedding Trousseau / Master Weaver Styling Help Card -->
+<div class="mt-4 p-3.5 rounded-xl bg-gradient-to-r from-brand-lavenderSoft via-[#fcf7ff] to-amber-50/60 border border-brand-lavenderMuted text-left flex items-start gap-3">
+<div class="p-2 rounded-lg bg-white shadow-xs text-brand-purpleDeep font-serif text-base">🪡</div>
+<div class="text-xs space-y-0.5">
+<p class="font-semibold text-slate-800">Planning a wedding trousseau or bespoke bulk order?</p>
+<a class="text-brand-purpleDeep font-semibold hover:text-amber-800 inline-flex items-center gap-1 transition-colors" href="https://wa.me/919600012345" rel="noopener" target="_blank">
+<span>Speak with our Master Weaver Styling Desk</span>
+<span>→</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Trust Footer Stamp -->
+<footer class="mt-8 pt-4 border-t border-brand-lavenderSoft text-center text-[11px] text-slate-500 space-y-1">
+<p class="flex items-center justify-center gap-1.5">
+<span>🔒 256-bit Secure Handloom Direct Portal</span>
+<span>•</span>
+<span>Verified Silk Mark Certified</span>
+</p>
+<p class="text-[10px] text-slate-400">Salem Weaver Looms Cluster, Tamil Nadu, India</p>
+</footer>
+</section>
+<!-- END: RightAuthInterface -->
+</main>
+<!-- END: MainAuthWrapper -->
+<!-- JavaScript for Tabs, Visibility and Mode Switching -->
+<script data-purpose="auth-interactions">
+    let currentMode = 'signin'; // 'signin' or 'signup'
+
+    function switchAuthTab(type) {
+      const mobileBtn = document.getElementById('tabMobileBtn');
+      const passwordBtn = document.getElementById('tabPasswordBtn');
+      const mobileForm = document.getElementById('mobileForm');
+      const passwordForm = document.getElementById('passwordForm');
+
+      if (type === 'mobile') {
+        // Tab buttons styling
+        mobileBtn.className = 'flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 bg-brand-purpleDeep text-white shadow-sm';
+        passwordBtn.className = 'flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 text-slate-600 hover:text-brand-purpleDeep';
+
+        // Forms visibility
+        mobileForm.classList.remove('hidden');
+        passwordForm.classList.add('hidden');
+      } else {
+        // Tab buttons styling
+        passwordBtn.className = 'flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 bg-brand-purpleDeep text-white shadow-sm';
+        mobileBtn.className = 'flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 text-slate-600 hover:text-brand-purpleDeep';
+
+        // Forms visibility
+        passwordForm.classList.remove('hidden');
+        mobileForm.classList.add('hidden');
+      }
+    }
+
+    function togglePasswordVisibility() {
+      const pwdField = document.getElementById('passwordInput');
+      const eyeIcon = document.getElementById('eyeIcon');
+      if (pwdField.type === 'password') {
+        pwdField.type = 'text';
+        eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />`;
+      } else {
+        pwdField.type = 'password';
+        eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
+      }
+    }
+
+    function toggleAccountMode() {
+      const title = document.getElementById('authTitle');
+      const subtitle = document.getElementById('authSubtitle');
+      const prompt = document.getElementById('accountTogglePrompt');
+      const toggleBtn = document.getElementById('accountToggleBtn');
+      const registerForm = document.getElementById('registerForm');
+      const mobileForm = document.getElementById('mobileForm');
+      const passwordForm = document.getElementById('passwordForm');
+      const tabSwitcher = document.getElementById('tabMobileBtn').parentElement;
+
+      if (currentMode === 'signin') {
+        currentMode = 'signup';
+        title.innerText = 'Join our Patron Circle';
+        subtitle.innerText = 'Register for exclusive bridal silk previews, loom updates, and heirloom discounts.';
+        prompt.innerText = 'Already have an account?';
+        toggleBtn.innerHTML = '<span>Sign in instead</span> <span>→</span>';
+        
+        tabSwitcher.classList.add('hidden');
+        mobileForm.classList.add('hidden');
+        passwordForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+      } else {
+        currentMode = 'signin';
+        title.innerText = 'Welcome Back';
+        subtitle.innerText = 'Sign in to view your orders, track shipments, and access your saved drapes.';
+        prompt.innerText = 'New to Ungal Nesavalan?';
+        toggleBtn.innerHTML = '<span>Create an account</span> <span>→</span>';
+        
+        tabSwitcher.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        switchAuthTab('mobile');
+      }
+    }
+  </script>
+
+
+
+
+<grammarly-desktop-integration data-grammarly-shadow-root="true" style="visibility: visible !important;"></grammarly-desktop-integration>
+
+<div id="snapdom-sandbox" data-snapdom-sandbox="true" aria-hidden="true" style="position: absolute; left: -9999px; top: -9999px; width: 0px; height: 0px; overflow: hidden;"></div></body></html>

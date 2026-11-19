@@ -185,3 +185,35 @@
   66%  { inset: -10px; transform: rotate(90deg); }
   100% { inset: 0;     transform: rotate(90deg); }
 }
+
+/* Stitch Luxury & Lavender Authentication Portal Styles */
+.heritage-bg-pattern {
+  background-color: #fbf7f4;
+  background-image: radial-gradient(#c59d4f 0.55px, transparent 0.55px);
+  background-size: 24px 24px;
+}
+
+.bg-loom-overlay {
+  background-image: radial-gradient(rgba(217, 119, 6, 0.12) 1px, transparent 1px),
+                    radial-gradient(rgba(217, 119, 6, 0.08) 1px, rgba(37, 10, 52, 0.94) 1px);
+  background-size: 28px 28px;
+  background-position: 0 0, 14px 14px;
+}
+
+.glow-gold-sm {
+  box-shadow: 0 0 15px rgba(217, 119, 6, 0.35);
+}
+
+.glow-purple {
+  box-shadow: 0 10px 30px -10px rgba(60, 18, 77, 0.4);
+}
+
+.luxury-arch-shadow {
+  box-shadow: 0 20px 45px -15px rgba(90, 14, 26, 0.22);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #d3a44d 0%, #f6e3a6 50%, #b8862d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

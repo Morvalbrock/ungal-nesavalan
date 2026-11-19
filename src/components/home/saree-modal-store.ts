@@ -5,8 +5,11 @@ export interface SareeDetailData {
   slug?: string;
   title: string;
   price: string;
-  originalPrice: string;
-  discount: string;
+  // Only set when the product is genuinely on sale — the modal hides the
+  // strikethrough and discount badge otherwise, so we never fabricate a
+  // "₹750 ~~₹750~~ 35% OFF" display for a product with no sale price.
+  originalPrice?: string;
+  discount?: string;
   imageUrl: string;
   badge: string;
   rating?: number;
@@ -14,6 +17,10 @@ export interface SareeDetailData {
   weave?: string;
   fabric?: string;
   length?: string;
+  // When provided, the modal decides blouse-piece copy from the boolean and ignores
+  // the free-text suffix in `length`. Omit entirely from legacy/static callers to
+  // keep their existing display text intact.
+  blousePieceIncluded?: boolean;
   borderWork?: string;
   weaver?: string;
   thumbnails?: string[];

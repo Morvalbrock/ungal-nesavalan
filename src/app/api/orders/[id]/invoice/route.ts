@@ -26,15 +26,21 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: "not_downloadable" }, { status: 409 });
   }
 
-  // Read logo from public/images/logo.jpeg (or fallback to invoice_logo.jpeg)
+  // Read logo from public/images/logo.png (or fallback to logo.jpeg or invoice_logo.jpeg)
   let logoDataUrl: string | undefined;
   try {
+    const logoPng = path.join(process.cwd(), "public", "images", "logo.png");
     const logoJpeg = path.join(process.cwd(), "public", "images", "logo.jpeg");
     const invoiceLogoPath = path.join(process.cwd(), "public", "images", "invoice_logo.jpeg");
-    const logoPath = fs.existsSync(logoJpeg) ? logoJpeg : invoiceLogoPath;
+    const logoPath = fs.existsSync(logoPng)
+      ? logoPng
+      : fs.existsSync(logoJpeg)
+      ? logoJpeg
+      : invoiceLogoPath;
     if (fs.existsSync(logoPath)) {
       const buffer = fs.readFileSync(logoPath);
-      logoDataUrl = `data:image/jpeg;base64,${buffer.toString("base64")}`;
+      const mime = logoPath.endsWith(".png") ? "image/png" : "image/jpeg";
+      logoDataUrl = `data:${mime};base64,${buffer.toString("base64")}`;
     }
   } catch (err) {
     console.warn("[invoice] Failed to load logo from disk:", (err as Error).message);

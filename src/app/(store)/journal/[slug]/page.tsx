@@ -72,7 +72,7 @@ export default async function JournalPostPage({ params }: { params: Promise<{ sl
     image: post.heroImage,
     datePublished: post.publishedAt,
     author: { "@type": "Organization", name: "Ungal Nesavalan" },
-    publisher: { "@type": "Organization", name: "Ungal Nesavalan", logo: `${SITE_URL}/icon-512.png` }
+    publisher: { "@type": "Organization", name: "Ungal Nesavalan", logo: `${SITE_URL}/images/logo.png` }
   };
 
   return (

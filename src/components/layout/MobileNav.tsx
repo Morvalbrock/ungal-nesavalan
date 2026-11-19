@@ -11,19 +11,19 @@ const SECTIONS = [
   {
     heading: "Shop",
     links: [
+      { label: "Home", href: "/" },
       { label: "All Sarees", href: "/products" },
-      { label: "Bridal", href: "/category/bridal-sarees" },
-      { label: "Silk", href: "/category/silk-sarees" },
-      { label: "Cotton", href: "/category/cotton-sarees" },
-      { label: "Designer", href: "/category/designer-sarees" },
-      { label: "Printed", href: "/category/printed-sarees" }
+      { label: "Bridal Sarees", href: "/category/bridal-sarees" },
+      { label: "Silk Sarees", href: "/category/silk-sarees" },
+      { label: "Cotton Sarees", href: "/category/cotton-sarees" },
+      { label: "Designer Sarees", href: "/category/designer-sarees" },
+      { label: "Printed Sarees", href: "/category/printed-sarees" }
     ]
   },
   {
     heading: "Discover",
     links: [
       { label: "Journal", href: "/journal" },
-      { label: "Our Weavers", href: "/about" },
       { label: "Care Guide", href: "/care-guide" },
       { label: "Contact", href: "/contact" }
     ]
@@ -75,7 +75,7 @@ export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNav
       let links = s.links;
       if (s.heading === "Shop" && inStockSlugs) {
         links = links.filter((l) => {
-          if (l.href === "/products") return true;
+          if (l.href === "/" || l.href === "/products") return true;
           const slug = l.href.split("/category/")[1];
           return slug ? inStockSlugs.includes(slug) : true;
         });
@@ -100,11 +100,11 @@ export function MobileNav({ inStockSlugs, availableWeaves, catalogs }: MobileNav
         <div className="flex items-center justify-between border-b border-purple-100 bg-white px-6 py-4">
           <Link href="/" onClick={() => closeDrawer()} className="flex items-center">
             <Image
-              src="/images/logo.jpeg"
+              src="/images/logo.png"
               alt="Ungal Nesavalan"
-              width={140}
-              height={44}
-              className="h-8 w-auto object-contain"
+              width={150}
+              height={50}
+              className="h-8 sm:h-9 w-auto object-contain"
             />
           </Link>
           <button

@@ -30,12 +30,12 @@ function TabButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`flex-1 rounded-lg px-4 py-2 text-xs font-semibold tracking-wide transition ${
+      className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm transition-all duration-200 ${
         active
-          ? "bg-brand-deep text-white shadow-xs"
+          ? "bg-[#3c124d] text-white shadow-xs font-semibold"
           : disabled
-            ? "cursor-not-allowed text-purple-300"
-            : "text-purple-900/70 hover:bg-purple-100/60"
+            ? "cursor-not-allowed text-slate-300"
+            : "text-slate-600 hover:text-[#3c124d] font-medium"
       }`}
     >
       {children}
@@ -90,32 +90,35 @@ export function LoginForm() {
     <div className="space-y-5">
       <GoogleSignInButton />
 
-      <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-purple-900/40">
-        <span className="h-px flex-1 bg-purple-100" />
-        <span>or</span>
-        <span className="h-px flex-1 bg-purple-100" />
+      {/* Divider with Text */}
+      <div className="relative flex items-center justify-center my-3">
+        <div className="border-t border-[#e8dbf2] w-full" />
+        <span className="px-3 text-xs text-slate-400 uppercase tracking-widest font-medium bg-[#faf8fc]">
+          or
+        </span>
+        <div className="border-t border-[#e8dbf2] w-full" />
       </div>
 
       {/* Mode toggle */}
       <div className="relative">
-        <div className="flex gap-1 rounded-xl border border-purple-200 bg-purple-50/50 p-1">
+        <div className="p-1 rounded-xl bg-[#f3ecf8] border border-[#e8dbf2]/60 grid grid-cols-2 gap-1 text-sm font-medium">
           <TabButton
             active={mode === "phone"}
             disabled={isOtpFlowLocked}
             onClick={() => setMode("phone")}
           >
-            📱 Mobile OTP
+            <span>📱 Mobile OTP</span>
           </TabButton>
           <TabButton
             active={mode === "email"}
             disabled={isOtpFlowLocked}
             onClick={() => setMode("email")}
           >
-            ✉️ Password
+            <span>🔑 Password</span>
           </TabButton>
         </div>
         {isOtpFlowLocked && (
-          <p className="mt-1.5 text-center text-[10px] text-purple-900/60">
+          <p className="mt-1.5 text-center text-[10px] text-slate-500">
             Verification in progress. Click &ldquo;Change&rdquo; above to switch methods.
           </p>
         )}
@@ -128,7 +131,7 @@ export function LoginForm() {
         />
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <AuthField label="Email or Mobile" error={errors.email?.message}>
+          <AuthField label="Email or Mobile Number" error={errors.email?.message}>
             <input
               type="text"
               autoComplete="username"
@@ -138,29 +141,49 @@ export function LoginForm() {
             />
           </AuthField>
 
-          <AuthField label="Password" error={errors.password?.message}>
+          <div className="space-y-1.5 text-left">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                Password
+              </label>
+              <Link href="/forgot-password" className="text-xs text-[#3c124d] hover:underline font-medium">
+                Forgot password?
+              </Link>
+            </div>
             <PasswordInput
               autoComplete="current-password"
+              placeholder="••••••••••••"
               {...register("password")}
               error={!!errors.password}
             />
-          </AuthField>
+            {errors.password?.message && (
+              <span className="mt-1 block text-xs text-rose-600 font-medium">
+                {errors.password.message}
+              </span>
+            )}
+          </div>
 
           {serverError && <p className="text-xs text-rose-600 font-medium">{serverError}</p>}
 
-          <button type="submit" disabled={isSubmitting} className="btn-primary w-full font-semibold shadow-md shadow-brand-deep/20 py-3">
-            {isSubmitting ? "Signing in…" : "Sign in to Account"}
-          </button>
+          <div className="pt-1">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 px-4 bg-gradient-to-r from-[#3c124d] to-[#4e1a61] hover:from-[#320f41] hover:to-[#441455] text-white font-medium text-sm rounded-xl shadow-md glow-purple transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50"
+            >
+              <span>{isSubmitting ? "Signing in…" : "Sign in to Account"}</span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </button>
+          </div>
 
-          <div className="flex items-center justify-between text-xs text-purple-900/70 pt-1">
-            <Link href="/forgot-password" className="hover:text-brand-purple hover:underline">
-              Forgot password?
-            </Link>
+          <div className="pt-2 text-center text-xs text-slate-600">
+            <span>New to Ungal Nesavalan?</span>
             <Link
               href={`/register${sp.get("next") ? `?next=${encodeURIComponent(sp.get("next")!)}` : ""}`}
-              className="text-brand-purple font-semibold hover:underline"
+              className="text-[#3c124d] font-bold hover:underline ml-1 inline-flex items-center gap-1"
             >
-              Create an account →
+              <span>Create an account</span>
+              <span>→</span>
             </Link>
           </div>
         </form>

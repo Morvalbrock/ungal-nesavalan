@@ -4,7 +4,6 @@ import { Search, Award } from "lucide-react";
 import { Container } from "./Container";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { MobileNav } from "./MobileNav";
-import { MegaMenu } from "./MegaMenu";
 import { HeaderNavLinks } from "./HeaderNavLinks";
 import { MiniCart } from "@/components/cart/MiniCart";
 import { AccountMenu } from "./AccountMenu";
@@ -21,9 +20,6 @@ export async function Header() {
 
   const inStockSlugs = inStockCategories.map((c) => c.slug);
   const availableWeaves = facets.weaves.map((w) => w.id.toLowerCase());
-  const availableFabrics = facets.fabrics.map((f) => f.id.toLowerCase());
-  const availableOccasions = facets.occasions.map((o) => o.id.toLowerCase());
-  const hasBridal = inStockSlugs.includes("bridal-sarees");
 
   const catalogMenuItems = allCatalogs
     .filter((c) => !c.legacy)
@@ -48,10 +44,10 @@ export async function Header() {
           {/* Brand Logo Container */}
           <Link href="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0 group">
             <Image
-              src="/images/logo.jpeg"
+              src="/images/logo.png"
               alt="Ungal Nesavalan Elampillai Handlooms"
-              width={160}
-              height={50}
+              width={180}
+              height={60}
               priority
               className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
             />
@@ -124,14 +120,6 @@ export async function Header() {
       <nav className="bg-gradient-to-r from-[#2f0837] via-[#430f4e] to-[#2f0837] text-white shadow-inner hidden lg:block">
         <Container className="flex items-center justify-between text-sm font-medium">
           <div className="flex items-center gap-2">
-            <MegaMenu
-              availableWeaves={availableWeaves}
-              availableFabrics={availableFabrics}
-              availableOccasions={availableOccasions}
-              catalogs={catalogMenuItems}
-              showBridalPromo={hasBridal}
-            />
-
             <HeaderNavLinks inStockSlugs={inStockSlugs} />
           </div>
 

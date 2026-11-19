@@ -29,12 +29,12 @@ function TabButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`flex-1 rounded-lg px-4 py-2 text-xs font-semibold tracking-wide transition ${
+      className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm transition-all duration-200 ${
         active
-          ? "bg-brand-deep text-white shadow-xs"
+          ? "bg-[#3c124d] text-white shadow-xs font-semibold"
           : disabled
-            ? "cursor-not-allowed text-purple-300"
-            : "text-purple-900/70 hover:bg-purple-100/60"
+            ? "cursor-not-allowed text-slate-300"
+            : "text-slate-600 hover:text-[#3c124d] font-medium"
       }`}
     >
       {children}
@@ -86,33 +86,37 @@ export function RegisterForm() {
 
   return (
     <div className="space-y-5">
-      <GoogleSignInButton />
-      <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-purple-900/40">
-        <span className="h-px flex-1 bg-purple-100" />
-        <span>or</span>
-        <span className="h-px flex-1 bg-purple-100" />
+      <GoogleSignInButton label="Sign up with Google" />
+
+      {/* Divider with Text */}
+      <div className="relative flex items-center justify-center my-3">
+        <div className="border-t border-[#e8dbf2] w-full" />
+        <span className="px-3 text-xs text-slate-400 uppercase tracking-widest font-medium bg-[#faf8fc]">
+          or
+        </span>
+        <div className="border-t border-[#e8dbf2] w-full" />
       </div>
 
       {/* Mode toggle */}
       <div className="relative">
-        <div className="flex gap-1 rounded-xl border border-purple-200 bg-purple-50/50 p-1">
+        <div className="p-1 rounded-xl bg-[#f3ecf8] border border-[#e8dbf2]/60 grid grid-cols-2 gap-1 text-sm font-medium">
           <TabButton
             active={mode === "phone"}
             disabled={isOtpFlowLocked}
             onClick={() => setMode("phone")}
           >
-            📱 Mobile OTP
+            <span>📱 Mobile OTP</span>
           </TabButton>
           <TabButton
             active={mode === "email"}
             disabled={isOtpFlowLocked}
             onClick={() => setMode("email")}
           >
-            ✉️ Email &amp; Password
+            <span>✉️ Email &amp; Password</span>
           </TabButton>
         </div>
         {isOtpFlowLocked && (
-          <p className="mt-1.5 text-center text-[10px] text-purple-900/60">
+          <p className="mt-1.5 text-center text-[10px] text-slate-500">
             Verification in progress. Click &ldquo;Change&rdquo; above to switch methods.
           </p>
         )}
@@ -125,31 +129,66 @@ export function RegisterForm() {
         />
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <AuthField label="Full name" error={errors.name?.message}>
-            <input autoComplete="name" placeholder="Priyadarshini" {...register("name")} className={authInputCls} />
+          <AuthField label="Full Name" error={errors.name?.message}>
+            <input
+              autoComplete="name"
+              placeholder="e.g. Priyadarshini Sundaram"
+              {...register("name")}
+              className={authInputCls}
+            />
           </AuthField>
-          <AuthField label="Email" error={errors.email?.message}>
-            <input type="email" autoComplete="email" placeholder="you@example.com" {...register("email")} className={authInputCls} />
+
+          <AuthField label="Email Address" error={errors.email?.message}>
+            <input
+              type="email"
+              autoComplete="email"
+              placeholder="patron@royalatelier.in"
+              {...register("email")}
+              className={authInputCls}
+            />
           </AuthField>
-          <AuthField label="Mobile (optional)" error={errors.phone?.message}>
-            <input inputMode="tel" placeholder="+91 9876543210" {...register("phone")} className={authInputCls} />
+
+          <AuthField label="Mobile Number (Optional)" error={errors.phone?.message}>
+            <input
+              inputMode="tel"
+              placeholder="+91 9876543210"
+              {...register("phone")}
+              className={authInputCls}
+            />
           </AuthField>
+
           <AuthField label="Password" error={errors.password?.message}>
-            <PasswordInput autoComplete="new-password" {...register("password")} error={!!errors.password} />
+            <PasswordInput
+              autoComplete="new-password"
+              placeholder="••••••••••••"
+              {...register("password")}
+              error={!!errors.password}
+            />
           </AuthField>
+
           {serverError && <p className="text-xs text-rose-600 font-medium">{serverError}</p>}
-          <button type="submit" disabled={isSubmitting} className="btn-primary w-full font-semibold shadow-md shadow-brand-deep/20 py-3">
-            {isSubmitting ? "Creating account…" : "Create Account"}
-          </button>
-          <p className="text-xs text-purple-900/70 text-center pt-2">
-            Already have an account?{" "}
+
+          <div className="pt-1">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 px-4 bg-gradient-to-r from-[#3c124d] to-[#4e1a61] hover:from-[#320f41] hover:to-[#441455] text-white font-medium text-sm rounded-xl shadow-md glow-purple transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50"
+            >
+              <span>{isSubmitting ? "Creating account…" : "Create Patron Account"}</span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </button>
+          </div>
+
+          <div className="pt-2 text-center text-xs text-slate-600">
+            <span>Already have an account?</span>
             <Link
               href={`/login${sp.get("next") ? `?next=${encodeURIComponent(sp.get("next")!)}` : ""}`}
-              className="text-brand-purple font-semibold hover:underline"
+              className="text-[#3c124d] font-bold hover:underline ml-1 inline-flex items-center gap-1"
             >
-              Sign in →
+              <span>Sign in instead</span>
+              <span>→</span>
             </Link>
-          </p>
+          </div>
         </form>
       )}
     </div>

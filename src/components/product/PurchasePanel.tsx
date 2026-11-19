@@ -107,7 +107,9 @@ export function PurchasePanel({ product }: { product: Product }) {
       // "Default" is the sentinel for products with no colour options — don't
       // surface it to customers in cart / checkout / order summaries.
       variantLabel: variant.color === "Default" ? "" : variant.color,
-      image: product.images[0]?.url ?? "",
+      // Prefer the chosen variant's first image — the cart should show the colour
+      // the customer picked, not the product-level default.
+      image: variant.images?.[0]?.url ?? product.images[0]?.url ?? "",
       unitPricePaise: unitPrice,
       quantity: effectiveQty,
       maxStock: Math.min(MAX_PURCHASE_LIMIT, variant.stock)

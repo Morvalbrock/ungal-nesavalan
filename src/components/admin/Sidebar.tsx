@@ -51,11 +51,11 @@ export function AdminSidebar() {
       <div className="border-b border-border/70 px-5 py-5">
         <Link href="/admin" className="flex items-center">
           <Image
-            src="/images/logo.jpeg"
+            src="/images/logo.png"
             alt="Ungal Nesavalan Admin"
-            width={140}
-            height={44}
-            className="h-8 w-auto object-contain"
+            width={150}
+            height={50}
+            className="h-8 sm:h-9 w-auto object-contain"
           />
         </Link>
         <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-ink-muted">Admin Panel</p>

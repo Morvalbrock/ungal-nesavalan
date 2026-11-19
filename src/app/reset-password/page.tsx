@@ -4,7 +4,10 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { verifyResetToken } from "@/features/auth/password-reset.service";
 import { ResetPasswordForm } from "./ResetPasswordForm";
 
-export const metadata: Metadata = { title: "Choose a new password" };
+export const metadata: Metadata = {
+  title: "Choose New Password | Ungal Nesavalan - Authentic Elampillai Handlooms",
+  description: "Set a new secure password for your Ungal Nesavalan account."
+};
 export const dynamic = "force-dynamic";
 
 interface SearchParams {
@@ -28,9 +31,17 @@ export default async function ResetPasswordPage({
 
   if (!id || !token) {
     return (
-      <AuthShell title="Reset your password" tagline={INVALID_COPY.missing}>
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs sm:text-sm text-rose-800">
-          <Link href="/forgot-password" className="text-brand-purple font-semibold hover:underline">
+      <AuthShell
+        title="Reset Your Password"
+        tagline={INVALID_COPY.missing}
+        heroBadge="Direct From Elampillai Looms"
+        heroSeries="Authentic Salem Weaves"
+        heroQuote="Every thread carries the sacred prayers and dedication of our master weaver’s loom."
+        heroSubtext="Set a strong confidential passphrase to secure your custom bridal drapes and order archives."
+        heroImage="/images/login_image.png"
+      >
+        <div className="rounded-lg border border-rose-200 bg-rose-50/80 p-4 text-xs sm:text-sm text-rose-800">
+          <Link href="/forgot-password" className="text-[#3c124d] font-semibold hover:underline">
             ← Request a new reset link
           </Link>
         </div>
@@ -41,9 +52,17 @@ export default async function ResetPasswordPage({
   const check = await verifyResetToken(id, token);
   if (!check.ok) {
     return (
-      <AuthShell title="Reset your password" tagline={INVALID_COPY[check.reason]}>
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs sm:text-sm text-rose-800">
-          <Link href="/forgot-password" className="text-brand-purple font-semibold hover:underline">
+      <AuthShell
+        title="Reset Your Password"
+        tagline={INVALID_COPY[check.reason]}
+        heroBadge="Direct From Elampillai Looms"
+        heroSeries="Authentic Salem Weaves"
+        heroQuote="Every thread carries the sacred prayers and dedication of our master weaver’s loom."
+        heroSubtext="Set a strong confidential passphrase to secure your custom bridal drapes and order archives."
+        heroImage="/images/login_image.png"
+      >
+        <div className="rounded-lg border border-rose-200 bg-rose-50/80 p-4 text-xs sm:text-sm text-rose-800">
+          <Link href="/forgot-password" className="text-[#3c124d] font-semibold hover:underline">
             ← Request a new reset link
           </Link>
         </div>
@@ -53,8 +72,13 @@ export default async function ResetPasswordPage({
 
   return (
     <AuthShell
-      title="Choose a new password"
+      title="Choose a New Password"
       tagline="Enter a new password for your account. Minimum 8 characters."
+      heroBadge="Direct From Elampillai Looms"
+      heroSeries="Authentic Salem Weaves"
+      heroQuote="Every thread carries the sacred prayers and dedication of our master weaver’s loom."
+      heroSubtext="Set a strong confidential passphrase to secure your custom bridal drapes and order archives."
+      heroImage="/images/login_image.png"
     >
       <ResetPasswordForm id={id} token={token} />
     </AuthShell>

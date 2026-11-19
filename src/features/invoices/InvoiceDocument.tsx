@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#e5e5e5",
     paddingTop: 10
   },
-  footerLogo: { width: 48, height: 48, objectFit: "contain", borderRadius: 4 },
+  footerLogo: { width: 60, height: 20, objectFit: "contain" },
   footerText: { flex: 1, fontSize: 8, color: "#888" },
   codCollectBox: {
     alignSelf: "flex-start",

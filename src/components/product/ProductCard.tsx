@@ -59,24 +59,39 @@ export function ProductCard({ product, className, rating, compact = false }: Pro
     e.preventDefault();
     e.stopPropagation();
 
+    const blouseIncluded =
+      "blousePieceIncluded" in product && typeof (product as { blousePieceIncluded?: boolean }).blousePieceIncluded === "boolean"
+        ? (product as { blousePieceIncluded: boolean }).blousePieceIncluded
+        : undefined;
+    const weaveLabel = product.weave?.replace(/-/g, " ") || "Handloom Weave";
+    const lengthSuffix =
+      blouseIncluded === false
+        ? " (blouse piece not included)"
+        : blouseIncluded === true
+          ? " with Blouse Piece"
+          : "";
+
     openModal({
       productId: product.id,
       slug: product.slug,
       title: product.name,
       price: formattedPrice,
-      originalPrice: formattedOrig,
-      discount: onSale ? `${salePct}% OFF` : "Authentic Rate",
+      // Only expose the strikethrough + discount badge on a genuine sale — otherwise
+      // the modal was showing "₹X ~~₹X~~ Authentic Rate" and faking a comparison price.
+      originalPrice: onSale ? formattedOrig : undefined,
+      discount: onSale ? `${salePct}% OFF` : undefined,
       imageUrl:
         primary?.url ||
         "https://res.cloudinary.com/khxbcqk3/image/upload/v1793090878/ungal-nesavalan/products/xlkyzqueh0gj9wchifnj.jpg",
-      badge: product.weave?.replace(/-/g, " ") || "Elampillai Handloom",
-      rating: rating?.avg ? Number(rating.avg.toFixed(1)) : 4.9,
-      reviewCount: rating?.count || 48,
-      weave: "Authentic Elampillai Pit-loom",
-      fabric: product.fabric?.replace(/-/g, " ") || "Pure Mulberry Silk Blend",
-      length: `${lengthMeters} Meters with Blouse Piece`,
-      borderWork: "Traditional Peacock & Temple Zari",
-      weaver: "Master Weaver Family, Loom #42, Elampillai",
+      badge: weaveLabel,
+      rating: rating?.avg ? Number(rating.avg.toFixed(1)) : undefined,
+      reviewCount: rating?.count ?? undefined,
+      weave: weaveLabel,
+      fabric: product.fabric?.replace(/-/g, " ") || undefined,
+      length: `${lengthMeters} Meters${lengthSuffix}`,
+      blousePieceIncluded: blouseIncluded,
+      // borderWork and weaver are intentionally omitted — those fields don't exist on
+      // the Product record, so the modal hides those rows rather than lying.
       thumbnails: product.images
         .map((img) => img.url)
         .filter((u) => Boolean(u) && !u.includes("img.png") && !u.includes("screen.png"))
@@ -95,6 +110,9 @@ export function ProductCard({ product, className, rating, compact = false }: Pro
       let targetColor = "";
       let targetStock = 25;
       let targetPricePaise = product.salePrice ?? product.basePrice;
+      // Prefer the chosen variant's first image so the cart thumbnail matches the
+      // colour / variant being purchased instead of defaulting to product.images[0].
+      let targetImage = primary?.url || "";
 
       if (product.variants && product.variants.length > 0) {
         const inStock =
@@ -104,6 +122,7 @@ export function ProductCard({ product, className, rating, compact = false }: Pro
         targetColor = inStock.color === "Default" ? "" : inStock.color;
         targetStock = inStock.stock;
         if (inStock.priceOverride) targetPricePaise = inStock.priceOverride;
+        if (inStock.images?.[0]?.url) targetImage = inStock.images[0].url;
       } else if (!targetVariantId) {
         try {
           const res = await fetch(`/api/products/${product.slug}`);
@@ -117,6 +136,7 @@ export function ProductCard({ product, className, rating, compact = false }: Pro
               targetColor = inStock.color === "Default" ? "" : inStock.color;
               targetStock = inStock.stock;
               if (inStock.priceOverride) targetPricePaise = inStock.priceOverride;
+              if (inStock.images?.[0]?.url) targetImage = inStock.images[0].url;
             }
           }
         } catch {
@@ -130,7 +150,7 @@ export function ProductCard({ product, className, rating, compact = false }: Pro
         slug: product.slug,
         name: product.name,
         variantLabel: targetColor || (product.weave?.replace(/-/g, " ") ?? "Handloom"),
-        image: primary?.url || "/images/img.png",
+        image: targetImage || "/images/img.png",
         unitPricePaise: targetPricePaise,
         quantity: 1,
         maxStock: Math.min(30, targetStock || 25)

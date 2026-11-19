@@ -36,10 +36,10 @@ export async function Footer() {
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="inline-flex items-center bg-white/95 rounded-xl px-3 py-1.5 shadow-sm group">
               <Image
-                src="/images/logo.jpeg"
+                src="/images/logo.png"
                 alt="Ungal Nesavalan"
-                width={160}
-                height={50}
+                width={180}
+                height={60}
                 className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105"
               />
             </Link>
@@ -60,7 +60,9 @@ export async function Footer() {
               </p>
               <p className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-amber-400 shrink-0" />
-                <span>care@ungalnesavalan.com</span>
+                <a href="mailto:ungalnesavalan01@gmail.com" className="hover:text-white transition-colors">
+                  ungalnesavalan01@gmail.com
+                </a>
               </p>
             </div>
           </div>

@@ -43,7 +43,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     matchedCatalog?.imageUrl ||
     activeCategory?.headerImage ||
     activeCategory?.image ||
-    banner?.imageUrl;
+    (banner?.imageUrl && !banner.imageUrl.includes("picsum.photos")
+      ? banner.imageUrl
+      : "/images/authentic_indian_handloom_silk_saree.png");
 
   const weaveTitle =
     matchedCatalog?.name ||
@@ -63,8 +65,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      {bannerImageUrl ? (
-        <section className="relative overflow-hidden bg-ink text-cream">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#1f0525] via-[#2d083b] to-[#14021b] text-white">
+        {bannerImageUrl && (
           <div className="absolute inset-0">
             <Image
               src={bannerImageUrl}
@@ -72,71 +74,40 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               fill
               priority
               sizes="100vw"
-              className="object-cover opacity-45"
+              className="object-cover opacity-40"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/30 to-ink/80" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#1f0525]/80 via-[#2d083b]/50 to-[#14021b]/90" />
           </div>
-          <Container className="relative flex min-h-[340px] flex-col justify-end py-16">
-            <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-cream/70">
-              <Link href="/" className="hover:text-cream">Home</Link>
-              <span className="mx-2 text-cream/40">/</span>
-              {weaveTitle ? (
-                <>
-                  <Link href="/products" className="hover:text-cream">All Sarees</Link>
-                  <span className="mx-2 text-cream/40">/</span>
-                  <span className="text-cream">{weaveTitle}</span>
-                </>
-              ) : (
-                <span className="text-cream">{bannerTitle}</span>
-              )}
-            </nav>
+        )}
+        <Container className="relative flex min-h-[300px] sm:min-h-[340px] flex-col justify-end py-12 sm:py-16">
+          <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-purple-200/80">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <span className="mx-2 text-purple-300/40">/</span>
+            {weaveTitle ? (
+              <>
+                <Link href="/products" className="hover:text-white transition-colors">All Sarees</Link>
+                <span className="mx-2 text-purple-300/40">/</span>
+                <span className="text-white font-semibold">{weaveTitle}</span>
+              </>
+            ) : (
+              <span className="text-white font-semibold">All Sarees</span>
+            )}
+          </nav>
 
-            <p className="eyebrow-cream mt-6">{weaveTitle ? "Curated Weave Collection" : "The full atlas"}</p>
-            <h1 className="mt-3 font-display text-[46px] leading-none md:text-[62px]">
-              {bannerTitle}
-            </h1>
-            <Ornament className="mt-4 h-4 w-40" tone="gold" />
-            <p className="mt-5 max-w-xl text-[15px] leading-[1.7] text-cream/80">
+          <div className="mt-5 inline-flex items-center gap-1.5 self-start rounded-full border border-purple-300/40 bg-purple-900/60 backdrop-blur-md px-3 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-purple-200">
+            {weaveTitle ? "Curated Weave Collection" : "Artisan Handloom Collection"}
+          </div>
+          <h1 className="mt-3 font-heritage text-[40px] font-bold text-white leading-none md:text-[56px]">
+            {bannerTitle}
+          </h1>
+          <Ornament className="mt-4 h-4 w-40" tone="gold" />
+          {bannerSubtitle && (
+            <p className="mt-4 max-w-xl text-[14.5px] leading-relaxed text-purple-100/90">
               {bannerSubtitle}
             </p>
-          </Container>
-        </section>
-      ) : (
-        <section className="border-b border-purple-100 bg-lavender-mist">
-          <Container className="py-10 sm:py-14">
-            <nav aria-label="Breadcrumb" className="text-[11.5px] uppercase tracking-widest2 text-slate-500">
-              <Link href="/" className="hover:text-brand-purple transition-colors">Home</Link>
-              <span className="mx-2 text-purple-300">/</span>
-              {weaveTitle ? (
-                <>
-                  <Link href="/products" className="hover:text-brand-purple transition-colors">All Sarees</Link>
-                  <span className="mx-2 text-purple-300">/</span>
-                  <span className="text-brand-plum font-semibold">{weaveTitle}</span>
-                </>
-              ) : (
-                <span className="text-brand-plum font-semibold">All Sarees</span>
-              )}
-            </nav>
-
-            <div className="mt-5 flex flex-col items-start gap-3 md:flex-row md:items-end md:justify-between">
-              <div>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-100/90 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-brand-purple">
-                  {weaveTitle ? "Weave Family Collection" : "Loom Fresh Atlas"}
-                </span>
-                <h1 className="mt-3 font-heritage text-[38px] font-bold text-brand-plum leading-tight md:text-[52px]">
-                  {weaveTitle || "All Sarees"}
-                </h1>
-                <p className="mt-2.5 max-w-lg text-sm text-slate-600 leading-relaxed">
-                  {weaveTitle
-                    ? `Explore our authentic ${weaveTitle} collection woven using traditional jacquard and pit-loom techniques — direct from master weaver to your wardrobe.`
-                    : "Elampillai silk-cotton and pure soft silk sarees woven on our own pit-looms — direct from master weaver to your wardrobe."}
-                </p>
-              </div>
-              <Ornament className="hidden h-4 w-40 md:block" tone="maroon" />
-            </div>
-          </Container>
-        </section>
-      )}
+          )}
+        </Container>
+      </section>
 
       <Container className="py-8 sm:py-10">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-purple-100 pb-5">

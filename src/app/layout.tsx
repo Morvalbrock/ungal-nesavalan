@@ -39,7 +39,18 @@ export const metadata: Metadata = {
   description:
     "Silk-cotton sarees woven on our own looms in Elampillai, Tamil Nadu — direct from our looms to your drape.",
   metadataBase: new URL(SITE_URL),
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", sizes: "32x32", type: "image/png" }
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" }
+    ],
+    shortcut: "/favicon.ico"
+  },
   openGraph: {
     type: "website",
     siteName: "Ungal Nesavalan",
@@ -57,7 +68,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FFFFFF"
+  themeColor: "#3C124D"
 };
 
 const ORGANIZATION_JSONLD = {
@@ -65,7 +76,7 @@ const ORGANIZATION_JSONLD = {
   "@type": "Organization",
   name: "Ungal Nesavalan",
   url: SITE_URL,
-  logo: `${SITE_URL}/icon-512.png`,
+  logo: `${SITE_URL}/images/logo.png`,
   sameAs: [] as string[]
 };
 
