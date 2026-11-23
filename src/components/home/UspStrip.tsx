@@ -8,8 +8,8 @@ const USPS = [
     icon: Sparkles
   },
   {
-    title: "Handloom Mark Certified",
-    body: "Govt. of India certified purity on authentic hand-woven silks and heritage zari weaves.",
+    title: "100% Authentic Handloom",
+    body: "Pure traditional craftsmanship on authentic hand-woven silks and heritage zari weaves.",
     icon: Award
   },
   {

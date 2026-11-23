@@ -40,8 +40,8 @@ export function BrandStoryBlock() {
               <span className="mt-1 text-[11.5px] uppercase tracking-wider text-ink-muted">Drapes Delivered</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="font-display text-2xl font-bold text-maroon sm:text-3xl">Govt.</span>
-              <span className="mt-1 text-[11.5px] uppercase tracking-wider text-ink-muted">Handloom Mark</span>
+              <span className="font-display text-2xl font-bold text-maroon sm:text-3xl">100%</span>
+              <span className="mt-1 text-[11.5px] uppercase tracking-wider text-ink-muted">Pit-Loom Woven</span>
             </div>
           </div>
 

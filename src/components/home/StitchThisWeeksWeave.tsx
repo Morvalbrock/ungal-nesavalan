@@ -73,7 +73,7 @@ const DEFAULT_PRODUCTS = [
     title: "Aarani Soft Silk Saree",
     fullTitle: "Royal Violet Aarani Soft Silk Saree with Pure Zari Border",
     badge: "Soft Silk",
-    tag: "SILK MARK",
+    tag: "HANDLOOM",
     tagColor: "bg-amber-600",
     rating: 4.9,
     reviews: 96,
@@ -109,6 +109,7 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
 
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [buyingId, setBuyingId] = useState<string | null>(null);
+  const [isTabTransitioning, setIsTabTransitioning] = useState(false);
 
   useEffect(() => {
     if (categoryParam) {
@@ -119,9 +120,16 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
   }, [categoryParam]);
 
   const handleTabClick = (tabId: string) => {
+    if (tabId === activeCategory) return;
+    setIsTabTransitioning(true);
     setActiveCategory(tabId);
     const url = tabId === "all" ? "/" : `/?category=${tabId}#this-weeks-weave`;
-    router.replace(url, { scroll: false });
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", url);
+    }
+    setTimeout(() => {
+      setIsTabTransitioning(false);
+    }, 200);
   };
 
   // Filter products by selected category. Returns the honest filtered list — an
@@ -132,7 +140,43 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
   const matchingProducts = useMemo(() => {
     if (!products || products.length === 0) return [];
 
-    if (activeCategory === "all") return [...products];
+    if (activeCategory === "all") {
+      // Curated diverse showcase across distinct weaves
+      const byWeave = new Map<string, ProductSummary[]>();
+      for (const p of products) {
+        const w = p.weave || "other";
+        if (!byWeave.has(w)) byWeave.set(w, []);
+        byWeave.get(w)!.push(p);
+      }
+      const result: ProductSummary[] = [];
+      const weaveOrder = [
+        "wedding-silk-sarees",
+        "maheshwari-cotton",
+        "aarani-soft-silk",
+        "kalyani-silk-cotton",
+        "aarani-checked-sarees",
+        "borderless-sarees"
+      ];
+      for (const w of weaveOrder) {
+        const list = byWeave.get(w);
+        if (list && list.length > 0) result.push(list[0]);
+      }
+      for (const [w, list] of byWeave) {
+        if (!weaveOrder.includes(w) && list.length > 0 && !result.some((r) => r.id === list[0].id)) {
+          result.push(list[0]);
+        }
+      }
+      if (result.length < 6) {
+        const seen = new Set(result.map((p) => p.id));
+        for (const p of products) {
+          if (!seen.has(p.id)) {
+            result.push(p);
+            if (result.length === 6) break;
+          }
+        }
+      }
+      return result.slice(0, 6);
+    }
 
     if (activeCategory === "new-arrivals") {
       // createdAt is now surfaced on ProductSummary, so this is a real sort.
@@ -147,28 +191,37 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
       return products.filter(
         (p) =>
           p.categoryId === "cat_bridal" ||
-          p.occasion?.includes("bridal") ||
+          p.weave === "wedding-silk-sarees" ||
           p.name.toLowerCase().includes("bridal") ||
-          p.weave?.toLowerCase().includes("bridal")
+          p.name.toLowerCase().includes("wedding") ||
+          p.name.toLowerCase().includes("muhurtham")
       );
     }
+
     if (activeCategory === "silk-sarees") {
       return products.filter(
         (p) =>
-          p.categoryId === "cat_silk" ||
-          p.fabric === "silk" ||
-          p.fabric === "silk-cotton" ||
-          p.name.toLowerCase().includes("silk")
+          (p.fabric === "silk" || p.weave === "aarani-soft-silk" || p.categoryId === "cat_silk") &&
+          p.weave !== "maheshwari-cotton" &&
+          !p.name.toLowerCase().includes("cotton")
       );
     }
+
     if (activeCategory === "cotton-sarees") {
-      return products.filter(
-        (p) =>
-          p.categoryId === "cat_cotton" ||
-          p.fabric === "cotton" ||
-          p.fabric === "silk-cotton" ||
-          p.name.toLowerCase().includes("cotton")
-      );
+      return products
+        .filter(
+          (p) =>
+            p.categoryId === "cat_cotton" ||
+            p.weave === "maheshwari-cotton" ||
+            p.fabric === "cotton" ||
+            (p.name.toLowerCase().includes("cotton") && !p.weave?.includes("borderless"))
+        )
+        .sort((a, b) => {
+          // Prioritize pure cotton & maheshwari-cotton first
+          const scoreA = (a.fabric === "cotton" ? 2 : 0) + (a.weave === "maheshwari-cotton" ? 1 : 0);
+          const scoreB = (b.fabric === "cotton" ? 2 : 0) + (b.weave === "maheshwari-cotton" ? 1 : 0);
+          return scoreB - scoreA;
+        });
     }
 
     return [...products];
@@ -224,13 +277,39 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
       const ratingCount = agg?.count ?? 0;
       const ratingAvg = ratingCount > 0 ? Number((agg!.avg).toFixed(1)) : undefined;
 
+      const tagLabel =
+        activeCategory === "new-arrivals"
+          ? "NEW"
+          : activeCategory === "cotton-sarees"
+          ? "COTTON"
+          : activeCategory === "bridal-sarees"
+          ? "BRIDAL"
+          : idx === 0
+          ? "NEW"
+          : idx === 1
+          ? "HOT"
+          : "HANDLOOM";
+
+      const tagColor =
+        activeCategory === "new-arrivals"
+          ? "bg-purple-900/80"
+          : activeCategory === "cotton-sarees"
+          ? "bg-emerald-700"
+          : activeCategory === "bridal-sarees"
+          ? "bg-amber-600"
+          : idx === 0
+          ? "bg-purple-900/80"
+          : idx === 1
+          ? "bg-emerald-700"
+          : "bg-amber-600";
+
       return {
         id: p.id,
         title: p.name,
         fullTitle: p.name,
         badge: p.weave?.replace(/-/g, " ") || (p.fabric ? `${p.fabric.replace(/-/g, " ")} Handloom` : d.badge),
-        tag: idx === 0 ? "NEW" : idx === 1 ? "HOT" : "SILK MARK",
-        tagColor: idx === 0 ? "bg-purple-900/80" : idx === 1 ? "bg-emerald-700" : "bg-amber-600",
+        tag: tagLabel,
+        tagColor: tagColor,
         specs: `${fabricLabel ?? "Authentic Pit-Loom"} • ${lengthValue}m`,
         blouse: blouseIncluded === false ? "Direct Loom Finish" : "With Running Blouse Piece",
         price: formattedPrice,
@@ -253,7 +332,7 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
         variantImage
       };
     });
-  }, [matchingProducts, products, ratings]);
+  }, [matchingProducts, products, ratings, activeCategory]);
 
 
   const handleDirectBuy = async (item: (typeof displayList)[0]) => {
@@ -359,7 +438,7 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
 
           {/* Horizontal Snap Scroll Rail */}
           <div className="relative -mx-3.5 px-3.5">
-            <div className="flex space-x-3 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-2 scroll-smooth">
+            <div className={cn("flex space-x-3 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-2 scroll-smooth transition-opacity duration-200", isTabTransitioning && "opacity-40")}>
               {matchingProducts.length === 0 && products && products.length > 0 ? (
                 <EmptyCategoryState />
               ) : displayList.map((p) => {
@@ -367,7 +446,7 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
 
                 return (
                   <div
-                    key={`mobile-${p.id}`}
+                    key={`mobile-${activeCategory}-${p.id}`}
                     onClick={() =>
                       openModal({
                         productId: p.id,
@@ -451,27 +530,66 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDirectBuy(p);
-                        }}
-                        disabled={buyingId === p.id}
-                        className="w-full mt-2 py-1.5 text-[11px] font-bold text-purple-950 bg-amber-400 hover:bg-amber-300 rounded-lg shadow-xs transition active:scale-95 flex items-center justify-center space-x-1 cursor-pointer"
-                      >
-                        {buyingId === p.id ? (
-                          <>
-                            <Loader2 className="h-3 w-3 animate-spin shrink-0 text-purple-950" />
-                            <span>Adding…</span>
-                          </>
-                        ) : (
-                          <>
-                            <Zap className="h-3 w-3 text-purple-950 fill-purple-950 shrink-0" />
-                            <span>+ Direct Buy</span>
-                          </>
-                        )}
-                      </button>
+                      <div className="mt-2 flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openModal({
+                              productId: p.id,
+                              title: p.fullTitle,
+                              price: p.price,
+                              originalPrice: p.onSale ? p.originalPrice : undefined,
+                              discount: p.onSale ? p.discount : undefined,
+                              imageUrl: p.image,
+                              badge: p.badge,
+                              rating: p.ratingAvg,
+                              reviewCount: p.ratingCount,
+                              weave: p.weaveLabel,
+                              fabric: p.fabricLabel,
+                              length:
+                                p.lengthMeters != null
+                                  ? `${p.lengthMeters} Meters${
+                                      p.blousePieceIncluded === false
+                                        ? " (blouse piece not included)"
+                                        : p.blousePieceIncluded === true
+                                          ? " with Blouse Piece"
+                                          : ""
+                                    }`
+                                  : undefined,
+                              blousePieceIncluded: p.blousePieceIncluded,
+                              thumbnails: p.thumbnails && p.thumbnails.length > 0 ? p.thumbnails : [p.image]
+                            });
+                          }}
+                          aria-label="View saree details"
+                          title="View"
+                          className="px-2 py-1.5 rounded-full bg-purple-50/80 hover:bg-purple-100 text-[#4a044e] text-[10.5px] font-semibold transition-all border border-purple-200/80 flex items-center justify-center gap-1 shrink-0 whitespace-nowrap cursor-pointer shadow-2xs"
+                        >
+                          <Eye className="h-3 w-3 text-brand-purple shrink-0" />
+                          <span>View</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDirectBuy(p);
+                          }}
+                          disabled={buyingId === p.id}
+                          className="flex-1 py-1.5 px-2 rounded-full bg-[#3b0744] hover:bg-[#4d0c58] text-white text-[10.5px] font-bold transition-all shadow-sm flex items-center justify-center gap-1 active:scale-95 disabled:opacity-75 whitespace-nowrap cursor-pointer"
+                        >
+                          {buyingId === p.id ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin shrink-0 text-amber-300" />
+                              <span className="whitespace-nowrap">Adding…</span>
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="h-3 w-3 text-amber-400 fill-amber-400 shrink-0" />
+                              <span className="whitespace-nowrap">Direct Buy</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -527,7 +645,7 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
           {/* Products grid — single row of 6 on desktop (lg:grid-cols-6);
               responsive drops to 3 cols on tablet, 2 on mobile. Right-side
               CTA tile removed; "View All Sarees" button sits centered below. */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className={cn("grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 transition-opacity duration-200", isTabTransitioning && "opacity-40")}>
             {matchingProducts.length === 0 && products && products.length > 0 ? (
               <div className="col-span-2 sm:col-span-3 lg:col-span-6">
                 <EmptyCategoryState />
@@ -537,7 +655,7 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
 
                 return (
                   <div
-                    key={p.id}
+                    key={`desktop-${activeCategory}-${p.id}`}
                     onClick={() =>
                       openModal({
                         productId: p.id,
@@ -607,6 +725,14 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
                       <span className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm text-brand-plum text-[9px] font-semibold px-2 py-0.5 rounded-full border border-purple-100 shadow-xs capitalize">
                         {p.badge}
                       </span>
+
+                      {/* Hover Quick View Pill */}
+                      <div className="absolute inset-x-0 bottom-2.5 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-[10px] font-semibold text-brand-plum shadow-md">
+                          <Eye className="h-3 w-3 text-brand-purple" />
+                          <span>Quick View</span>
+                        </span>
+                      </div>
                     </div>
 
                     {/* Metadata */}
@@ -646,7 +772,7 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
                         )}
                       </div>
 
-                      {/* Action Buttons: Quick View & Direct Buy */}
+                      {/* Action Buttons: View & Direct Buy */}
                       <div className="mt-2.5 flex items-center gap-1.5">
                         <button
                           type="button"
@@ -678,13 +804,13 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
                               thumbnails: p.thumbnails && p.thumbnails.length > 0 ? p.thumbnails : [p.image]
                             });
                           }}
-                          className="px-2.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-brand-purple text-xs font-semibold transition-all shadow-xs flex items-center justify-center shrink-0 border border-purple-200/60"
-                          title="View details"
+                          aria-label="View saree details"
+                          title="View"
+                          className="px-2.5 sm:px-3 py-1.5 rounded-full bg-purple-50/80 hover:bg-purple-100 text-[#4a044e] text-xs font-semibold transition-all border border-purple-200/80 flex items-center justify-center gap-1 shrink-0 whitespace-nowrap cursor-pointer shadow-2xs"
                         >
-                          <Eye className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline text-[11px] ml-1">View</span>
+                          <Eye className="h-3.5 w-3.5 text-brand-purple shrink-0" />
+                          <span>View</span>
                         </button>
-
                         <button
                           type="button"
                           onClick={(e) => {
@@ -692,17 +818,17 @@ function StitchThisWeeksWeaveInner({ products, ratings }: StitchThisWeeksWeavePr
                             handleDirectBuy(p);
                           }}
                           disabled={buyingId === p.id}
-                          className="flex-1 py-2 px-2.5 rounded-xl bg-gradient-to-r from-brand-deep to-brand-purple hover:from-brand-purple hover:to-brand-deep text-white text-xs font-bold transition-all shadow-sm shadow-brand-deep/20 flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-75"
+                          className="flex-1 py-1.5 px-2.5 sm:px-3 rounded-full bg-[#3b0744] hover:bg-[#4d0c58] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1 active:scale-95 disabled:opacity-75 whitespace-nowrap cursor-pointer"
                         >
                           {buyingId === p.id ? (
                             <>
                               <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0 text-amber-300" />
-                              <span>Buying…</span>
+                              <span className="whitespace-nowrap">Adding…</span>
                             </>
                           ) : (
                             <>
-                              <Zap className="h-3.5 w-3.5 text-amber-300 fill-amber-300 shrink-0" />
-                              <span>Direct Buy</span>
+                              <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400 shrink-0" />
+                              <span className="whitespace-nowrap">Direct Buy</span>
                             </>
                           )}
                         </button>

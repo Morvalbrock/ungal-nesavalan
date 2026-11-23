@@ -1,0 +1,32 @@
+[
+  {
+    "id": "pol_privacy",
+    "slug": "privacy",
+    "title": "Privacy Policy",
+    "kicker": "Legal",
+    "effectiveDate": "1 April 2025",
+    "lede": "Effective 1 April 2025. We collect the least information necessary to sell you a saree and to keep the site secure.",
+    "content": "## What we collect\n\n* **Account:** name, email, phone (optional), hashed password.\n* **Shipping:** addresses you save at checkout.\n* **Orders:** what you bought, from which device, at what time.\n* **Payment:** processed by Razorpay — we never see or store your card / UPI credentials.\n* **Analytics:** aggregated page views via Plausible (no cookies, no personal identifiers).\n\n## How we use it\n\n* Fulfilling and shipping orders you placed.\n* Sending transactional email — order confirmation, dispatch, delivery, return decisions.\n* Fraud prevention and abuse detection on the site.\n* Improving the product with aggregated, non-identifiable analytics.\n\n## Who we share it with\n\nOnly sub-processors necessary to run the business: Razorpay (payments), Resend (email), our courier partner (DHL / Bluedart / India Post), and our hosting provider. We do not sell your data. We do not run ad-retargeting.\n\n## Retention\n\nAccount and order records are retained for **7 years** to meet Indian tax and consumer-protection obligations. On written request we anonymise your record after that window.\n\n## Your rights\n\nYou can access, correct, or export your data from the Account section, or by writing to [ungalnesavalan01@gmail.com](mailto:ungalnesavalan01@gmail.com). Deletion requests are honoured within 30 days, subject to the retention notice above.\n\n## Contact\n\nUngal Nesavalan · Nandhakumar, 3/364, KK Nagar West, Edanganasalai, Salem - 637502, Tamil Nadu · India.",
+    "updatedAt": "2025-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "pol_terms",
+    "slug": "terms",
+    "title": "Terms of Service",
+    "kicker": "Legal",
+    "effectiveDate": "1 April 2025",
+    "lede": "Effective 1 April 2025. By using this site you agree to the following. It's short — please read it.",
+    "content": "## 1. Who we are\n\nThis site is operated by Ungal Nesavalan, a proprietary firm registered in Tamil Nadu, India (GSTIN on request). \"We\", \"us\", \"our\" means the firm. \"You\" means the person using the site.\n\n## 2. Product accuracy\n\nHandloom sarees vary in weave density, dye lot, and zari sheen. Photographs are shot in natural daylight and are as faithful as we can make them, but small variations are the mark of a real handloom and are not defects.\n\n## 3. Prices and taxes\n\nPrices displayed include GST as applicable. We reserve the right to correct a pricing error before dispatching an order — if we do, you'll be notified and offered a full refund.\n\n## 4. Order acceptance\n\nAn order is a proposal to buy. We accept it when we ship it. We may refuse or cancel an order (with a refund) for stock, fraud, or non-serviceable shipping addresses.\n\n## 5. Payments\n\nPayments are processed by Razorpay. Their terms and refund timelines apply to the payment leg of the transaction. Refunds land in the same instrument used to pay.\n\n## 6. Returns\n\nGoverned by our [Shipping & Returns](/shipping-returns) policy.\n\n## 7. Intellectual property\n\nPhotographs, editorial copy, and the site design are ours. Motifs and weave traditions belong to the weaving communities that made them.\n\n## 8. Liability\n\nOur liability for any claim arising from a purchase is limited to the amount you paid for the affected order. Nothing in these terms limits the rights you have under the Indian Consumer Protection Act, 2019.\n\n## 9. Governing law\n\nThese terms are governed by the laws of India. Courts in Chennai have exclusive jurisdiction over any dispute that cannot be settled by conversation first — and we prefer conversation first.",
+    "updatedAt": "2025-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "pol_shipping_returns",
+    "slug": "shipping-returns",
+    "title": "Shipping & Returns",
+    "kicker": "Support",
+    "effectiveDate": "1 April 2025",
+    "lede": "Every saree is inspected, folded in cotton muslin, and dispatched from our Elampillai studio hub in Salem, Tamil Nadu. Here's what to expect.",
+    "content": "## Shipping timelines\n\n* **India (metro):** 2–4 business days after dispatch.\n* **India (non-metro):** 4–7 business days after dispatch.\n* **International:** 7–14 business days with tracked courier (DHL / FedEx).\n* We dispatch within 24 hours of a paid order (Monday–Saturday).\n\n## Shipping charges\n\nShipping within India is **free on orders above ₹5,000**. Below that, a flat ₹99 applies. International rates are calculated at checkout by destination weight and zone.\n\n## Returns window\n\nYou have **7 days from delivery** to request a return. Sarees must be unworn, unwashed, and returned with all original tags and packaging. Reach us from your order page — the \"Request return\" button appears when eligible.\n\n## Non-returnable items\n\n* Blouses that have been stitched to custom measurements.\n* Sarees marked *final sale* on the product page.\n* Items showing signs of use, alteration, or laundering.\n\n## Refunds\n\nOnce your return is received and inspected, we refund to the original payment method within **5–7 business days**. Razorpay refunds show in your statement with the reference we email you.\n\n## Damaged in transit?\n\nWrite to [ungalnesavalan01@gmail.com](mailto:ungalnesavalan01@gmail.com) within 48 hours of delivery with photos of the parcel and the saree. We'll organise a replacement or full refund at our cost.",
+    "updatedAt": "2025-04-01T00:00:00.000Z"
+  }
+]

@@ -227,7 +227,7 @@ export function PurchasePanel({ product }: { product: Product }) {
       <div className="rounded-xl border border-purple-200/80 bg-gradient-to-r from-purple-50 to-amber-50/40 p-3 text-xs text-purple-950 flex items-center gap-2.5">
         <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
         <span>
-          <strong>Loom Direct Guarantee:</strong> 100% Genuine Handloom Mark · Free shipping in Tamil Nadu &amp; India · 7-day hassle-free return
+          <strong>Loom Direct Guarantee:</strong> 100% Authentic Handloom · Free shipping in Tamil Nadu &amp; India · 7-day hassle-free return
         </span>
       </div>
     </div>

@@ -191,16 +191,6 @@ export function SareeDetailModal() {
                   unoptimized
                 />
 
-                {/* Silk Mark Certified Badge */}
-                <div className="absolute top-3.5 left-3.5 bg-white/95 backdrop-blur-md border border-amber-200 py-1.5 px-3 rounded-full shadow-md flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px]">
-                    <Check className="h-3 w-3 stroke-[3]" />
-                  </span>
-                  <span className="text-[11px] font-bold text-amber-900 tracking-wide uppercase">
-                    Silk Mark Certified
-                  </span>
-                </div>
-
                 {/* Direct Loom Tag */}
                 <div className="absolute bottom-3.5 left-3.5 bg-brand-deep/90 text-white text-[11px] px-3 py-1 rounded-full backdrop-blur-sm font-medium flex items-center gap-1.5">
                   <Award className="h-3.5 w-3.5 text-amber-300" />

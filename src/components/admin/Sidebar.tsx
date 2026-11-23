@@ -17,6 +17,7 @@ import {
   Megaphone,
   BookOpen,
   BookMarked,
+  ShieldCheck,
   ExternalLink,
   LogOut
 } from "lucide-react";
@@ -35,6 +36,7 @@ const NAV = [
   { href: "/admin/shipping-charges", label: "Shipping charges", icon: Truck },
   { href: "/admin/returns", label: "Returns", icon: RotateCcw },
   { href: "/admin/questions", label: "Q & A", icon: MessageCircle },
+  { href: "/admin/policies", label: "Legal & Policies", icon: ShieldCheck },
   { href: "/admin/journal", label: "Journal", icon: BookOpen },
   { href: "/admin/abandoned-carts", label: "Abandoned carts", icon: Clock },
   { href: "/admin/customers", label: "Customers", icon: Users }

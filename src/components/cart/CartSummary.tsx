@@ -64,7 +64,7 @@ export function CartSummary({
       )}
 
       <div className="mt-4 rounded-xl bg-purple-50/60 p-3 border border-purple-100 text-center text-xs text-purple-900/70">
-        100% Weaver Direct · Handloom Mark Certified · Secure Checkout
+        100% Weaver Direct · Authentic Handloom · Secure Checkout
       </div>
     </div>
   );

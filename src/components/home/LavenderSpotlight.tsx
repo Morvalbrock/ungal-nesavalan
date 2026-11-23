@@ -106,7 +106,7 @@ export function LavenderSpotlight() {
                     Signature Weave
                   </span>
                   <span className="rounded-full bg-gold/20 px-2 py-0.5 text-[10px] font-medium text-gold-soft">
-                    Handloom Mark
+                    Authentic Weave
                   </span>
                 </div>
                 <h3 className="mt-1 font-display text-lg font-medium text-cream">

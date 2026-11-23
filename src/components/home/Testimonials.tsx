@@ -18,7 +18,7 @@ const QUOTES = [
     verified: true
   },
   {
-    body: "I've bought handlooms across Chennai and Coimbatore boutiques. Ungal Nesavalan is the first studio that sends the weaver's name and cluster directly on the tag. Authentic Handloom Mark, zero middlemen, and superb customer care.",
+    body: "I've bought handlooms across Chennai and Coimbatore boutiques. Ungal Nesavalan is the first studio that sends the weaver's name and cluster directly on the tag. Authentic handloom weaves, zero middlemen, and superb customer care.",
     name: "Kavya Shankar",
     role: "Chennai",
     weave: "Elampillai Temple Border Silk",

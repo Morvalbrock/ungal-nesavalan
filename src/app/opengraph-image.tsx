@@ -1,4 +1,3 @@
-import { ImageResponse } from "next/og";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
@@ -7,115 +6,13 @@ export const alt = "Ungal Nesavalan — Direct from Our Elampillai Looms";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-async function loadDataUrl(relativePath: string, mime: string): Promise<string | null> {
-  try {
-    const abs = path.join(process.cwd(), "public", relativePath);
-    const bytes = await fs.readFile(abs);
-    return `data:${mime};base64,${bytes.toString("base64")}`;
-  } catch {
-    return null;
-  }
-}
-
 export default async function OpenGraphImage() {
-  const [heroSrc, logoSrc] = await Promise.all([
-    loadDataUrl("images/elegant_south_indian.png", "image/png"),
-    loadDataUrl("images/logo.png", "image/png")
-  ]);
-
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "1200px",
-          height: "630px",
-          display: "flex",
-          background: "#f5eddc",
-          fontFamily: "sans-serif"
-        }}
-      >
-        <div style={{ flex: 1.1, position: "relative", display: "flex", overflow: "hidden" }}>
-          {heroSrc && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={heroSrc}
-              alt=""
-              width={660}
-              height={630}
-              style={{ objectFit: "cover", width: "100%", height: "100%" }}
-            />
-          )}
-        </div>
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "70px 58px",
-            background: "linear-gradient(180deg, #f5eddc 0%, #ecdfc0 100%)"
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            {logoSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoSrc}
-                alt="Ungal Nesavalan"
-                width={204}
-                height={68}
-                style={{ width: 204, height: 68, objectFit: "contain" }}
-              />
-            ) : (
-              <div
-                style={{
-                  fontSize: 22,
-                  letterSpacing: 5,
-                  color: "#7a1f2b",
-                  textTransform: "uppercase",
-                  fontWeight: 600
-                }}
-              >
-                Ungal Nesavalan
-              </div>
-            )}
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div
-              style={{
-                fontSize: 60,
-                color: "#1a1a1a",
-                fontWeight: 600,
-                lineHeight: 1.05,
-                letterSpacing: -1
-              }}
-            >
-              Elampillai Silk-Cotton Sarees
-            </div>
-            <div
-              style={{
-                fontSize: 26,
-                color: "#5a4a3a",
-                marginTop: 24,
-                lineHeight: 1.4
-              }}
-            >
-              Direct from our own looms in Elampillai, Tamil Nadu — own manufacturing, honest pricing.
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 20, color: "#7a1f2b", letterSpacing: 3, textTransform: "uppercase" }}>
-              ungalnesavalan.com
-            </div>
-            <div style={{ fontSize: 18, color: "#666", marginTop: 8 }}>
-              Own-weave · Handloom Mark certified
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-    { ...size }
-  );
+  const abs = path.join(process.cwd(), "public", "images", "og-share.png");
+  const bytes = await fs.readFile(abs);
+  return new Response(bytes, {
+    headers: {
+      "Content-Type": "image/png",
+      "Cache-Control": "public, max-age=31536000, immutable"
+    }
+  });
 }

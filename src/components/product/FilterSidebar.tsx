@@ -1,8 +1,9 @@
 "use client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
-import { SlidersHorizontal, ChevronDown } from "lucide-react";
+import { useCallback, useEffect, useState, useTransition } from "react";
+import { SlidersHorizontal, ChevronDown, Loader2 } from "lucide-react";
 import { FABRICS, OCCASIONS, PRICE_BUCKETS, WEAVES } from "@/features/products/filters";
+import { useFilterLoadingStore } from "@/features/products/filter-loading.store";
 import { cn } from "@/lib/utils";
 
 type MultiKey = "fabric" | "weave" | "occasion";
@@ -31,6 +32,21 @@ export function FilterSidebar({
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const { isFiltering, activeFilterKey, startFiltering, stopFiltering } = useFilterLoadingStore();
+
+  const busy = isPending || isFiltering;
+
+  // Clear loading state once transition settles or searchParams update
+  useEffect(() => {
+    if (!isPending) {
+      stopFiltering();
+    }
+  }, [isPending, stopFiltering]);
+
+  useEffect(() => {
+    stopFiltering();
+  }, [sp, stopFiltering]);
 
   const getList = useCallback(
     (key: MultiKey) => (sp.get(key)?.split(",").filter(Boolean) ?? []) as string[],
@@ -38,7 +54,9 @@ export function FilterSidebar({
   );
 
   const updateParams = useCallback(
-    (patch: Record<string, string | undefined>) => {
+    (patch: Record<string, string | undefined>, filterKey?: string) => {
+      if (busy) return;
+      startFiltering(filterKey);
       const next = new URLSearchParams(sp.toString());
       for (const [k, v] of Object.entries(patch)) {
         if (v == null || v === "") next.delete(k);
@@ -46,26 +64,34 @@ export function FilterSidebar({
       }
       next.delete("page");
       const qs = next.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      startTransition(() => {
+        router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      });
     },
-    [router, pathname, sp]
+    [router, pathname, sp, busy, startFiltering]
   );
 
   const toggleMulti = useCallback(
     (key: MultiKey, value: string) => {
+      if (busy) return;
       const cur = getList(key);
       const next = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
-      updateParams({ [key]: next.length ? next.join(",") : undefined });
+      updateParams({ [key]: next.length ? next.join(",") : undefined }, `${key}-${value}`);
     },
-    [getList, updateParams]
+    [getList, updateParams, busy]
   );
 
   const currentPrice = `${sp.get("minPrice") ?? ""}-${sp.get("maxPrice") ?? ""}`;
   const setPriceBucket = (min?: number, max?: number) => {
-    updateParams({
-      minPrice: min != null ? String(min) : undefined,
-      maxPrice: max != null ? String(max) : undefined
-    });
+    if (busy) return;
+    const bucketKey = `price-${min ?? ""}-${max ?? ""}`;
+    updateParams(
+      {
+        minPrice: min != null ? String(min) : undefined,
+        maxPrice: max != null ? String(max) : undefined
+      },
+      bucketKey
+    );
   };
 
   const hasAny =
@@ -77,11 +103,15 @@ export function FilterSidebar({
     (!hideCategory && sp.get("category"));
 
   const clearAll = () => {
+    if (busy) return;
+    startFiltering("clear");
     const next = new URLSearchParams(sp.toString());
     ["fabric", "weave", "occasion", "minPrice", "maxPrice", "page"].forEach((k) => next.delete(k));
     if (!hideCategory) next.delete("category");
     const qs = next.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    startTransition(() => {
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    });
   };
 
   const activeCategory = sp.get("category");
@@ -103,24 +133,73 @@ export function FilterSidebar({
           onClick={() => setMobileOpen((v) => !v)}
           className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-plum"
         >
-          <SlidersHorizontal className="h-4 w-4 text-brand-purple" />
-          <span>Filter Sarees {activeCount > 0 && `(${activeCount} active)`}</span>
+          {busy ? (
+            <Loader2 className="h-4 w-4 animate-spin text-brand-purple" />
+          ) : (
+            <SlidersHorizontal className="h-4 w-4 text-brand-purple" />
+          )}
+          <span>
+            {busy
+              ? "Applying filter…"
+              : `Filter Sarees ${activeCount > 0 ? `(${activeCount} active)` : ""}`}
+          </span>
           <ChevronDown className={cn("h-3.5 w-3.5 transition", mobileOpen && "rotate-180")} />
         </button>
         {hasAny && (
-          <button type="button" onClick={clearAll} className="text-xs font-medium underline text-brand-purple hover:text-brand-plum">
-            Clear all
+          <button
+            type="button"
+            disabled={busy}
+            onClick={clearAll}
+            className={cn(
+              "text-xs font-medium underline text-brand-purple hover:text-brand-plum",
+              busy && "opacity-50 cursor-not-allowed pointer-events-none"
+            )}
+          >
+            {busy && activeFilterKey === "clear" ? (
+              <span className="inline-flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" /> Clearing…
+              </span>
+            ) : (
+              "Clear all"
+            )}
           </button>
         )}
       </div>
 
       {/* Filter groups: toggleable on mobile, always visible on desktop */}
-      <div className={cn("space-y-7 rounded-2xl border border-purple-100 bg-white p-5 shadow-sm lg:p-0 lg:bg-transparent lg:border-0 lg:shadow-none lg:block", mobileOpen ? "block" : "hidden")}>
+      <div
+        className={cn(
+          "space-y-7 rounded-2xl border border-purple-100 bg-white p-5 shadow-sm lg:p-0 lg:bg-transparent lg:border-0 lg:shadow-none lg:block",
+          mobileOpen ? "block" : "hidden"
+        )}
+      >
         <div className="hidden items-center justify-between lg:flex pb-2 border-b border-purple-100">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-brand-plum">Refine Weaves</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-brand-plum">Refine Weaves</h2>
+            {busy && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-purple-100 text-brand-purple text-[10px] font-semibold border border-purple-200">
+                <Loader2 className="h-3 w-3 animate-spin text-brand-purple" />
+                Updating…
+              </span>
+            )}
+          </div>
           {hasAny && (
-            <button type="button" onClick={clearAll} className="text-xs font-semibold text-brand-purple hover:underline">
-              Clear all
+            <button
+              type="button"
+              disabled={busy}
+              onClick={clearAll}
+              className={cn(
+                "text-xs font-semibold text-brand-purple hover:underline",
+                busy && "opacity-50 cursor-not-allowed pointer-events-none"
+              )}
+            >
+              {busy && activeFilterKey === "clear" ? (
+                <span className="inline-flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Clearing…
+                </span>
+              ) : (
+                "Clear all"
+              )}
             </button>
           )}
         </div>
@@ -129,12 +208,15 @@ export function FilterSidebar({
           <FilterGroup title="Category">
             {categories.map((c) => {
               const active = activeCategory === c.id;
+              const isChipLoading = busy && activeFilterKey === `cat-${c.id}`;
               return (
                 <FilterChip
                   key={c.id}
                   active={active}
                   label={c.label}
-                  onClick={() => updateParams({ category: active ? undefined : c.id })}
+                  loading={isChipLoading}
+                  disabled={busy}
+                  onClick={() => updateParams({ category: active ? undefined : c.id }, `cat-${c.id}`)}
                 />
               );
             })}
@@ -145,42 +227,57 @@ export function FilterSidebar({
           {(fabrics
             ? fabrics.map((f) => ({ key: f.id, label: f.label }))
             : FABRICS.map((f) => ({ key: f, label: f }))
-          ).map((f) => (
-            <FilterChip
-              key={f.key}
-              active={getList("fabric").includes(f.key)}
-              label={f.label}
-              onClick={() => toggleMulti("fabric", f.key)}
-            />
-          ))}
+          ).map((f) => {
+            const isChipLoading = busy && activeFilterKey === `fabric-${f.key}`;
+            return (
+              <FilterChip
+                key={f.key}
+                active={getList("fabric").includes(f.key)}
+                label={f.label}
+                loading={isChipLoading}
+                disabled={busy}
+                onClick={() => toggleMulti("fabric", f.key)}
+              />
+            );
+          })}
         </FilterGroup>
 
         <FilterGroup title="Catalog">
           {(weaves
             ? weaves.map((w) => ({ key: w.id, label: w.label }))
             : WEAVES.map((w) => ({ key: w, label: w }))
-          ).map((w) => (
-            <FilterChip
-              key={w.key}
-              active={getList("weave").includes(w.key)}
-              label={w.label}
-              onClick={() => toggleMulti("weave", w.key)}
-            />
-          ))}
+          ).map((w) => {
+            const isChipLoading = busy && activeFilterKey === `weave-${w.key}`;
+            return (
+              <FilterChip
+                key={w.key}
+                active={getList("weave").includes(w.key)}
+                label={w.label}
+                loading={isChipLoading}
+                disabled={busy}
+                onClick={() => toggleMulti("weave", w.key)}
+              />
+            );
+          })}
         </FilterGroup>
 
         <FilterGroup title="Occasion">
           {(occasions
             ? occasions.map((o) => ({ key: o.id, label: o.label }))
             : OCCASIONS.map((o) => ({ key: o, label: o }))
-          ).map((o) => (
-            <FilterChip
-              key={o.key}
-              active={getList("occasion").includes(o.key)}
-              label={o.label}
-              onClick={() => toggleMulti("occasion", o.key)}
-            />
-          ))}
+          ).map((o) => {
+            const isChipLoading = busy && activeFilterKey === `occasion-${o.key}`;
+            return (
+              <FilterChip
+                key={o.key}
+                active={getList("occasion").includes(o.key)}
+                label={o.label}
+                loading={isChipLoading}
+                disabled={busy}
+                onClick={() => toggleMulti("occasion", o.key)}
+              />
+            );
+          })}
         </FilterGroup>
 
         <FilterGroup title="Price">
@@ -188,14 +285,17 @@ export function FilterSidebar({
             {PRICE_BUCKETS.map((b) => {
               const key = `${b.min ?? ""}-${b.max ?? ""}`;
               const active = currentPrice === key;
+              const isBucketLoading = busy && activeFilterKey === `price-${key}`;
               return (
                 <button
                   key={b.label}
                   type="button"
+                  disabled={busy}
                   onClick={() => (active ? setPriceBucket() : setPriceBucket(b.min, b.max))}
                   className={cn(
                     "flex items-center gap-2 text-left text-sm text-ink-soft transition hover:text-ink",
-                    active && "font-medium text-ink"
+                    active && "font-medium text-ink",
+                    busy && "opacity-60 cursor-not-allowed pointer-events-none"
                   )}
                 >
                   <span
@@ -204,7 +304,8 @@ export function FilterSidebar({
                       active && "border-brand-purple bg-brand-purple"
                     )}
                   />
-                  {b.label}
+                  <span>{b.label}</span>
+                  {isBucketLoading && <Loader2 className="h-3 w-3 animate-spin text-brand-purple" />}
                 </button>
               );
             })}
@@ -224,19 +325,35 @@ function FilterGroup({ title, children }: { title: string; children: React.React
   );
 }
 
-function FilterChip({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
+function FilterChip({
+  active,
+  label,
+  loading = false,
+  disabled = false,
+  onClick
+}: {
+  active: boolean;
+  label: string;
+  loading?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
+      aria-disabled={disabled}
       className={cn(
-        "rounded-full border px-3 py-1 text-xs capitalize transition font-medium",
+        "rounded-full border px-3 py-1 text-xs capitalize transition font-medium inline-flex items-center gap-1.5",
         active
           ? "border-brand-purple bg-brand-purple text-white shadow-sm"
-          : "border-purple-200 bg-white text-slate-600 hover:border-brand-purple hover:text-brand-plum hover:bg-purple-50/60"
+          : "border-purple-200 bg-white text-slate-600 hover:border-brand-purple hover:text-brand-plum hover:bg-purple-50/60",
+        disabled && "opacity-60 cursor-not-allowed pointer-events-none"
       )}
     >
-      {label}
+      {loading && <Loader2 className="h-3 w-3 animate-spin text-current" />}
+      <span>{label}</span>
     </button>
   );
 }

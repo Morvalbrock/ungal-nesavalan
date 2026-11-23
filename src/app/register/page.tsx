@@ -20,7 +20,7 @@ export default async function RegisterPage() {
       heroBadge="Direct From Elampillai Looms"
       heroSeries="Authentic Salem Weaves"
       heroQuote="A saree is chosen once but wears the memory of every generation that folded it."
-      heroSubtext="Create an account to save your favourite drapes, receive authenticity certificates, and enjoy priority wedding trousseau consultation."
+      heroSubtext="Create an account to save your favourite drapes, receive authentic loom drop alerts, and enjoy priority wedding trousseau consultation."
       heroImage="/images/login_image.png"
     >
       <RegisterForm />

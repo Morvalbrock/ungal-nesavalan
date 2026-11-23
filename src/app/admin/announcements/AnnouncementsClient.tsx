@@ -106,19 +106,19 @@ export function AnnouncementsClient({ initialAnnouncements }: Props) {
 
       {/* Live Marquee Preview */}
       {activeItems.length > 0 && (
-        <div className="rounded-card border border-border bg-cream p-4">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-ink-muted">
-            <Megaphone className="h-3.5 w-3.5 text-gold-soft" />
+        <div className="rounded-card border border-purple-200 bg-purple-50/40 p-4">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-brand-plum">
+            <Megaphone className="h-3.5 w-3.5 text-amber-500" />
             <span>Storefront Ticker Live Preview</span>
           </div>
-          <div className="mt-3 overflow-hidden rounded border border-ink/10 bg-ink text-cream">
-            <div className="flex w-max animate-marquee whitespace-nowrap py-2">
+          <div className="mt-3 overflow-hidden rounded-lg border border-[#5a1c6a]/40 bg-[#32083b] text-purple-100 mask-fade-x">
+            <div className="flex w-max animate-marquee whitespace-nowrap py-2 hover:[animation-play-state:paused]">
               {[...activeItems, ...activeItems, ...activeItems].map((item, i) => (
                 <span
                   key={i}
-                  className="flex items-center px-6 text-[11px] font-medium uppercase tracking-widest2 text-cream/90"
+                  className="flex items-center px-6 text-[11px] font-medium uppercase tracking-widest2 text-purple-100/90"
                 >
-                  <span className="mr-6 text-gold-soft">✦</span>
+                  <span className="mr-6 text-amber-400">✦</span>
                   {item.text}
                 </span>
               ))}

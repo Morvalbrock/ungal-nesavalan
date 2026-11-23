@@ -1,20 +1,42 @@
 import type { Metadata } from "next";
 import { LegalShell } from "@/components/layout/LegalShell";
+import { PolicyRenderer } from "@/components/layout/PolicyRenderer";
+import { policyRepo } from "@/server/repositories";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description: "How Ungal Nesavalan collects, stores, and uses personal information.",
-  alternates: { canonical: "/privacy" }
-};
+export const revalidate = 60;
 
-const EFFECTIVE = "1 April 2025";
+export async function generateMetadata(): Promise<Metadata> {
+  const policy = await policyRepo.findBySlug("privacy");
+  return {
+    title: policy?.title ?? "Privacy Policy",
+    description: policy?.lede ?? "How Ungal Nesavalan collects, stores, and uses personal information.",
+    alternates: { canonical: "/privacy" }
+  };
+}
 
-export default function PrivacyPage() {
+const DEFAULT_EFFECTIVE = "1 April 2025";
+
+export default async function PrivacyPage() {
+  const policy = await policyRepo.findBySlug("privacy");
+
+  if (policy) {
+    return (
+      <LegalShell
+        kicker={policy.kicker || "Legal"}
+        title={policy.title}
+        lede={policy.lede || `Effective ${policy.effectiveDate || DEFAULT_EFFECTIVE}.`}
+      >
+        <PolicyRenderer content={policy.content} />
+      </LegalShell>
+    );
+  }
+
+  // Fallback if not seeded yet
   return (
     <LegalShell
       kicker="Legal"
       title="Privacy Policy"
-      lede={`Effective ${EFFECTIVE}. We collect the least information necessary to sell you a saree and to keep the site secure.`}
+      lede={`Effective ${DEFAULT_EFFECTIVE}. We collect the least information necessary to sell you a saree and to keep the site secure.`}
     >
       <section>
         <h2 className="font-display text-2xl text-ink">What we collect</h2>

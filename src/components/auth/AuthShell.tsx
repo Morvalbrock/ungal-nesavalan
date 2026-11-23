@@ -7,7 +7,7 @@ export function AuthShell({
   heroBadge = "Direct From Elampillai Looms",
   heroSeries = "Authentic Salem Weaves",
   heroQuote = "Every thread carries the sacred prayers and dedication of our master weaver’s loom.",
-  heroSubtext = "Handwoven directly in Tamil Nadu — crafted with heirloom soft silks, Kalyani organic cottons, and bridal drapes certified with Silk Mark & Handloom Mark authenticity.",
+  heroSubtext = "Handwoven directly in Tamil Nadu — crafted with heirloom soft silks, Kalyani organic cottons, and bridal drapes straight from authentic pit-looms.",
   heroImage = "/images/login_image.png",
   footer,
   children
@@ -81,7 +81,7 @@ export function AuthShell({
                 <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                   <path clipRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fillRule="evenodd" />
                 </svg>
-                Silk Mark Certified
+                100% Pure Handloom
               </span>
               <span className="px-3 py-1 rounded-md bg-white/10 backdrop-blur-sm border border-white/10 text-white flex items-center gap-1.5">
                 <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
@@ -177,7 +177,7 @@ export function AuthShell({
             <p className="flex items-center justify-center gap-1.5 flex-wrap">
               <span>🔒 256-bit Secure Handloom Direct Portal</span>
               <span>•</span>
-              <span>Verified Silk Mark Certified</span>
+              <span>Direct from Salem Looms</span>
             </p>
             <p className="text-[10px] text-slate-400">Salem Weaver Looms Cluster, Tamil Nadu, India</p>
           </footer>

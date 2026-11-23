@@ -18,7 +18,28 @@ export const metadata: Metadata = {
     description:
       "Direct from our Elampillai pit-looms. Explore Kalyani Silk Cotton, Aarani Soft Silk, and Maheshwari Handlooms at direct weaver rates.",
     url: "/",
-    type: "website"
+    type: "website",
+    images: [
+      {
+        url: "/images/og-share.png",
+        width: 1200,
+        height: 630,
+        alt: "Ungal Nesavalan — Authentic Elampillai Handloom Sarees"
+      },
+      {
+        url: "/images/og-square.png",
+        width: 600,
+        height: 600,
+        alt: "Ungal Nesavalan — Authentic Elampillai Handloom Sarees"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ungal Nesavalan — Authentic Elampillai Handloom Sarees",
+    description:
+      "Direct from our Elampillai pit-looms. Explore Kalyani Silk Cotton, Aarani Soft Silk, and Maheshwari Handlooms at direct weaver rates.",
+    images: ["/images/og-share.png"]
   }
 };
 

@@ -43,7 +43,7 @@ export function CartView() {
         </span>
         <h1 className="mt-3 font-heritage text-3xl sm:text-4xl text-brand-plum">Shopping Bag</h1>
         <p className="mt-1 text-sm text-purple-900/70">
-          Directly from the looms of Elampillai, Salem · Handloom Mark Certified
+          Directly from the looms of Elampillai, Salem · Authentic Handloom
         </p>
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px] items-start">

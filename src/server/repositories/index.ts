@@ -25,6 +25,7 @@ export { jsonPasswordResetRepo as passwordResetRepo } from "./password-reset.rep
 export { jsonAnnouncementRepo as announcementRepo } from "./announcements.repository";
 export { jsonPageBannerRepo as pageBannerRepo } from "./page-banners.repository";
 export { jsonPostRepo as postRepo } from "./posts.repository";
+export { jsonPolicyRepo as policyRepo } from "./policies.repository";
 export type { ProductRepository } from "./products.repository";
 export type { CategoryRepository } from "./categories.repository";
 export type { CatalogRepository } from "./catalogs.repository";
@@ -46,4 +47,5 @@ export type { PasswordResetRepository } from "./password-reset.repository";
 export type { AnnouncementRepository } from "./announcements.repository";
 export type { PageBannerRepository } from "./page-banners.repository";
 export type { PostRepository } from "./posts.repository";
+export type { PolicyRepository } from "./policies.repository";
 

@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { MDXRemote } from "next-mdx-remote/rsc";
 import { Container } from "@/components/layout/Container";
 import { ProductCard } from "@/components/product/ProductCard";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { MarkdownContent } from "@/components/journal/MarkdownContent";
 import { findPost, listPosts } from "@/features/journal/posts";
 import { productRepo } from "@/server/repositories";
 import type { ProductSummary } from "@/types/product";
@@ -13,10 +13,15 @@ import type { ProductSummary } from "@/types/product";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const revalidate = 300;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const posts = await listPosts();
-  return posts.map((p) => ({ slug: p.slug }));
+  try {
+    const posts = await listPosts();
+    return posts.map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -45,7 +50,9 @@ export default async function JournalPostPage({ params }: { params: Promise<{ sl
 
   const related: ProductSummary[] = [];
   if (post.relatedProductSlugs?.length) {
-    const found = await Promise.all(post.relatedProductSlugs.map((s) => productRepo.findBySlug(s)));
+    const found = await Promise.all(
+      post.relatedProductSlugs.map((s) => productRepo.findBySlug(s).catch(() => null))
+    );
     for (const p of found) {
       if (!p) continue;
       related.push({
@@ -57,7 +64,7 @@ export default async function JournalPostPage({ params }: { params: Promise<{ sl
         fabric: p.fabric,
         weave: p.weave,
         occasion: p.occasion,
-        images: p.images,
+        images: p.images ?? [],
         categoryId: p.categoryId,
         featured: p.featured
       });
@@ -75,6 +82,20 @@ export default async function JournalPostPage({ params }: { params: Promise<{ sl
     publisher: { "@type": "Organization", name: "Ungal Nesavalan", logo: `${SITE_URL}/images/logo.png` }
   };
 
+  const formattedDate = post.publishedAt
+    ? (() => {
+        try {
+          return new Date(post.publishedAt).toLocaleDateString("en-IN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          });
+        } catch {
+          return post.publishedAt;
+        }
+      })()
+    : null;
+
   return (
     <div className="bg-[#faf7fd] min-h-[85vh] py-10 sm:py-14">
       <Container>
@@ -84,14 +105,12 @@ export default async function JournalPostPage({ params }: { params: Promise<{ sl
             ← Back to Journal
           </Link>
           <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-purple-900/60">
-            {new Date(post.publishedAt).toLocaleDateString("en-IN", {
-              year: "numeric",
-              month: "long",
-              day: "numeric"
-            })}{" "}
-            · {post.readingTimeMin} min read
+            {formattedDate ? `${formattedDate} · ` : ""}
+            {post.readingTimeMin ?? 1} min read
           </p>
-          <h1 className="mt-3 font-heritage font-bold text-3xl sm:text-4xl md:text-5xl text-brand-plum leading-[1.15]">{post.title}</h1>
+          <h1 className="mt-3 font-heritage font-bold text-3xl sm:text-4xl md:text-5xl text-brand-plum leading-[1.15]">
+            {post.title}
+          </h1>
           <p className="mt-3 text-base sm:text-lg text-slate-700 leading-relaxed">{post.excerpt}</p>
         </div>
 
@@ -108,7 +127,7 @@ export default async function JournalPostPage({ params }: { params: Promise<{ sl
         )}
 
         <article className="prose-journal mx-auto mt-8 max-w-3xl rounded-2xl border border-purple-100 bg-white p-6 sm:p-10 shadow-xs">
-          <MDXRemote source={post.content} />
+          <MarkdownContent content={post.content} />
         </article>
 
         {related.length > 0 && (

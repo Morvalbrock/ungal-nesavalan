@@ -18,7 +18,8 @@ import {
   shippingChargesRepo,
   userRepo,
   announcementRepo,
-  pageBannerRepo
+  pageBannerRepo,
+  policyRepo
 } from "@/server/repositories";
 import { INDIAN_STATES } from "@/features/checkout/checkout.schema";
 import { getPaymentProvider } from "@/features/payments";
@@ -1128,3 +1129,58 @@ export async function bulkUpsertShippingCharges(
   revalidatePath("/checkout");
   return { ok: true };
 }
+
+// ---------------------------------------------------------------------------
+// Policies & Legal Pages (Privacy Policy, Terms of Service, etc.)
+// ---------------------------------------------------------------------------
+
+const policySchema = z.object({
+  id: z.string().optional(),
+  slug: z
+    .string()
+    .trim()
+    .min(2, "Slug must be at least 2 characters")
+    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens"),
+  title: z.string().trim().min(2, "Title is required"),
+  kicker: z.string().trim().default("Legal"),
+  effectiveDate: z.string().trim().default(""),
+  lede: z.string().trim().default(""),
+  content: z.string().trim().min(1, "Content is required")
+});
+
+export type PolicyFormValues = z.input<typeof policySchema>;
+
+export async function upsertPolicy(values: PolicyFormValues) {
+  await requireAdmin();
+  const parsed = policySchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: "invalid_input",
+      issues: parsed.error.flatten().fieldErrors as Record<string, string[]>
+    };
+  }
+
+  const saved = await policyRepo.upsert(parsed.data);
+  revalidatePath("/admin/policies");
+  revalidatePath(`/${saved.slug}`);
+  revalidatePath("/privacy");
+  revalidatePath("/terms");
+  revalidatePath("/shipping-returns");
+  return { ok: true, policy: saved };
+}
+
+export async function deletePolicy(id: string) {
+  await requireAdmin();
+  const existing = await policyRepo.findById(id);
+  const removed = await policyRepo.remove(id);
+  if (removed && existing) {
+    revalidatePath("/admin/policies");
+    revalidatePath(`/${existing.slug}`);
+    revalidatePath("/privacy");
+    revalidatePath("/terms");
+    revalidatePath("/shipping-returns");
+  }
+  return { ok: removed };
+}
+

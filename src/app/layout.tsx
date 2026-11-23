@@ -8,7 +8,9 @@ import { WishlistBoot } from "@/features/wishlist/WishlistBoot";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PlausibleScript } from "@/features/analytics/PlausibleScript";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://ungalnesavalan.com");
 
 const display = Fraunces({
   subsets: ["latin"],
@@ -57,13 +59,28 @@ export const metadata: Metadata = {
     title: "Ungal Nesavalan — Direct from Our Elampillai Looms",
     description:
       "Elampillai silk-cotton sarees crafted on our own looms in Tamil Nadu. Pure handloom, own manufacturing, honest pricing.",
-    url: SITE_URL
+    url: SITE_URL,
+    images: [
+      {
+        url: "/images/og-share.png",
+        width: 1200,
+        height: 630,
+        alt: "Ungal Nesavalan — Authentic Elampillai Handloom Sarees"
+      },
+      {
+        url: "/images/og-square.png",
+        width: 600,
+        height: 600,
+        alt: "Ungal Nesavalan — Authentic Elampillai Handloom Sarees"
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
     title: "Ungal Nesavalan — Direct from Our Elampillai Looms",
     description:
-      "Elampillai silk-cotton sarees crafted on our own looms in Tamil Nadu. Pure handloom, own manufacturing, honest pricing."
+      "Elampillai silk-cotton sarees crafted on our own looms in Tamil Nadu. Pure handloom, own manufacturing, honest pricing.",
+    images: ["/images/og-share.png"]
   }
 };
 

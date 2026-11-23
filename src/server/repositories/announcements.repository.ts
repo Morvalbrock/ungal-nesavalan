@@ -15,7 +15,7 @@ const COLLECTION = "announcements";
 const DEFAULT_ANNOUNCEMENTS: Announcement[] = [
   { id: "ann_1", text: "Free shipping across Tamil Nadu", link: "", sort: 1, active: true },
   { id: "ann_2", text: "Cash on delivery available", link: "", sort: 2, active: true },
-  { id: "ann_3", text: "Handloom Mark certified · direct from master weavers", link: "", sort: 3, active: true },
+  { id: "ann_3", text: "100% authentic handloom · direct from master weavers", link: "", sort: 3, active: true },
   { id: "ann_4", text: "Complimentary blouse piece with every drape", link: "", sort: 4, active: true },
   { id: "ann_5", text: "Returns subject to policy · Unboxing video mandatory", link: "", sort: 5, active: true }
 ];

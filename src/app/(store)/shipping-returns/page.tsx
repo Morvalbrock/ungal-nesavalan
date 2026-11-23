@@ -1,20 +1,42 @@
 import type { Metadata } from "next";
 import { LegalShell } from "@/components/layout/LegalShell";
+import { PolicyRenderer } from "@/components/layout/PolicyRenderer";
+import { policyRepo } from "@/server/repositories";
 
-export const metadata: Metadata = {
-  title: "Shipping & Returns",
-  description:
-    "How Ungal Nesavalan ships handloom sarees across India and abroad, and how returns work within our 7-day window.",
-  alternates: { canonical: "/shipping-returns" }
-};
+export const revalidate = 60;
 
-export default function ShippingReturnsPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const policy = await policyRepo.findBySlug("shipping-returns");
+  return {
+    title: policy?.title ?? "Shipping & Returns",
+    description:
+      policy?.lede ??
+      "How Ungal Nesavalan ships handloom sarees across India and abroad, and how returns work within our 7-day window.",
+    alternates: { canonical: "/shipping-returns" }
+  };
+}
+
+const DEFAULT_LEDE =
+  "Every saree is inspected, folded in cotton muslin, and dispatched from our Elampillai studio hub in Salem, Tamil Nadu. Here's what to expect.";
+
+export default async function ShippingReturnsPage() {
+  const policy = await policyRepo.findBySlug("shipping-returns");
+
+  if (policy) {
+    return (
+      <LegalShell
+        kicker={policy.kicker || "Support"}
+        title={policy.title}
+        lede={policy.lede || DEFAULT_LEDE}
+      >
+        <PolicyRenderer content={policy.content} />
+      </LegalShell>
+    );
+  }
+
+  // Fallback if not seeded yet
   return (
-    <LegalShell
-      kicker="Support"
-      title="Shipping & Returns"
-      lede="Every saree is inspected, folded in cotton muslin, and dispatched from our Elampillai studio hub in Salem, Tamil Nadu. Here's what to expect."
-    >
+    <LegalShell kicker="Support" title="Shipping & Returns" lede={DEFAULT_LEDE}>
       <section>
         <h2 className="font-display text-2xl text-ink">Shipping timelines</h2>
         <ul className="mt-3 list-disc space-y-2 pl-5">

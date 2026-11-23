@@ -293,34 +293,34 @@ export function ProductCard({ product, className, rating, compact = false }: Pro
         </div>
       </div>
 
-      {/* Action Buttons: Quick View & Direct Buy */}
+      {/* Action Buttons: View & Direct Buy */}
       <div className="mt-2.5 flex items-center gap-1.5">
         <button
           type="button"
           onClick={handleQuickView}
-          aria-label="Quick View saree details"
-          title="Quick View"
-          className="px-2.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-brand-purple text-xs font-semibold transition-all shadow-xs flex items-center justify-center shrink-0 border border-purple-200/60"
+          aria-label="View saree details"
+          title="View"
+          className="px-2.5 sm:px-3 py-1.5 rounded-full bg-purple-50/80 hover:bg-purple-100 text-[#4a044e] text-xs font-semibold transition-all border border-purple-200/80 flex items-center justify-center gap-1 shrink-0 whitespace-nowrap cursor-pointer shadow-2xs"
         >
-          <Eye className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline text-[11px] ml-1">View</span>
+          <Eye className="h-3.5 w-3.5 text-brand-purple shrink-0" />
+          <span>View</span>
         </button>
 
         <button
           type="button"
           onClick={handleDirectBuy}
           disabled={isBuying}
-          className="flex-1 py-2 px-2.5 rounded-xl bg-gradient-to-r from-brand-deep to-brand-purple hover:from-brand-purple hover:to-brand-deep text-white text-xs font-bold transition-all shadow-sm shadow-brand-deep/20 flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-75"
+          className="flex-1 py-1.5 px-2.5 sm:px-3 rounded-full bg-[#3b0744] hover:bg-[#4d0c58] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1 active:scale-95 disabled:opacity-75 whitespace-nowrap cursor-pointer"
         >
           {isBuying ? (
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0 text-amber-300" />
-              <span>Buying…</span>
+              <span className="whitespace-nowrap">Buying…</span>
             </>
           ) : (
             <>
-              <Zap className="h-3.5 w-3.5 text-amber-300 fill-amber-300 shrink-0" />
-              <span>Direct Buy</span>
+              <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400 shrink-0" />
+              <span className="whitespace-nowrap">Direct Buy</span>
             </>
           )}
         </button>

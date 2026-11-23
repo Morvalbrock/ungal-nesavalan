@@ -62,7 +62,7 @@ const FALLBACK: HeroSlide[] = [
     featureImageAlt: "Handloom cotton silk saree",
     featureEyebrow: "Heritage Weave",
     featureTitle: "Elampillai Cotton Silk",
-    featureSubtitle: "Featherlight · Handloom Mark",
+    featureSubtitle: "Featherlight · Authentic Loom",
     sort: 2,
     active: true
   }

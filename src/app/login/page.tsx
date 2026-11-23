@@ -20,7 +20,7 @@ export default async function LoginPage() {
       heroBadge="Direct From Elampillai Looms"
       heroSeries="Authentic Salem Weaves"
       heroQuote="Every thread carries the sacred prayers and dedication of our master weaver’s loom."
-      heroSubtext="Handwoven directly in Tamil Nadu — crafted with heirloom soft silks, Kalyani organic cottons, and bridal drapes certified with Silk Mark & Handloom Mark authenticity."
+      heroSubtext="Handwoven directly in Tamil Nadu — crafted with heirloom soft silks, Kalyani organic cottons, and bridal drapes straight from authentic pit-looms."
       heroImage="/images/login_image.png"
     >
       <LoginForm />
