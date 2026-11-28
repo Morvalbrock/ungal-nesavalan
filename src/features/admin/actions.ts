@@ -26,7 +26,7 @@ import { getPaymentProvider } from "@/features/payments";
 import { getMailProvider } from "@/features/mail";
 import { deliveredEmail, returnDecisionEmail, shippedEmail } from "@/features/mail/templates";
 import { VALID_ORDER_TRANSITIONS, type OrderStatus } from "@/types/order";
-import type { Fabric, Occasion, Product, ProductImage, Variant } from "@/types/product";
+import type { Fabric, Occasion, Product, ProductImage, ProductSize, Variant } from "@/types/product";
 import { FABRICS, OCCASIONS } from "@/features/products/filters";
 import { newId, readCollection } from "@/server/db/json-store";
 import { slugify } from "@/lib/utils";
@@ -91,6 +91,14 @@ const productSchema = z.object({
           ])
           .optional(),
         imageAlt: z.string().trim().optional()
+      })
+    )
+    .default([]),
+  sizes: z
+    .array(
+      z.object({
+        label: z.string().trim().min(1, "Size label is required").max(20, "Size label too long"),
+        enabled: z.boolean().default(true)
       })
     )
     .default([]),
@@ -182,6 +190,19 @@ export async function upsertProduct(values: ProductFormValues): Promise<ActionRe
         : []
     }));
 
+    // Normalise sizes: trim labels, drop empties, dedupe by case-insensitive label
+    // so admins can't accidentally save "M" and "m" as separate sizes.
+    const seenSize = new Set<string>();
+    const sizes: ProductSize[] = [];
+    for (const s of data.sizes ?? []) {
+      const label = s.label.trim();
+      if (!label) continue;
+      const key = label.toLowerCase();
+      if (seenSize.has(key)) continue;
+      seenSize.add(key);
+      sizes.push({ label, enabled: s.enabled });
+    }
+
     const payload: Omit<Product, "createdAt" | "updatedAt"> = {
       id: productId,
       slug,
@@ -198,6 +219,7 @@ export async function upsertProduct(values: ProductFormValues): Promise<ActionRe
       categoryId: data.categoryId,
       images,
       variants,
+      sizes: sizes.length > 0 ? sizes : undefined,
       featured: data.featured,
       published: data.published
     };

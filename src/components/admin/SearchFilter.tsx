@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
+import { useAdminListLoadingStore } from "@/features/admin/list-loading.store";
 
 export interface FilterOption {
   value: string;
@@ -34,11 +35,18 @@ export function SearchFilter({
   const sp = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [term, setTerm] = useState(sp.get(searchKey) ?? "");
+  const startLoading = useAdminListLoadingStore((s) => s.startLoading);
+  const stopLoading = useAdminListLoadingStore((s) => s.stopLoading);
 
   // Keep local input in sync when URL changes externally (back/forward nav)
   useEffect(() => {
     setTerm(sp.get(searchKey) ?? "");
   }, [sp, searchKey]);
+
+  // Clear overlay as soon as the server-driven transition settles
+  useEffect(() => {
+    if (!pending) stopLoading();
+  }, [pending, stopLoading]);
 
   // Debounced URL sync on search typing
   useEffect(() => {
@@ -48,6 +56,7 @@ export function SearchFilter({
       const next = new URLSearchParams(sp);
       if (term) next.set(searchKey, term);
       else next.delete(searchKey);
+      startLoading(`search:${searchKey}`);
       startTransition(() => {
         router.replace(`${pathname}?${next.toString()}`, { scroll: false });
       });
@@ -60,12 +69,14 @@ export function SearchFilter({
     const next = new URLSearchParams(sp);
     if (value && value !== "all") next.set(key, value);
     else next.delete(key);
+    startLoading(`filter:${key}`);
     startTransition(() => {
       router.replace(`${pathname}?${next.toString()}`, { scroll: false });
     });
   }
 
   function clearAll() {
+    startLoading("clear");
     startTransition(() => {
       router.replace(pathname, { scroll: false });
     });

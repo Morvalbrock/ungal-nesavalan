@@ -162,7 +162,7 @@ export function ReviewStep({
             <p>{address.line1}{address.line2 ? `, ${address.line2}` : ""}</p>
             <p>{address.city}, {address.state} {address.pincode}</p>
             <p>{address.country} · {address.phone}</p>
-            <p className="text-purple-900/60">{address.email}</p>
+            {address.email && <p className="text-purple-900/60">{address.email}</p>}
             {address.notes && <p className="mt-2 text-purple-950 font-medium bg-purple-50 p-2 rounded-lg">Note: {address.notes}</p>}
           </div>
           <div className="mt-3 rounded-xl bg-purple-50/60 border border-purple-100 p-3 text-xs text-purple-950">
@@ -275,7 +275,7 @@ export function ReviewStep({
         <section className="rounded-2xl border border-purple-100 bg-white p-5 sm:p-6 shadow-xs">
           <h2 className="font-heritage text-xl font-bold text-brand-plum">Selected Sarees ({items.length})</h2>
           <div className="mt-3">
-            {items.map((i) => <CartLine key={i.variantId} item={i} compact />)}
+            {items.map((i) => <CartLine key={i.lineKey} item={i} compact />)}
           </div>
         </section>
 

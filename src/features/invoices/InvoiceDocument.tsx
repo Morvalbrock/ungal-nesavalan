@@ -306,8 +306,12 @@ export function InvoiceDocument({ order, brand }: InvoiceProps) {
             <View key={i.id} style={[styles.row, styles.itemRow]}>
               <View style={styles.colName}>
                 <Text style={styles.itemName}>{i.productNameSnapshot}</Text>
-                {i.variantLabelSnapshot ? (
-                  <Text style={styles.itemVariant}>{i.variantLabelSnapshot}</Text>
+                {(i.variantLabelSnapshot || i.sizeSnapshot) ? (
+                  <Text style={styles.itemVariant}>
+                    {[i.variantLabelSnapshot, i.sizeSnapshot ? `Size ${i.sizeSnapshot}` : null]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </Text>
                 ) : null}
               </View>
               <Text style={styles.colQty}>{i.quantity}</Text>

@@ -65,7 +65,7 @@ export function MiniCart() {
             <>
               <div className="max-h-80 overflow-y-auto px-4">
                 {items.map((i) => (
-                  <CartLine key={i.variantId} item={i} compact />
+                  <CartLine key={i.lineKey} item={i} compact />
                 ))}
               </div>
               <div className="border-t border-purple-100 px-4 py-4 bg-purple-50/30 rounded-b-2xl">

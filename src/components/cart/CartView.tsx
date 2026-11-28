@@ -49,7 +49,7 @@ export function CartView() {
         <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px] items-start">
           <div className="rounded-2xl border border-purple-100 bg-white p-6 shadow-xs">
             {items.map((i) => (
-              <CartLine key={i.variantId} item={i} />
+              <CartLine key={i.lineKey} item={i} />
             ))}
           </div>
           <CartSummary />

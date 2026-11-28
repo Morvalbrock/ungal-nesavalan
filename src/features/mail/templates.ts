@@ -27,13 +27,16 @@ function inr(paise: number) {
 
 function itemsTable(order: Order): string {
   const rows = order.items
-    .map(
-      (i) => `<tr>
-<td style="padding:8px 0;">${i.productNameSnapshot}${i.variantLabelSnapshot ? `<br><span style="color:#888;font-size:12px;">${i.variantLabelSnapshot}</span>` : ""}</td>
+    .map((i) => {
+      const subline = [i.variantLabelSnapshot, i.sizeSnapshot ? `Size ${i.sizeSnapshot}` : null]
+        .filter((p): p is string => Boolean(p))
+        .join(" · ");
+      return `<tr>
+<td style="padding:8px 0;">${i.productNameSnapshot}${subline ? `<br><span style="color:#888;font-size:12px;">${subline}</span>` : ""}</td>
 <td style="padding:8px 0;text-align:right;">Qty ${i.quantity}</td>
 <td style="padding:8px 0;text-align:right;">${inr(i.unitPricePaise * i.quantity)}</td>
-</tr>`
-    )
+</tr>`;
+    })
     .join("");
   return `<table style="width:100%;border-collapse:collapse;font-size:14px;">${rows}
 <tr><td colspan="3"><hr style="border:0;border-top:1px solid #d9c9a9;margin:12px 0;"/></td></tr>

@@ -42,6 +42,12 @@ export interface OrderItem {
   variantId: string;
   productNameSnapshot: string;
   variantLabelSnapshot: string;
+  /**
+   * Snapshot of the customer-selected size at order time. Absent for products
+   * that had no admin-configured sizes, or for historical orders predating this
+   * field — consumers should treat missing/empty as "no size chosen".
+   */
+  sizeSnapshot?: string;
   imageSnapshot: string;
   unitPricePaise: number;
   quantity: number;
@@ -72,6 +78,17 @@ export interface Order {
   trackingId?: string;
   courier?: string;
   notifiedAt?: string;
+  /**
+   * True when the order was placed via the guest-checkout flow (no login / OTP).
+   * Older orders predate this flag, so absence should be treated as "registered".
+   */
+  isGuestOrder?: boolean;
+  /**
+   * Client-generated UUID issued once per checkout attempt. Reused across retries
+   * so the server can short-circuit duplicate POSTs (double-clicks, flaky retries)
+   * and return the original order+payment instead of creating a second one.
+   */
+  idempotencyKey?: string;
   createdAt: string;
   updatedAt: string;
 }

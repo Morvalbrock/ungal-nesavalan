@@ -13,6 +13,8 @@ export interface CartLinePayload {
   productId: string;
   variantId: string;
   quantity: number;
+  /** Admin-configured size picked by the customer (if the product has sizes). */
+  size?: string;
 }
 
 export interface BuiltOrderTotals {
@@ -30,7 +32,9 @@ export class OrderBuildError extends Error {
     | "product_missing"
     | "variant_missing"
     | "out_of_stock"
-    | "insufficient_stock";
+    | "insufficient_stock"
+    | "size_required"
+    | "invalid_size";
   constructor(code: OrderBuildError["code"], message: string) {
     super(message);
     this.code = code;
@@ -79,6 +83,33 @@ export async function buildOrderFromCart(
         `Maximum allowed purchase quantity is 30 for ${product.name}${variantParens}`
       );
     }
+
+    // Size validation: when the product has admin-configured enabled sizes, the
+    // customer MUST pick one that is still enabled at order time. Disabled sizes
+    // (e.g. a size the admin pulled between add-to-cart and checkout) are rejected.
+    // Products without sizes just ignore any size value sent.
+    const enabledSizes = (product.sizes ?? []).filter((s) => s.enabled && s.label.trim().length > 0);
+    const submittedSize = line.size?.trim();
+    let sizeSnapshot: string | undefined;
+    if (enabledSizes.length > 0) {
+      if (!submittedSize) {
+        throw new OrderBuildError(
+          "size_required",
+          `Please select a size for ${product.name}${variantParens}`
+        );
+      }
+      const match = enabledSizes.find(
+        (s) => s.label.toLowerCase() === submittedSize.toLowerCase()
+      );
+      if (!match) {
+        throw new OrderBuildError(
+          "invalid_size",
+          `Size "${submittedSize}" is not available for ${product.name}${variantParens}`
+        );
+      }
+      sizeSnapshot = match.label;
+    }
+
     const unit = priceOf(product, variant);
     const linePaise = unit * line.quantity;
     subtotal += linePaise;
@@ -95,6 +126,7 @@ export async function buildOrderFromCart(
       // Snapshot an empty label for Default-only products so order summaries,
       // invoices, and mail templates don't leak the sentinel to customers.
       variantLabelSnapshot: variant.color === "Default" ? "" : variant.color,
+      sizeSnapshot,
       imageSnapshot: product.images[0]?.url ?? "",
       unitPricePaise: unit,
       quantity: line.quantity

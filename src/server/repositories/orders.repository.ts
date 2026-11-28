@@ -8,6 +8,7 @@ export type OrderCreateInput = Omit<Order, "id" | "orderNumber" | "createdAt" | 
 export interface OrderRepository {
   create(input: OrderCreateInput): Promise<Order>;
   findById(id: string): Promise<Order | null>;
+  findByIdempotencyKey(key: string): Promise<Order | null>;
   listByUser(userId: string): Promise<Order[]>;
   listAll(): Promise<Order[]>;
   updateStatus(id: string, status: OrderStatus): Promise<Order | null>;
@@ -56,6 +57,16 @@ export const jsonOrderRepo: OrderRepository = {
   async findById(id) {
     const rows = await readCollection<Order>(COLLECTION);
     const hit = rows.find((o) => o.id === id);
+    return hit ? normalise(hit) : null;
+  },
+  async findByIdempotencyKey(key) {
+    if (!key) return null;
+    const rows = await readCollection<Order>(COLLECTION);
+    // Prefer the most-recent match so a retry after a cancelled attempt still
+    // dedupes against the active in-flight order.
+    const hit = rows
+      .filter((o) => o.idempotencyKey === key)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
     return hit ? normalise(hit) : null;
   },
   async listByUser(userId) {

@@ -67,7 +67,15 @@ export default async function AdminOrderDetailPage({
                   <div className="flex flex-1 items-start justify-between text-sm">
                     <div>
                       <p className="font-medium">{i.productNameSnapshot}</p>
-                      <p className="text-xs text-ink-muted">{i.variantLabelSnapshot} · Qty {i.quantity}</p>
+                      <p className="text-xs text-ink-muted">
+                        {[
+                          i.variantLabelSnapshot,
+                          i.sizeSnapshot ? `Size ${i.sizeSnapshot}` : null,
+                          `Qty ${i.quantity}`
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
                     </div>
                     <p className="font-medium">{formatINR(i.unitPricePaise * i.quantity)}</p>
                   </div>
@@ -105,11 +113,33 @@ export default async function AdminOrderDetailPage({
           />
 
           <div className="rounded-card border border-border bg-cream p-4">
-            <p className="text-[11px] uppercase tracking-widest text-ink-muted">Customer</p>
-            <p className="mt-2 font-medium">{user?.name ?? order.addressSnapshot?.fullName ?? "—"}</p>
-            <p className="text-xs text-ink-muted">{user?.email ?? ""}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] uppercase tracking-widest text-ink-muted">Customer</p>
+              {order.isGuestOrder ? (
+                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sky-800">
+                  🛍️ Guest Checkout
+                </span>
+              ) : (
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-800">
+                  Registered
+                </span>
+              )}
+            </div>
+            <p className="mt-2 font-medium">
+              {order.isGuestOrder
+                ? order.addressSnapshot?.fullName || user?.name || "—"
+                : user?.name ?? order.addressSnapshot?.fullName ?? "—"}
+            </p>
+            {!order.isGuestOrder && user?.email && (
+              <p className="text-xs text-ink-muted">{user.email}</p>
+            )}
             {(user?.phone || order.addressSnapshot?.phone) && (
               <p className="text-xs text-ink-muted">{user?.phone ?? order.addressSnapshot?.phone}</p>
+            )}
+            {order.isGuestOrder && (
+              <p className="mt-2 text-[11px] text-ink-muted">
+                Placed without login / OTP. All contact details come from the delivery address.
+              </p>
             )}
           </div>
 

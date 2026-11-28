@@ -23,7 +23,7 @@ export function CartLine({ item, compact = false }: { item: CartItem; compact?: 
   const handleStep = (delta: number) => {
     const current = parseInt(typedQty, 10) || item.quantity;
     const next = Math.max(1, Math.min(maxAllowed, current + delta));
-    setQuantity(item.variantId, next);
+    setQuantity(item.lineKey, next);
     setTypedQty(String(next));
   };
 
@@ -44,10 +44,10 @@ export function CartLine({ item, compact = false }: { item: CartItem; compact?: 
       return;
     }
     if (num > maxAllowed) {
-      setQuantity(item.variantId, maxAllowed);
+      setQuantity(item.lineKey, maxAllowed);
       setTypedQty(String(maxAllowed));
     } else {
-      setQuantity(item.variantId, num);
+      setQuantity(item.lineKey, num);
       setTypedQty(clean);
     }
   };
@@ -55,11 +55,11 @@ export function CartLine({ item, compact = false }: { item: CartItem; compact?: 
   const handleInputBlur = () => {
     const parsed = parseInt(typedQty, 10);
     if (!typedQty || isNaN(parsed) || parsed < 1) {
-      setQuantity(item.variantId, 1);
+      setQuantity(item.lineKey, 1);
       setTypedQty("1");
     } else {
       const clamped = Math.max(1, Math.min(maxAllowed, parsed));
-      setQuantity(item.variantId, clamped);
+      setQuantity(item.lineKey, clamped);
       setTypedQty(String(clamped));
     }
   };
@@ -83,13 +83,21 @@ export function CartLine({ item, compact = false }: { item: CartItem; compact?: 
             <Link href={`/products/${item.slug}`} className="font-heritage font-bold text-base leading-snug text-brand-plum hover:text-brand-purple transition">
               {item.name}
             </Link>
-            {item.variantLabel && (
-              <p className="mt-0.5 text-xs font-medium text-purple-900/60">Colour: <span className="text-slate-800">{item.variantLabel}</span></p>
+            {(item.variantLabel || item.size) && (
+              <p className="mt-0.5 text-xs font-medium text-purple-900/60">
+                {item.variantLabel && (
+                  <>Colour: <span className="text-slate-800">{item.variantLabel}</span></>
+                )}
+                {item.variantLabel && item.size && <span className="mx-1.5 text-purple-900/40">·</span>}
+                {item.size && (
+                  <>Size: <span className="text-slate-800">{item.size}</span></>
+                )}
+              </p>
             )}
           </div>
           <button
             type="button"
-            onClick={() => removeItem(item.variantId)}
+            onClick={() => removeItem(item.lineKey)}
             aria-label={`Remove ${item.name}`}
             className="rounded-full p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
           >

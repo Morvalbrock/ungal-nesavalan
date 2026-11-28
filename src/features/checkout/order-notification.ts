@@ -50,17 +50,23 @@ export async function sendOrderPlacedNotifications(orderId: string): Promise<voi
       console.error("[order-notification] Failed to send admin email:", (err as Error).message);
     }
 
-    // 2. Send Customer Confirmation Email
-    if (customer.email) {
+    // 2. Send Customer Confirmation Email — skip placeholder emails generated
+    // for guest / phone-only accounts (they aren't real inboxes).
+    const customerEmail = customer.email;
+    const hasRealEmail =
+      !!customerEmail &&
+      !customerEmail.endsWith("@phone.local") &&
+      !customerEmail.endsWith("@firebase.local");
+    if (hasRealEmail && customerEmail) {
       try {
         const customerMail = orderConfirmationEmail(order, customer.name);
         await mail.send({
-          to: customer.email,
+          to: customerEmail,
           subject: customerMail.subject,
           html: customerMail.html,
           tags: { orderId: order.id, orderNumber: order.orderNumber, recipient: "customer" }
         });
-        console.log(`[order-notification] Customer confirmation sent to ${customer.email} for order #${order.orderNumber}`);
+        console.log(`[order-notification] Customer confirmation sent to ${customerEmail} for order #${order.orderNumber}`);
       } catch (err) {
         console.error("[order-notification] Failed to send customer confirmation:", (err as Error).message);
       }

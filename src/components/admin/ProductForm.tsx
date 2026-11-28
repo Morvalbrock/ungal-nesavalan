@@ -59,6 +59,7 @@ type Values = {
     imageUrl: string;
     imageAlt: string;
   }[];
+  sizes: { label: string; enabled: boolean }[];
 };
 
 function toInitial(p?: Product, defaultCatalog = "kanchivaram", defaultCategory = ""): Values {
@@ -80,7 +81,8 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram", defaultCategory 
       featured: false,
       published: true,
       images: [{ url: "", alt: "" }],
-      variants: []
+      variants: [],
+      sizes: []
     };
   }
   // A product saved from Basics-only (no colour variants) carries a single
@@ -116,7 +118,8 @@ function toInitial(p?: Product, defaultCatalog = "kanchivaram", defaultCategory 
       priceOverride: v.priceOverride != null ? v.priceOverride / 100 : "",
       imageUrl: v.images?.[0]?.url ?? "",
       imageAlt: v.images?.[0]?.alt ?? ""
-    }))
+    })),
+    sizes: (p.sizes ?? []).map((s) => ({ label: s.label, enabled: s.enabled }))
   };
 }
 
@@ -195,7 +198,10 @@ export function ProductForm({
           imageUrl: v.imageUrl?.trim() ? v.imageUrl.trim() : undefined,
           imageAlt: v.imageAlt?.trim() ? v.imageAlt.trim() : undefined
         };
-      })
+      }),
+      sizes: values.sizes
+        .map((s) => ({ label: s.label.trim(), enabled: s.enabled }))
+        .filter((s) => s.label.length > 0)
     } as unknown as ProductFormValues;
 
     startTransition(async () => {
@@ -516,6 +522,89 @@ export function ProductForm({
           <p className="text-xs text-ink-muted">
             Variant <strong>Price ₹</strong> is in rupees (e.g. type <code className="rounded bg-ink/5 px-1">800</code> for ₹800).
             Leave blank to use the product&rsquo;s sale/base price. If a variant currently shows the wrong amount in the Add to Cart button, clear this field and save.
+          </p>
+        </div>
+      </Section>
+
+      <Section title="Sizes (optional)">
+        <div className="space-y-3">
+          {values.sizes.length === 0 && (
+            <p className="text-xs text-ink-muted">
+              No sizes configured. The storefront will not show a size selector for this product.
+            </p>
+          )}
+          {values.sizes.length > 0 && (
+            <ul className="flex flex-wrap gap-2">
+              {values.sizes.map((s, i) => {
+                const patch = (p: Partial<Values["sizes"][number]>) => {
+                  const arr = [...values.sizes];
+                  arr[i] = { ...arr[i], ...p };
+                  setField("sizes", arr);
+                };
+                return (
+                  <li
+                    key={i}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-card border bg-cream px-2 py-1 text-sm",
+                      s.enabled ? "border-border text-ink" : "border-border/60 text-ink-muted bg-ink/[.02]"
+                    )}
+                  >
+                    <input
+                      value={s.label}
+                      onChange={(e) => patch({ label: e.target.value })}
+                      placeholder="e.g. M"
+                      className="w-16 bg-transparent px-1 py-0.5 text-sm text-ink outline-none"
+                      aria-label="Size label"
+                    />
+                    <label className="flex items-center gap-1 text-[11px] uppercase tracking-widest text-ink-muted" title="Enabled sizes appear on the storefront. Disable to hide without deleting.">
+                      <input
+                        type="checkbox"
+                        checked={s.enabled}
+                        onChange={(e) => patch({ enabled: e.target.checked })}
+                      />
+                      <span>{s.enabled ? "On" : "Off"}</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setField("sizes", values.sizes.filter((_, j) => j !== i))}
+                      className="rounded p-0.5 text-ink-muted hover:text-maroon"
+                      aria-label={`Remove size ${s.label || "entry"}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => setField("sizes", [...values.sizes, { label: "", enabled: true }])}
+              className="btn-ghost inline-flex"
+            >
+              <Plus className="h-4 w-4" /> Add size
+            </button>
+            <span className="text-ink-muted">or quick-add:</span>
+            {["S", "M", "L", "XL", "XXL"].map((preset) => {
+              const already = values.sizes.some((s) => s.label.trim().toLowerCase() === preset.toLowerCase());
+              return (
+                <button
+                  key={preset}
+                  type="button"
+                  disabled={already}
+                  onClick={() => setField("sizes", [...values.sizes, { label: preset, enabled: true }])}
+                  className="rounded-card border border-border px-2 py-1 text-ink-soft hover:border-ink hover:text-ink disabled:opacity-40 disabled:hover:border-border"
+                >
+                  {preset}
+                </button>
+              );
+            })}
+          </div>
+          {issues.sizes && <p className="text-xs text-maroon">{issues.sizes[0]}</p>}
+          <p className="text-xs text-ink-muted">
+            When sizes are configured, customers must pick one before adding the product to cart. Disable a size to
+            hide it from the storefront without deleting its history.
           </p>
         </div>
       </Section>

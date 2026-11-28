@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Check, ShoppingBag, Zap } from "lucide-react";
 import type { Product } from "@/types/product";
 import { useCartStore } from "@/features/cart/cart.store";
+import { makeCartLineKey } from "@/features/cart/cart.types";
 import { useSelectedVariantStore } from "@/features/products/selected-variant.store";
 import { track } from "@/features/analytics/track";
 import { cn, formatINR } from "@/lib/utils";
@@ -39,6 +40,26 @@ export function PurchasePanel({ product }: { product: Product }) {
     setQuantity(1);
     setTypedQty("1");
   }, [variantId]);
+
+  // Enabled sizes drive the size selector; an empty list hides it entirely.
+  const availableSizes = useMemo(
+    () => (product.sizes ?? []).filter((s) => s.enabled && s.label.trim().length > 0),
+    [product.sizes]
+  );
+  const hasSizes = availableSizes.length > 0;
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  // Reset the size whenever the colour-variant changes so a stale size can't
+  // silently follow onto a different variant row.
+  useEffect(() => {
+    setSelectedSize(null);
+  }, [variantId]);
+  // If the admin trimmed the size list after the shopper picked one, un-pick it.
+  useEffect(() => {
+    if (selectedSize && !availableSizes.some((s) => s.label === selectedSize)) {
+      setSelectedSize(null);
+    }
+  }, [availableSizes, selectedSize]);
 
   // Clear the shared store on unmount so another product page starts clean.
   useEffect(() => {
@@ -97,11 +118,15 @@ export function PurchasePanel({ product }: { product: Product }) {
 
   const addToCart = () => {
     if (!variant || outOfStock) return false;
+    if (hasSizes && !selectedSize) return false;
     setQuantity(effectiveQty);
     setTypedQty(String(effectiveQty));
+    const size = hasSizes ? selectedSize ?? undefined : undefined;
     addItem({
       productId: product.id,
       variantId: variant.id,
+      size,
+      lineKey: makeCartLineKey(variant.id, size),
       slug: product.slug,
       name: product.name,
       // "Default" is the sentinel for products with no colour options — don't
@@ -139,12 +164,48 @@ export function PurchasePanel({ product }: { product: Product }) {
   const isDefaultOnly =
     product.variants.length === 1 && product.variants[0].color === "Default";
 
+  const sizeRequiredButMissing = hasSizes && !selectedSize;
+
   return (
     <div className="space-y-6">
       {!isDefaultOnly && (
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-plum">
           Colour · <span className="text-purple-700 font-bold">{variant?.color ?? "—"}</span>
         </p>
+      )}
+
+      {hasSizes && (
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-plum">
+            Size · <span className="text-purple-700 font-bold">{selectedSize ?? "Choose one"}</span>
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {availableSizes.map((s) => {
+              const active = selectedSize === s.label;
+              return (
+                <button
+                  key={s.label}
+                  type="button"
+                  onClick={() => setSelectedSize(s.label)}
+                  className={cn(
+                    "min-w-11 rounded-xl border px-3 py-2 text-sm font-semibold transition",
+                    active
+                      ? "border-brand-purple bg-brand-purple text-white shadow-sm"
+                      : "border-purple-200 bg-white text-brand-plum hover:border-brand-purple hover:bg-purple-50"
+                  )}
+                  aria-pressed={active}
+                >
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
+          {sizeRequiredButMissing && (
+            <p className="mt-2 text-[11px] font-medium text-rose-600">
+              Please select a size before adding to cart.
+            </p>
+          )}
+        </div>
       )}
 
       <div className="flex items-center gap-4">
@@ -193,7 +254,8 @@ export function PurchasePanel({ product }: { product: Product }) {
         <button
           type="button"
           onClick={handleAdd}
-          disabled={outOfStock || buyingNow}
+          disabled={outOfStock || buyingNow || sizeRequiredButMissing}
+          title={sizeRequiredButMissing ? "Select a size to continue" : undefined}
           className={cn(
             "btn-ghost flex-1 !border-purple-300 hover:!bg-purple-50 !text-brand-plum font-semibold rounded-xl py-3.5 transition",
             justAdded && "!border-brand-purple !bg-brand-purple !text-white"
@@ -205,6 +267,8 @@ export function PurchasePanel({ product }: { product: Product }) {
             </>
           ) : outOfStock ? (
             "Sold out"
+          ) : sizeRequiredButMissing ? (
+            "Select a size"
           ) : (
             <>
               <ShoppingBag className="h-4 w-4" /> Add to cart
@@ -214,11 +278,18 @@ export function PurchasePanel({ product }: { product: Product }) {
         <button
           type="button"
           onClick={handleBuyNow}
-          disabled={outOfStock || buyingNow}
+          disabled={outOfStock || buyingNow || sizeRequiredButMissing}
+          title={sizeRequiredButMissing ? "Select a size to continue" : undefined}
           className="btn-primary flex-1 font-semibold rounded-xl py-3.5 transition shadow-md shadow-brand-deep/20"
         >
           <Zap className="h-4 w-4 text-amber-300 fill-amber-300" />
-          {buyingNow ? "Redirecting to Checkout…" : outOfStock ? "Sold out" : `Direct Buy Now · ${formatINR(unitPrice * effectiveQty)}`}
+          {buyingNow
+            ? "Redirecting to Checkout…"
+            : outOfStock
+              ? "Sold out"
+              : sizeRequiredButMissing
+                ? "Select a size"
+                : `Direct Buy Now · ${formatINR(unitPrice * effectiveQty)}`}
         </button>
       </div>
 

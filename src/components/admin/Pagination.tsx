@@ -1,5 +1,17 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useTransition, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useAdminListLoadingStore } from "@/features/admin/list-loading.store";
+import { buildHref } from "./pagination-utils";
+
+export {
+  DEFAULT_PER_PAGE,
+  MAX_PER_PAGE,
+  resolvePage,
+  resolvePerPage
+} from "./pagination-utils";
 
 export interface PaginationProps {
   page: number;
@@ -9,40 +21,16 @@ export interface PaginationProps {
   searchParams: Record<string, string | undefined>;
 }
 
-export const DEFAULT_PER_PAGE = 25;
-export const MAX_PER_PAGE = 100;
-
-export function resolvePage(raw: string | undefined, totalPages: number): number {
-  const n = Number(raw);
-  if (!Number.isFinite(n) || n < 1) return 1;
-  if (n > totalPages && totalPages > 0) return totalPages;
-  return Math.floor(n);
-}
-
-export function resolvePerPage(raw: string | undefined): number {
-  const n = Number(raw);
-  if (!Number.isFinite(n) || n < 1) return DEFAULT_PER_PAGE;
-  return Math.min(MAX_PER_PAGE, Math.floor(n));
-}
-
-function buildHref(
-  pathname: string,
-  searchParams: Record<string, string | undefined>,
-  overrides: Record<string, string | undefined>
-): string {
-  const params = new URLSearchParams();
-  for (const [k, v] of Object.entries(searchParams)) {
-    if (v != null && v !== "") params.set(k, v);
-  }
-  for (const [k, v] of Object.entries(overrides)) {
-    if (v == null || v === "") params.delete(k);
-    else params.set(k, v);
-  }
-  const qs = params.toString();
-  return qs ? `${pathname}?${qs}` : pathname;
-}
-
 export function Pagination({ page, perPage, total, pathname, searchParams }: PaginationProps) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const startLoading = useAdminListLoadingStore((s) => s.startLoading);
+  const stopLoading = useAdminListLoadingStore((s) => s.stopLoading);
+
+  useEffect(() => {
+    if (!pending) stopLoading();
+  }, [pending, stopLoading]);
+
   const totalPages = Math.max(1, Math.ceil(total / perPage));
   if (totalPages <= 1 && total <= perPage) return null;
 
@@ -61,6 +49,13 @@ export function Pagination({ page, perPage, total, pathname, searchParams }: Pag
   const pageNumbers: number[] = [];
   for (let i = start; i <= end; i++) pageNumbers.push(i);
 
+  function navigate(href: string, targetPage: number) {
+    startLoading(`page:${targetPage}`);
+    startTransition(() => {
+      router.push(href, { scroll: false });
+    });
+  }
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-ink-muted">
       <span>
@@ -69,7 +64,7 @@ export function Pagination({ page, perPage, total, pathname, searchParams }: Pag
       </span>
 
       <div className="flex items-center gap-1">
-        <PageLink href={prevHref} label="Previous">
+        <PageLink href={prevHref} label="Previous" onNavigate={(h) => navigate(h, page - 1)}>
           <ChevronLeft className="h-3.5 w-3.5" />
         </PageLink>
 
@@ -78,6 +73,7 @@ export function Pagination({ page, perPage, total, pathname, searchParams }: Pag
             <PageLink
               href={buildHref(pathname, searchParams, { page: "1" })}
               label="Page 1"
+              onNavigate={(h) => navigate(h, 1)}
             >
               1
             </PageLink>
@@ -91,6 +87,7 @@ export function Pagination({ page, perPage, total, pathname, searchParams }: Pag
             href={buildHref(pathname, searchParams, { page: String(n) })}
             label={`Page ${n}`}
             active={n === page}
+            onNavigate={(h) => navigate(h, n)}
           >
             {n}
           </PageLink>
@@ -102,13 +99,14 @@ export function Pagination({ page, perPage, total, pathname, searchParams }: Pag
             <PageLink
               href={buildHref(pathname, searchParams, { page: String(totalPages) })}
               label={`Page ${totalPages}`}
+              onNavigate={(h) => navigate(h, totalPages)}
             >
               {totalPages}
             </PageLink>
           </>
         )}
 
-        <PageLink href={nextHref} label="Next">
+        <PageLink href={nextHref} label="Next" onNavigate={(h) => navigate(h, page + 1)}>
           <ChevronRight className="h-3.5 w-3.5" />
         </PageLink>
       </div>
@@ -120,12 +118,14 @@ function PageLink({
   href,
   label,
   active,
-  children
+  children,
+  onNavigate
 }: {
   href: string | null;
   label: string;
   active?: boolean;
   children: React.ReactNode;
+  onNavigate: (href: string) => void;
 }) {
   const base =
     "inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-card border px-2 text-xs transition-colors";
@@ -143,14 +143,19 @@ function PageLink({
       </span>
     );
   }
+  function onClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    onNavigate(href!);
+  }
   return (
-    <Link
+    <a
       href={href}
-      scroll={false}
+      onClick={onClick}
       className={`${base} border-border text-ink hover:border-ink`}
       aria-label={label}
     >
       {children}
-    </Link>
+    </a>
   );
 }

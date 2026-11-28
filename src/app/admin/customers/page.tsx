@@ -1,11 +1,25 @@
 import { orderRepo, userRepo } from "@/server/repositories";
+import type { User } from "@/types/user";
 import { formatINR } from "@/lib/utils";
 import { formatISTDate } from "@/lib/datetime";
 import { getSession } from "@/features/auth/session";
+
+/**
+ * A user is guest-origin if their record was auto-provisioned during guest
+ * checkout — identifiable by the "guest_" prefix on a @phone.local placeholder.
+ * Older phone-OTP users use the same @phone.local domain without the prefix, so
+ * we require both.
+ */
+function isGuestOriginUser(u: User): boolean {
+  return u.email.startsWith("guest_") && u.email.endsWith("@phone.local");
+}
 import { SearchFilter } from "@/components/admin/SearchFilter";
 import { CustomerRoleToggle } from "@/components/admin/CustomerRoleToggle";
-import { Pagination, resolvePage, resolvePerPage } from "@/components/admin/Pagination";
-import { SortableHeader, parseSort } from "@/components/admin/SortableHeader";
+import { Pagination } from "@/components/admin/Pagination";
+import { resolvePage, resolvePerPage } from "@/components/admin/pagination-utils";
+import { SortableHeader } from "@/components/admin/SortableHeader";
+import { parseSort } from "@/components/admin/sort-utils";
+import { AdminListOverlay } from "@/components/admin/AdminListOverlay";
 import { ExportLink } from "@/components/admin/ExportLink";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +27,7 @@ export const dynamic = "force-dynamic";
 interface SearchParams {
   q?: string;
   role?: string;
+  type?: string;
   sort?: string;
   page?: string;
   perPage?: string;
@@ -52,6 +67,8 @@ export default async function AdminCustomersPage({
       if (!hay.includes(needle)) return false;
     }
     if (sp.role && sp.role !== "all" && u.role !== sp.role) return false;
+    if (sp.type === "guest" && !isGuestOriginUser(u)) return false;
+    if (sp.type === "registered" && isGuestOriginUser(u)) return false;
     return true;
   });
 
@@ -87,12 +104,15 @@ export default async function AdminCustomersPage({
   const superCount = users.filter((u) => u.role === "super_admin").length;
   const adminCount = users.filter((u) => u.role === "admin").length;
   const customerCount = users.length - adminCount - superCount;
+  const guestCount = users.filter(isGuestOriginUser).length;
+  const registeredCount = users.length - guestCount;
 
   const isSuperAdmin = session?.role === "super_admin";
 
   const serializedSp: Record<string, string | undefined> = {
     q: sp.q,
     role: sp.role,
+    type: sp.type,
     sort: sp.sort,
     page: sp.page,
     perPage: sp.perPage
@@ -124,10 +144,19 @@ export default async function AdminCustomersPage({
               { value: "admin", label: "Admin", count: adminCount },
               { value: "super_admin", label: "Super admin", count: superCount }
             ]
+          },
+          {
+            key: "type",
+            label: "Type",
+            options: [
+              { value: "registered", label: "Registered", count: registeredCount },
+              { value: "guest", label: "Guest", count: guestCount }
+            ]
           }
         ]}
       />
 
+      <AdminListOverlay label="Loading customers…">
       <div className="overflow-hidden rounded-card border border-border bg-cream">
         <table className="w-full text-sm">
           <thead className="bg-ink/[.03] text-left text-[10px] uppercase tracking-widest text-ink-muted">
@@ -144,13 +173,21 @@ export default async function AdminCustomersPage({
           <tbody>
             {rows.map((u) => {
               const s = spendByUser.get(u.id);
+              const isGuest = isGuestOriginUser(u);
               return (
                 <tr key={u.id} className="border-t border-border/70">
                   <td className="p-3">
-                    <p className="font-medium">{u.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{u.name}</p>
+                      {isGuest && (
+                        <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sky-800">
+                          Guest
+                        </span>
+                      )}
+                    </div>
                     {u.phone && <p className="text-xs text-ink-muted">{u.phone}</p>}
                   </td>
-                  <td className="p-3">{u.email}</td>
+                  <td className="p-3">{isGuest ? <span className="text-ink-muted italic">no email on file</span> : u.email}</td>
                   <td className="p-3">
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-widest ${
@@ -195,6 +232,7 @@ export default async function AdminCustomersPage({
         pathname={PATHNAME}
         searchParams={serializedSp}
       />
+      </AdminListOverlay>
     </div>
   );
 }

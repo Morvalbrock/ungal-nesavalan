@@ -1,19 +1,13 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useTransition, useEffect } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { useAdminListLoadingStore } from "@/features/admin/list-loading.store";
+import type { SortDir, SortSpec } from "./sort-utils";
 
-export type SortDir = "asc" | "desc";
-
-export interface SortSpec {
-  field: string;
-  dir: SortDir;
-}
-
-export function parseSort(raw: string | undefined, defaultField: string, defaultDir: SortDir = "desc"): SortSpec {
-  if (!raw) return { field: defaultField, dir: defaultDir };
-  const [field, dir] = raw.split("-");
-  if (!field) return { field: defaultField, dir: defaultDir };
-  return { field, dir: dir === "asc" ? "asc" : "desc" };
-}
+export type { SortDir, SortSpec } from "./sort-utils";
+export { parseSort } from "./sort-utils";
 
 export interface SortableHeaderProps {
   field: string;
@@ -32,6 +26,15 @@ export function SortableHeader({
   searchParams,
   className
 }: SortableHeaderProps) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const startLoading = useAdminListLoadingStore((s) => s.startLoading);
+  const stopLoading = useAdminListLoadingStore((s) => s.stopLoading);
+
+  useEffect(() => {
+    if (!pending) stopLoading();
+  }, [pending, stopLoading]);
+
   const isActive = current.field === field;
   const nextDir: SortDir = isActive && current.dir === "asc" ? "desc" : "asc";
 
@@ -44,18 +47,28 @@ export function SortableHeader({
 
   const Icon = !isActive ? ArrowUpDown : current.dir === "asc" ? ArrowUp : ArrowDown;
 
+  function onClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    // Let modified clicks (cmd/ctrl/shift/middle) fall through to default navigation
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    startLoading(`sort:${field}`);
+    startTransition(() => {
+      router.push(href, { scroll: false });
+    });
+  }
+
   return (
     <th className={`p-3 ${className ?? ""}`}>
-      <Link
+      <a
         href={href}
-        scroll={false}
+        onClick={onClick}
         className={`inline-flex items-center gap-1 transition-colors ${
           isActive ? "text-ink" : "text-ink-muted hover:text-ink"
         }`}
       >
         {label}
         <Icon className="h-3 w-3" />
-      </Link>
+      </a>
     </th>
   );
 }

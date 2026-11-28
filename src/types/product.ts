@@ -35,6 +35,17 @@ export interface Variant {
   images: ProductImage[];
 }
 
+/**
+ * Admin-configured size options for a product. Sizes are product-level metadata
+ * (not variant-level inventory) — the customer picks a colour-variant AND a size
+ * independently, and the chosen size is snapshotted on the order item. Stock
+ * continues to live on Variant, matching the existing unstitched-saree model.
+ */
+export interface ProductSize {
+  label: string;
+  enabled: boolean;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -51,6 +62,8 @@ export interface Product {
   categoryId: string;
   images: ProductImage[];
   variants: Variant[];
+  /** Admin-defined size options. Empty / undefined = size selection not required. */
+  sizes?: ProductSize[];
   featured: boolean;
   published: boolean;
   // Admin-controlled display order within the category. Lower = shown earlier on the

@@ -146,9 +146,11 @@ async function buildOrdersCsv(sp: Record<string, string>): Promise<string> {
     "Order number",
     "Order ID",
     "Status",
+    "Customer type",
     "Customer name",
     "Customer email",
     "Items",
+    "Sizes",
     "Total (INR)",
     "Payment mode",
     "Payment status",
@@ -169,13 +171,25 @@ async function buildOrdersCsv(sp: Record<string, string>): Promise<string> {
     const u = userMap.get(o.userId);
     const a = o.addressSnapshot;
     const p = o.paymentId ? paymentMap.get(o.paymentId) : undefined;
+    const isGuest = o.isGuestOrder === true;
+    // On guest orders the user record email is a placeholder; surface the
+    // address-snapshot fields as the source of truth and hide the placeholder.
+    const customerName = isGuest ? a?.fullName ?? u?.name ?? "" : u?.name ?? a?.fullName ?? "";
+    const customerEmail = isGuest ? "" : u?.email ?? "";
+    // Join per-item sizes into one cell (blank for items without a size).
+    const sizesCell = o.items
+      .map((it) => it.sizeSnapshot?.trim())
+      .filter((s): s is string => Boolean(s))
+      .join(", ");
     return [
       o.orderNumber,
       o.id,
       o.status,
-      u?.name ?? "",
-      u?.email ?? "",
+      isGuest ? "Guest" : "Registered",
+      customerName,
+      customerEmail,
       o.items.length,
+      sizesCell,
       (o.totalPaise / 100).toFixed(2),
       o.paymentMode ?? "prepaid",
       p?.status ?? "not_initiated",

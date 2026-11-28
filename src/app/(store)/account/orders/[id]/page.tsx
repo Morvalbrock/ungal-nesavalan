@@ -60,7 +60,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   <div>
                     <p className="font-heritage font-bold text-base text-brand-plum">{i.productNameSnapshot}</p>
                     <p className="text-xs text-purple-900/60 mt-0.5">
-                      {i.variantLabelSnapshot ? `${i.variantLabelSnapshot} · ` : ""}Qty: {i.quantity}
+                      {[
+                        i.variantLabelSnapshot,
+                        i.sizeSnapshot ? `Size: ${i.sizeSnapshot}` : null,
+                        `Qty: ${i.quantity}`
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </p>
                   </div>
                   <p className="font-heritage font-bold text-base text-brand-plum">{formatINR(i.unitPricePaise * i.quantity)}</p>

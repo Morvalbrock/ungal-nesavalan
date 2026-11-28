@@ -40,7 +40,11 @@ export const addressSchema = z.object({
     .string()
     .trim()
     .regex(/^(\+91[- ]?)?[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
-  email: z.string().trim().email("Enter a valid email"),
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "Enter a valid email"),
   line1: z.string().trim().min(4, "Address is too short"),
   line2: z.string().trim().optional(),
   city: z.string().trim().min(2, "City is required"),

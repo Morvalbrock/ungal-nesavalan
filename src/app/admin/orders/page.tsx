@@ -6,8 +6,11 @@ import type { Review } from "@/types/review";
 import { formatINR } from "@/lib/utils";
 import { formatIST } from "@/lib/datetime";
 import { SearchFilter } from "@/components/admin/SearchFilter";
-import { Pagination, resolvePage, resolvePerPage } from "@/components/admin/Pagination";
-import { SortableHeader, parseSort } from "@/components/admin/SortableHeader";
+import { Pagination } from "@/components/admin/Pagination";
+import { resolvePage, resolvePerPage } from "@/components/admin/pagination-utils";
+import { SortableHeader } from "@/components/admin/SortableHeader";
+import { parseSort } from "@/components/admin/sort-utils";
+import { AdminListOverlay } from "@/components/admin/AdminListOverlay";
 import { ExportLink } from "@/components/admin/ExportLink";
 
 export const dynamic = "force-dynamic";
@@ -66,6 +69,7 @@ export default async function AdminOrdersPage({
   //   "cod"               → Cash on Delivery: paymentMode == cod, deposit captured, still in-flight
   //   "pending"           → every order whose payment hasn't been captured yet (status == "pending")
   //   "delivered"         → delivered orders; this is where customer feedback / ratings surface
+  //   "guest"             → orders placed via guest checkout (no login/OTP)
   //   "all"               → every order regardless of payment/status
   //   any other status    → filter by that status (packed, shipped, cancelled, refunded)
   // Default-on-load = prepaid so the finance/dispatch workflow starts with ready-to-ship orders.
@@ -83,6 +87,7 @@ export default async function AdminOrdersPage({
     if (filter === "all") return matchesSearch(o);
     if (filter === "prepaid") return isPrepaidActive(o) && matchesSearch(o);
     if (filter === "cod") return isCodActive(o) && matchesSearch(o);
+    if (filter === "guest") return o.isGuestOrder === true && matchesSearch(o);
     if (o.status !== filter) return false;
     return matchesSearch(o);
   });
@@ -90,7 +95,9 @@ export default async function AdminOrdersPage({
   function matchesSearch(o: (typeof orders)[number]) {
     if (!needle) return true;
     const u = userMap.get(o.userId);
-    const hay = `${o.orderNumber} ${u?.name ?? ""} ${u?.email ?? ""} ${o.addressSnapshot?.phone ?? ""}`.toLowerCase();
+    // Address snapshot name + phone are the only identity on guest orders, so
+    // include them in the search haystack alongside the user record.
+    const hay = `${o.orderNumber} ${u?.name ?? ""} ${u?.email ?? ""} ${o.addressSnapshot?.fullName ?? ""} ${o.addressSnapshot?.phone ?? ""}`.toLowerCase();
     return hay.includes(needle);
   }
 
@@ -116,7 +123,7 @@ export default async function AdminOrdersPage({
   const pageSlice = sorted.slice((page - 1) * perPage, page * perPage);
 
   // Single filter row: Full Paid (default) → COD → Pending → rest of status flow.
-  const filterTabs: { key: string; label: string; count: number; tone: "prepaid" | "cod" | "status" | "all" }[] = [
+  const filterTabs: { key: string; label: string; count: number; tone: "prepaid" | "cod" | "status" | "all" | "guest" }[] = [
     {
       key: "prepaid",
       label: "Full Paid",
@@ -135,6 +142,7 @@ export default async function AdminOrdersPage({
     { key: "delivered", label: "Delivered", count: orders.filter((o) => o.status === "delivered").length, tone: "status" },
     { key: "cancelled", label: "Cancelled", count: orders.filter((o) => o.status === "cancelled").length, tone: "status" },
     { key: "refunded", label: "Refunded", count: orders.filter((o) => o.status === "refunded").length, tone: "status" },
+    { key: "guest", label: "Guest", count: orders.filter((o) => o.isGuestOrder === true).length, tone: "guest" },
     { key: "all", label: "All", count: orders.length, tone: "all" }
   ];
 
@@ -182,14 +190,19 @@ export default async function AdminOrdersPage({
               ? "border-emerald-700 bg-emerald-700 text-white"
               : tab.tone === "cod"
                 ? "border-amber-700 bg-amber-700 text-white"
-                : "border-ink bg-ink text-cream";
+                : tab.tone === "guest"
+                  ? "border-sky-700 bg-sky-700 text-white"
+                  : "border-ink bg-ink text-cream";
           const idleCls =
             tab.tone === "prepaid"
               ? "border-emerald-700/30 text-emerald-800 hover:border-emerald-700 hover:bg-emerald-50"
               : tab.tone === "cod"
                 ? "border-amber-700/30 text-amber-800 hover:border-amber-700 hover:bg-amber-50"
-                : "border-border text-ink-soft hover:border-ink hover:text-ink";
-          const icon = tab.tone === "prepaid" ? "💳 " : tab.tone === "cod" ? "💵 " : "";
+                : tab.tone === "guest"
+                  ? "border-sky-700/30 text-sky-800 hover:border-sky-700 hover:bg-sky-50"
+                  : "border-border text-ink-soft hover:border-ink hover:text-ink";
+          const icon =
+            tab.tone === "prepaid" ? "💳 " : tab.tone === "cod" ? "💵 " : tab.tone === "guest" ? "🛍️ " : "";
 
           return (
             <Link
@@ -204,6 +217,7 @@ export default async function AdminOrdersPage({
         })}
       </div>
 
+      <AdminListOverlay label="Loading orders…">
       <div className="overflow-hidden rounded-card border border-border bg-cream">
         <table className="w-full text-sm">
           <thead className="bg-ink/[.03] text-left text-[10px] uppercase tracking-widest text-ink-muted">
@@ -232,8 +246,27 @@ export default async function AdminOrdersPage({
                     )}
                   </td>
                   <td className="p-3">
-                    <p className="font-medium text-ink">{u?.name || o.addressSnapshot?.fullName || "—"}</p>
-                    <p className="text-xs text-ink-muted">{u?.email || o.addressSnapshot?.phone || ""}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-ink">
+                        {o.isGuestOrder
+                          ? o.addressSnapshot?.fullName || u?.name || "—"
+                          : u?.name || o.addressSnapshot?.fullName || "—"}
+                      </p>
+                      {o.isGuestOrder ? (
+                        <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sky-800">
+                          Guest
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-soft">
+                          Registered
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-ink-muted">
+                      {o.isGuestOrder
+                        ? o.addressSnapshot?.phone || ""
+                        : u?.email || o.addressSnapshot?.phone || ""}
+                    </p>
                   </td>
                   <td className="p-3">
                     {isCod ? (
@@ -310,6 +343,7 @@ export default async function AdminOrdersPage({
         pathname={PATHNAME}
         searchParams={serializedSp}
       />
+      </AdminListOverlay>
     </div>
   );
 }

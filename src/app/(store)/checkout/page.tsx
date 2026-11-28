@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { CheckoutFlow } from "@/components/checkout/CheckoutFlow";
 import { getSession } from "@/features/auth/session";
 import { shippingChargesRepo, userRepo } from "@/server/repositories";
@@ -8,12 +7,14 @@ export const metadata: Metadata = { title: "Checkout" };
 
 export default async function CheckoutPage() {
   const session = await getSession();
-  if (!session) redirect("/login?next=/checkout");
-  const user = await userRepo.findById(session.userId);
-  if (!user) redirect("/login?next=/checkout");
+  const user = session ? await userRepo.findById(session.userId) : null;
 
-  const isDummyEmail = user.email.endsWith("@phone.local") || user.email.endsWith("@firebase.local");
-  const isPhoneAsName = user.name.startsWith("+") || /^\d+$/.test(user.name);
+  const isDummyEmail = user
+    ? user.email.endsWith("@phone.local") || user.email.endsWith("@firebase.local")
+    : false;
+  const isPhoneAsName = user
+    ? user.name.startsWith("+") || /^\d+$/.test(user.name)
+    : false;
 
   const [shippingCharges, shippingDefaults] = await Promise.all([
     shippingChargesRepo.list(),
@@ -22,11 +23,15 @@ export default async function CheckoutPage() {
 
   return (
     <CheckoutFlow
-      prefill={{
-        name: isPhoneAsName ? "" : user.name,
-        email: isDummyEmail ? "" : user.email,
-        phone: user.phone ?? ""
-      }}
+      prefill={
+        user
+          ? {
+              name: isPhoneAsName ? "" : user.name,
+              email: isDummyEmail ? "" : user.email,
+              phone: user.phone ?? ""
+            }
+          : { name: "", email: "", phone: "" }
+      }
       shippingCharges={shippingCharges}
       shippingDefaults={shippingDefaults}
     />

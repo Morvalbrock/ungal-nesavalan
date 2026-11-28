@@ -38,7 +38,7 @@ export function AddressStep({
           </Field>
         </div>
 
-        <Field label="Email Address" error={errors.email?.message}>
+        <Field label="Email Address (Optional)" error={errors.email?.message}>
           <input {...register("email")} type="email" className={inputCls(!!errors.email)} autoComplete="email" placeholder="you@example.com" />
         </Field>
 

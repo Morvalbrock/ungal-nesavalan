@@ -9,8 +9,11 @@ import { formatINR } from "@/lib/utils";
 import { formatISTDate } from "@/lib/datetime";
 import { SearchFilter } from "@/components/admin/SearchFilter";
 import { ProductRowActions } from "@/components/admin/ProductRowActions";
-import { Pagination, resolvePage, resolvePerPage } from "@/components/admin/Pagination";
-import { SortableHeader, parseSort } from "@/components/admin/SortableHeader";
+import { Pagination } from "@/components/admin/Pagination";
+import { resolvePage, resolvePerPage } from "@/components/admin/pagination-utils";
+import { SortableHeader } from "@/components/admin/SortableHeader";
+import { parseSort } from "@/components/admin/sort-utils";
+import { AdminListOverlay } from "@/components/admin/AdminListOverlay";
 import {
   BulkCheckbox,
   BulkSelectAllCheckbox,
@@ -160,6 +163,7 @@ export default async function AdminProductsPage({
 
       <BulkSelectInit ids={pageIds} />
 
+      <AdminListOverlay label="Loading products…">
       <div className="overflow-hidden rounded-card border border-border bg-cream">
         <table className="w-full text-sm">
           <thead className="bg-ink/[.03] text-left text-[10px] uppercase tracking-widest text-ink-muted">
@@ -272,6 +276,7 @@ export default async function AdminProductsPage({
         pathname={PATHNAME}
         searchParams={serializedSp}
       />
+      </AdminListOverlay>
 
       <ProductBulkActions canDelete={isSuperAdmin} />
     </div>

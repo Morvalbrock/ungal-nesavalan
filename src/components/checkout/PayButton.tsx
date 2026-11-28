@@ -1,11 +1,20 @@
 "use client";
 import Script from "next/script";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/features/cart/cart.store";
 import { useAppliedCouponStore } from "@/features/coupons/applied-coupon.store";
 import type { AddressForm } from "@/features/checkout/checkout.schema";
 import { formatINR } from "@/lib/utils";
+
+function makeIdempotencyKey(): string {
+  // Prefer crypto.randomUUID; fall back to a reasonably collision-resistant stamp
+  // on older browsers that don't expose it (e.g. older iOS Safari in the wild).
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `ik_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
 
 type CreateOrderResponse = {
   orderId: string;
@@ -64,6 +73,9 @@ export function PayButton({
   const [scriptReady, setScriptReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Stable per-mount key so retries of the same checkout attempt dedupe
+  // server-side rather than creating a second order.
+  const idempotencyKeyRef = useRef<string>(makeIdempotencyKey());
 
   const confirm = useCallback(
     async (data: {
@@ -102,10 +114,12 @@ export function PayButton({
         couponCode,
         preferredCourier,
         paymentMode,
+        idempotencyKey: idempotencyKeyRef.current,
         items: items.map((i) => ({
           productId: i.productId,
           variantId: i.variantId,
-          quantity: i.quantity
+          quantity: i.quantity,
+          size: i.size
         }))
       })
     });

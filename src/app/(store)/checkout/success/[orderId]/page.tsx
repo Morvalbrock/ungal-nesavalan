@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Check } from "lucide-react";
 import { Container } from "@/components/layout/Container";
@@ -8,7 +8,6 @@ import { getSession } from "@/features/auth/session";
 import { orderRepo, userRepo } from "@/server/repositories";
 import { formatINR } from "@/lib/utils";
 import { SuccessExtras } from "@/components/checkout/SuccessExtras";
-import { getOrCreateReferralCoupon } from "@/features/referrals/generate";
 
 export const metadata: Metadata = { title: "Order confirmed" };
 export const dynamic = "force-dynamic";
@@ -19,16 +18,22 @@ export default async function CheckoutSuccessPage({
   params: Promise<{ orderId: string }>;
 }) {
   const session = await getSession();
-  if (!session) redirect("/login");
-
   const { orderId } = await params;
   const order = await orderRepo.findById(orderId);
-  if (!order || order.userId !== session.userId) notFound();
+  if (!order) notFound();
+  if (session && order.userId !== session.userId) notFound();
+  if (!session) {
+    // Guest checkout path: without a session we can't prove ownership. The order
+    // is still queried by its id (unguessable), but we refuse to disclose details
+    // unless the caller held the session issued during create-order.
+    notFound();
+  }
 
-  const user = await userRepo.findById(session.userId);
-  const referral = user
-    ? await getOrCreateReferralCoupon({ user, order })
-    : null;
+  const orderUser = await userRepo.findById(order.userId);
+  const confirmationEmail =
+    orderUser && !orderUser.email.endsWith("@phone.local") && !orderUser.email.endsWith("@firebase.local")
+      ? orderUser.email
+      : order.addressSnapshot.phone;
 
   return (
     <div className="bg-[#faf7fd] min-h-[85vh] py-12">
@@ -42,7 +47,7 @@ export default async function CheckoutSuccessPage({
           </span>
           <h1 className="mt-3 font-heritage text-3xl sm:text-4xl text-brand-plum">Thank You for Supporting Handloom Weavers</h1>
           <p className="mt-2 text-sm text-purple-900/70">
-            A confirmation invoice has been queued to <strong className="text-brand-plum">{session.email}</strong>. Our Elampillai master artisans will prepare your drape with utmost care.
+            A confirmation invoice has been queued to <strong className="text-brand-plum">{confirmationEmail}</strong>. Our Elampillai master artisans will prepare your drape with utmost care.
           </p>
         </div>
 
@@ -62,7 +67,13 @@ export default async function CheckoutSuccessPage({
                   <div>
                     <p className="font-heritage font-bold text-base text-brand-plum">{i.productNameSnapshot}</p>
                     <p className="text-xs text-purple-900/60 mt-0.5">
-                      {i.variantLabelSnapshot ? `${i.variantLabelSnapshot} · ` : ""}Quantity: {i.quantity}
+                      {[
+                        i.variantLabelSnapshot,
+                        i.sizeSnapshot ? `Size: ${i.sizeSnapshot}` : null,
+                        `Quantity: ${i.quantity}`
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </p>
                   </div>
                   <p className="font-heritage font-bold text-base text-brand-plum">{formatINR(i.unitPricePaise * i.quantity)}</p>
@@ -104,8 +115,6 @@ export default async function CheckoutSuccessPage({
           orderId={order.id}
           revenuePaise={order.totalPaise}
           couponCode={order.couponSnapshot?.code}
-          referralCode={referral?.code}
-          referralValueLabel={referral?.valueLabel}
         />
 
         <div className="mx-auto mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-3">
