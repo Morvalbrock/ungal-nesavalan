@@ -93,12 +93,27 @@ export async function POST(req: Request) {
   }
 
   let user: User | null = session ? await userRepo.findById(session.userId) : null;
-  let isGuestCheckout = false;
+  const isGuestCheckout = !user;
+
+  // Validate the cart BEFORE creating any guest user record, so a bad size,
+  // insufficient-stock, or missing-variant error doesn't leave an orphan guest
+  // row in the admin customers list.
+  let built;
+  try {
+    built = await buildOrderFromCart(items, {
+      pincode: address.pincode,
+      state: address.state
+    });
+  } catch (err) {
+    if (err instanceof OrderBuildError) {
+      return NextResponse.json({ error: err.code, message: err.message }, { status: 400 });
+    }
+    return NextResponse.json({ error: "server_error" }, { status: 500 });
+  }
 
   if (!user) {
     // Guest checkout: always create a fresh user record (never look up by phone/email —
     // that would let a guest effectively "sign in" as an existing shopper without OTP).
-    isGuestCheckout = true;
     const normalizedPhone = normalizePhone(address.phone);
     const trimmedEmail = address.email?.trim().toLowerCase();
     const guestEmail =
@@ -129,19 +144,6 @@ export async function POST(req: Request) {
     if (Object.keys(userPatch).length > 0) {
       await userRepo.update(user.id, userPatch).catch(() => null);
     }
-  }
-
-  let built;
-  try {
-    built = await buildOrderFromCart(items, {
-      pincode: address.pincode,
-      state: address.state
-    });
-  } catch (err) {
-    if (err instanceof OrderBuildError) {
-      return NextResponse.json({ error: err.code, message: err.message }, { status: 400 });
-    }
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
 
   let discountPaise = 0;
